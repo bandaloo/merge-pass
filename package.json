@@ -1,0 +1,18 @@
+{
+  "name": "merge-pass",
+  "version": "0.1.0",
+  "description": "post-processing library that merges effects",
+  "main": "bundle.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node index.js",
+    "build": "tsc",
+    "bundle": "node_modules/.bin/watchify example.js -o bundle.js"
+  },
+  "author": "Cole Granof",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^3.9.3",
+    "watchify": "^3.11.1"
+  }
+}
