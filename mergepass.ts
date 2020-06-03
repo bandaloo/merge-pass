@@ -86,16 +86,28 @@ export class Merger {
   private makeTexture() {
     const texture = this.gl.createTexture();
     if (texture === null) {
-      throw new Error("problem creating back texture");
+      throw new Error("problem creating texture");
     }
 
     // flip the order of the pixels
-    this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
+    // TODO see if we need this
+    //this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
 
     // bind the texture after creating it
     this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
 
-    this.sendTexture(this.source.canvas);
+    //this.sendTexture(this.source.canvas);
+    this.gl.texImage2D(
+      this.gl.TEXTURE_2D,
+      0,
+      this.gl.RGBA,
+      this.gl.drawingBufferWidth,
+      this.gl.drawingBufferHeight,
+      0,
+      this.gl.RGBA,
+      this.gl.UNSIGNED_BYTE,
+      null
+    );
 
     // TODO see if this is needed with webgl2
     this.gl.texParameteri(
@@ -145,20 +157,18 @@ export class Merger {
       const replacedCode = e.fShaderSource.replace(/main\s*\(\)/, replacedFunc);
       code += "\n" + replacedCode + "\n";
       // an effect that samples neighbors cannot just be run in a for loop
-      console.log("---");
-      console.log(e.repeatNum);
-      console.log(!e.needsNeighborSample);
-      console.log(!e.needsNeighborSample && e.repeatNum > 1);
       const forStr =
         !e.needsNeighborSample && e.repeatNum > 1
           ? `for (int i = 0; i < ${e.repeatNum}; i++) `
           : "";
       calls += "  " + forStr + replacedFunc + ";\n";
-      console.log("calls");
-      console.log(calls);
 
       // TODO consider when to break off the merge
-      if (next === undefined || next.needsNeighborSample) {
+      if (
+        e.needsNeighborSample ||
+        next === undefined ||
+        next.needsNeighborSample
+      ) {
         // set up the fragment shader
         const fShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
         if (fShader === null) {
@@ -253,11 +263,65 @@ export class Merger {
     }
     */
 
+    let programIndex = 0;
+    this.sendTexture(this.source.canvas);
+    [this.texBack, this.texFront] = [this.texFront, this.texBack];
     for (const program of this.programs) {
-      console.log("simplified draw function");
-      this.gl.useProgram(program);
-      this.sendTexture(this.source.canvas);
-      this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+      for (let i = 0; i < this.repeatNums[programIndex]; i++) {
+        this.gl.useProgram(program);
+        if (
+          programIndex === this.programs.length - 1 &&
+          i === this.repeatNums[programIndex] - 1
+        ) {
+          // we are on the final pass of the final program, so draw to screen
+          console.log("final render pass");
+          // set to the default framebuffer
+          this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+          // TODO see if we need this
+          this.gl.viewport(
+            0,
+            0,
+            this.gl.drawingBufferWidth,
+            this.gl.drawingBufferHeight
+          );
+        } else {
+          console.log("intermediate render pass");
+          // we have to bounce between two textures
+          this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer);
+          // use the framebuffer to write to front texture
+          this.gl.framebufferTexture2D(
+            this.gl.FRAMEBUFFER,
+            this.gl.COLOR_ATTACHMENT0,
+            this.gl.TEXTURE_2D,
+            this.texFront,
+            0
+          );
+          // TODO see if we need this
+          this.gl.viewport(
+            0,
+            0,
+            this.gl.drawingBufferWidth,
+            this.gl.drawingBufferHeight
+          );
+
+          // allows us to read from `texBack`
+          // default sampler is 0, so `uSampler` uniform will always sample from texture 0
+          this.gl.activeTexture(this.gl.TEXTURE0);
+          this.gl.bindTexture(this.gl.TEXTURE_2D, this.texBack);
+        }
+
+        [this.texBack, this.texFront] = [this.texFront, this.texBack];
+        this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
+      }
+      programIndex++;
     }
+    // swap the textures
+    [this.texBack, this.texFront] = [this.texFront, this.texBack];
+
+    // go back to the default framebuffer object
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+    // use our last program as the draw program
+    // draw to the screen
+    this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
   }
 }

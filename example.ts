@@ -17,11 +17,25 @@ if (source === null) {
 
 // TODO get rid of onload if not necessary
 window.onload = () => {
+  // TODO make merger take in a TexImageSource rather than a canvas rendering context
   //const merger = new Merger([invert(), darken(50)], source, gl);
   //const merger = new Merger([red()], source, gl);
   //const merger = new Merger([nothing()], source, gl);
   //const merger = new Merger([blur5(1, 1)], source, gl);
-  const merger = new Merger([invert(), repeat(darken(50), 3)], source, gl);
+  //const merger = new Merger([repeat(blur5(1, 1), 1)], source, gl);
+  //const merger = new Merger([invert(), repeat(darken(50), 3)], source, gl);
+  /*
+  const merger = new Merger(
+    [invert(), repeat(darken(50), 3), blur5(2, 2)],
+    source,
+    gl
+  );
+  */
+  const merger = new Merger(
+    [repeat(darken(50), 2), repeat(blur5(1, 1), 3), invert()],
+    source,
+    gl
+  );
 
   source.fillStyle = "orange";
   source.fillRect(0, 0, 960, 540);
