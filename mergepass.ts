@@ -89,9 +89,8 @@ export class Merger {
       throw new Error("problem creating texture");
     }
 
-    // flip the order of the pixels
-    // TODO see if we need this
-    //this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
+    // flip the order of the pixels, or else it displays upside down
+    this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
 
     // bind the texture after creating it
     this.gl.bindTexture(this.gl.TEXTURE_2D, texture);

@@ -38,7 +38,7 @@ window.onload = () => {
   );
 
   source.fillStyle = "orange";
-  source.fillRect(0, 0, 960, 540);
+  source.fillRect(0, 0, 960 - 100, 540 - 100);
   source.fillStyle = "purple";
   source.fillRect(960 / 4, 540 / 4, 960 / 2, 540 / 2);
 
