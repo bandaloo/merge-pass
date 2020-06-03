@@ -31,8 +31,19 @@ window.onload = () => {
     gl
   );
   */
+
+  // this creates three programs because blur is in the middle and needs 3 passes
+  /*
   const merger = new Merger(
     [repeat(darken(50), 2), repeat(blur5(1, 1), 3), invert()],
+    source,
+    gl
+  );
+  */
+
+  // this creates only one program because blur has 1 pass and is at beginning
+  const merger = new Merger(
+    [blur5(1, 1), repeat(darken(50), 2), invert()],
     source,
     gl
   );
