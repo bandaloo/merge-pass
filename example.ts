@@ -44,7 +44,7 @@ window.onload = () => {
   // this creates only one program because blur has 1 pass and is at beginning
   const merger = new Merger(
     [blur5(1, 1), repeat(darken(50), 2), invert()],
-    source,
+    sourceCanvas,
     gl
   );
 

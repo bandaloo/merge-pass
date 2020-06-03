@@ -29,7 +29,7 @@ export class Merger {
   /** the context to render to */
   private gl: WebGL2RenderingContext;
   /** the context to apply post-processing to */
-  private source: RenderingContext;
+  private source: TexImageSource;
   private vShader: WebGLShader;
   private texFront: WebGLTexture;
   private texBack: WebGLTexture;
@@ -37,7 +37,7 @@ export class Merger {
 
   constructor(
     effects: Effect[],
-    source: RenderingContext,
+    source: TexImageSource,
     gl: WebGL2RenderingContext
   ) {
     this.effects = effects;
@@ -271,7 +271,7 @@ export class Merger {
     */
 
     let programIndex = 0;
-    this.sendTexture(this.source.canvas);
+    this.sendTexture(this.source);
     [this.texBack, this.texFront] = [this.texFront, this.texBack];
     for (const program of this.programs) {
       for (let i = 0; i < this.repeatNums[programIndex]; i++) {
