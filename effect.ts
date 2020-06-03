@@ -45,6 +45,14 @@ export function invert() {
   });
 }
 
+export function red() {
+  return new Effect({
+    fShaderSource: `void main() {
+  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}`,
+  });
+}
+
 function toGLSLFloatString(num: number) {
   let str = "" + num;
   if (!str.includes(".")) str += ".";

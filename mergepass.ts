@@ -8,15 +8,15 @@ uniform sampler2D uSampler;
 uniform mediump float uTime;
 uniform mediump vec2 uResolution;\n`;
 
-const FRAG_SET = `\n  gl_FragColor = texture2D(uSampler, gl_FragCoord.xy / uResolution);`;
-// the above line, which gets placed as the first line of `main`, enables allows
+// the line below, which gets placed as the first line of `main`, enables allows
 // multiple shaders to be chained together, which works for shaders that don't
 // need to use `uSampler` for anything other than the current pixel
+const FRAG_SET = `\n  gl_FragColor = texture2D(uSampler, gl_FragCoord.xy / uResolution);`;
 
 // TODO should boilerplate be prepended to this?
-const V_SOURCE = `attribute vec2 position;
+const V_SOURCE = `attribute vec2 aPosition;
 void main() {
-  gl_Position = vec4(position, 0.0, 1.0);
+  gl_Position = vec4(aPosition, 0.0, 1.0);
 }\n`;
 
 // TODO send down shared uniforms
@@ -88,8 +88,13 @@ export class Merger {
       throw new Error("problem creating back texture");
     }
 
+    // flip the order of the pixels
+    this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
+
     // bind the texture after creating it
     this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
+
+    this.sendTexture(this.source.canvas);
 
     // TODO see if this is needed with webgl2
     this.gl.texParameteri(
@@ -98,7 +103,7 @@ export class Merger {
       this.gl.CLAMP_TO_EDGE
     );
 
-    // how to map texture eleement
+    // how to map texture element
     this.gl.texParameteri(
       this.gl.TEXTURE_2D,
       this.gl.TEXTURE_MIN_FILTER,
@@ -109,8 +114,6 @@ export class Merger {
       this.gl.TEXTURE_MAG_FILTER,
       this.gl.NEAREST
     );
-
-    this.sendTexture(this.source.canvas);
 
     return texture;
   }
@@ -160,7 +163,6 @@ export class Merger {
         if (program === null) {
           throw new Error("problem creating program");
         }
-        // TODO wrap these in functions; do better code generation
         this.gl.attachShader(program, this.vShader);
         this.gl.attachShader(program, fShader);
         console.log("vertex shader info log");
@@ -168,19 +170,29 @@ export class Merger {
         console.log("fragment shader info log");
         console.log(this.gl.getShaderInfoLog(fShader));
         this.gl.linkProgram(program);
+        // TODO do we need to call `useProgram` here?
         this.gl.useProgram(program);
 
         // add the shader and program to the lists
         this.fShaders.push(fShader);
         this.programs.push(program);
 
+        // TODO see if width and height is right
         // set the uniform resolution (every program has this uniform)
         const uResolution = this.gl.getUniformLocation(program, "uResolution");
         this.gl.uniform2f(
           uResolution,
-          this.gl.canvas.width,
-          this.gl.canvas.height
+          this.gl.drawingBufferWidth,
+          this.gl.drawingBufferHeight
         );
+
+        const position = this.gl.getAttribLocation(program, "aPosition");
+        // enable the attribute
+        this.gl.enableVertexAttribArray(position);
+        // this will point to the vertices in the last bound array buffer.
+        // In this example, we only use one array buffer, where we're storing
+        // our vertices
+        this.gl.vertexAttribPointer(position, 2, this.gl.FLOAT, false, 0, 0);
 
         console.log(fullCode);
 
@@ -191,8 +203,14 @@ export class Merger {
   }
 
   draw() {
+    /*
     for (const program of this.programs) {
       this.gl.useProgram(program);
+
+      // TODO maybe get rid of this
+      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer);
+      // TODO maybe get rid of this too
+      this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
       // allows us to write to `texFront`
       this.gl.framebufferTexture2D(
         this.gl.FRAMEBUFFER,
@@ -201,7 +219,9 @@ export class Merger {
         this.texFront,
         0
       );
-      //this.sendTexture(this.source.canvas);
+      this.sendTexture(this.source.canvas);
+
+      console.log("drawing");
 
       // allows us to read from `texBack`
       this.gl.activeTexture(this.gl.TEXTURE0);
@@ -214,6 +234,12 @@ export class Merger {
 
       // go back to the default framebuffer object
       this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+    }
+    */
+    for (const program of this.programs) {
+      console.log("simplified draw function");
+      this.gl.useProgram(program);
+      this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
     }
   }
 }
