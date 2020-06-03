@@ -1,4 +1,5 @@
-// TODO make this more than just number
+import { glslFuncs } from "./glslfunctions";
+
 interface Uniforms {
   [name: string]: number | number[];
 }
@@ -10,15 +11,19 @@ interface EffectOptions {
   repeatNum?: number;
   fShaderSource: string;
   uniforms?: Uniforms;
+  externalFuncs?: string[];
 }
 
 export class Effect {
+  // TODO make this class have an instance of options rather than all this
+  // repeated code
   needsDepthBuffer: boolean;
   needsNeighborSample: boolean;
   needsCenterSample: boolean;
   repeatNum: number;
   fShaderSource: string;
   uniforms: Uniforms;
+  externalFuncs: string[];
 
   constructor(options: EffectOptions) {
     this.needsDepthBuffer = options?.needsDepthBuffer ?? false;
@@ -27,6 +32,7 @@ export class Effect {
     this.repeatNum = options?.repeatNum ?? 1;
     this.fShaderSource = options.fShaderSource;
     this.uniforms = options?.uniforms ?? {};
+    this.externalFuncs = options?.externalFuncs ?? [];
   }
 }
 
@@ -81,6 +87,15 @@ export function nothing() {
   return new Effect({
     fShaderSource: `void main() {
 }`,
+  });
+}
+
+export function fuzzy() {
+  return new Effect({
+    fShaderSource: `void main() {
+  gl_FragColor = vec4(random(gl_FragCoord.xy) * gl_FragColor.rgb, gl_FragColor.a);
+}`,
+    externalFuncs: [glslFuncs.random],
   });
 }
 

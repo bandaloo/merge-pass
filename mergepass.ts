@@ -142,9 +142,10 @@ export class Merger {
   }
 
   private generateCode() {
-    let code = BOILERPLATE;
+    let code = "";
     let calls = "\n";
     let needsCenterSample = false;
+    const externalFuncs: string[] = [];
 
     // using this style of loop since we need to do something different on the
     // last element and also know the next element
@@ -162,7 +163,12 @@ export class Merger {
         !e.needsNeighborSample && e.repeatNum > 1
           ? `for (int i = 0; i < ${e.repeatNum}; i++) `
           : "";
+
       calls += "  " + forStr + replacedFunc + ";\n";
+
+      for (const func of e.externalFuncs) {
+        if (!externalFuncs.includes(func)) externalFuncs.push(func);
+      }
 
       // TODO consider when to break off the merge
       if (
@@ -176,12 +182,19 @@ export class Merger {
           throw new Error("problem creating fragment shader");
         }
 
+        console.log("external funcs: " + externalFuncs.join("\n"));
+
         const fullCode =
+          BOILERPLATE +
+          "\n" +
+          externalFuncs.join("\n\n") +
+          "\n" +
           code +
           "\nvoid main () {" +
           (needsCenterSample ? FRAG_SET : "") +
           calls +
           "}";
+
         this.gl.shaderSource(fShader, fullCode);
         this.gl.compileShader(fShader);
 
@@ -228,9 +241,10 @@ export class Merger {
         console.log(fullCode);
 
         // clear the source code to start merging new shader source
-        code = BOILERPLATE;
+        code = "";
         calls = "\n";
         needsCenterSample = false;
+        externalFuncs.length = 0;
       }
     }
   }

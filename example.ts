@@ -1,5 +1,5 @@
 import { Merger } from "./mergepass";
-import { darken, invert, red, nothing, blur5, repeat } from "./effect";
+import { darken, invert, red, nothing, blur5, repeat, fuzzy } from "./effect";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -31,6 +31,7 @@ window.onload = () => {
     gl
   );
   */
+  const merger = new Merger([fuzzy()], sourceCanvas, gl);
 
   // this creates three programs because blur is in the middle and needs 3 passes
   /*
@@ -42,11 +43,13 @@ window.onload = () => {
   */
 
   // this creates only one program because blur has 1 pass and is at beginning
+  /*
   const merger = new Merger(
     [blur5(1, 1), repeat(darken(50), 2), invert()],
     sourceCanvas,
     gl
   );
+  */
 
   source.fillStyle = "orange";
   source.fillRect(0, 0, 960 - 100, 540 - 100);
