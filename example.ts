@@ -1,5 +1,5 @@
 import { Merger } from "./mergepass";
-import { darken, invert, red } from "./effect";
+import { darken, invert, red, nothing } from "./effect";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -17,8 +17,9 @@ if (source === null) {
 
 // TODO get rid of onload if not necessary
 window.onload = () => {
-  //const merger = new Merger([darken(50), invert()], source, gl);
-  const merger = new Merger([red()], source, gl);
+  const merger = new Merger([invert(), darken(50)], source, gl);
+  //const merger = new Merger([red()], source, gl);
+  //const merger = new Merger([nothing()], source, gl);
 
   source.fillStyle = "orange";
   source.fillRect(0, 0, 960, 540);

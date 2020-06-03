@@ -53,6 +53,13 @@ export function red() {
   });
 }
 
+export function nothing() {
+  return new Effect({
+    fShaderSource: `void main() {
+}`,
+  });
+}
+
 function toGLSLFloatString(num: number) {
   let str = "" + num;
   if (!str.includes(".")) str += ".";

@@ -236,9 +236,11 @@ export class Merger {
       this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
     }
     */
+
     for (const program of this.programs) {
       console.log("simplified draw function");
       this.gl.useProgram(program);
+      this.sendTexture(this.source.canvas);
       this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
     }
   }
