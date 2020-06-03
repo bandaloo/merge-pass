@@ -25,6 +25,7 @@ export class Merger {
   private effects: Effect[];
   private fShaders: WebGLShader[] = [];
   private programs: WebGLProgram[] = [];
+  private repeatNums: number[] = [];
   /** the context to render to */
   private gl: WebGL2RenderingContext;
   /** the context to apply post-processing to */
@@ -143,11 +144,21 @@ export class Merger {
       const replacedFunc = "pass" + i + "()";
       const replacedCode = e.fShaderSource.replace(/main\s*\(\)/, replacedFunc);
       code += "\n" + replacedCode + "\n";
-      calls += "  " + replacedFunc + ";\n";
+      // an effect that samples neighbors cannot just be run in a for loop
+      console.log("---");
+      console.log(e.repeatNum);
+      console.log(!e.needsNeighborSample);
+      console.log(!e.needsNeighborSample && e.repeatNum > 1);
+      const forStr =
+        !e.needsNeighborSample && e.repeatNum > 1
+          ? `for (int i = 0; i < ${e.repeatNum}; i++) `
+          : "";
+      calls += "  " + forStr + replacedFunc + ";\n";
+      console.log("calls");
+      console.log(calls);
 
-      // break of the merge if the next effect or the current effect needs to
-      // ping pong, or if we are at the end of the list of effects
-      if (e.pingPongNum !== 0 || next === undefined || next.pingPongNum !== 0) {
+      // TODO consider when to break off the merge
+      if (next === undefined || next.needsNeighborSample) {
         // set up the fragment shader
         const fShader = this.gl.createShader(this.gl.FRAGMENT_SHADER);
         if (fShader === null) {
@@ -173,9 +184,13 @@ export class Merger {
         // TODO do we need to call `useProgram` here?
         this.gl.useProgram(program);
 
-        // add the shader and program to the lists
+        // add the shader, the program and the repetitions to the lists
         this.fShaders.push(fShader);
         this.programs.push(program);
+        // if the effect doesn't need to sample neighbors, then the repetition
+        // of the effect is handled as a for loop in the code generation step,
+        // the repeat number can just be 1
+        this.repeatNums.push(e.needsNeighborSample ? e.repeatNum : 1);
 
         // TODO see if width and height is right
         // set the uniform resolution (every program has this uniform)
@@ -198,6 +213,7 @@ export class Merger {
 
         // clear the source code to start merging new shader source
         code = BOILERPLATE;
+        calls = "\n";
       }
     }
   }
