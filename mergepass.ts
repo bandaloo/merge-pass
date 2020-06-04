@@ -1,4 +1,12 @@
-import { Effect, uniformGLSLTypeStr } from "./effect";
+import {
+  Effect,
+  uniformGLSLTypeStr,
+  uniformGLSLTypeNum,
+  RawFloat,
+  RawVec2,
+  RawVec3,
+  RawVec4,
+} from "./effect";
 
 interface UniformLocs {
   [name: string]: WebGLUniformLocation;
@@ -22,11 +30,6 @@ const V_SOURCE = `attribute vec2 aPosition;
 void main() {
   gl_Position = vec4(aPosition, 0.0, 1.0);
 }\n`;
-
-// TODO send down shared uniforms
-// TODO we want a map of a names to locations. we then want to go into the
-// effect and get the value based on the name, and send that value down to the
-// GPU based on the location
 
 export class Merger {
   private effects: Effect[];
@@ -182,7 +185,7 @@ export class Merger {
 
       for (const name in e.uniforms) {
         const uniformVal = e.uniforms[name];
-        const typeName = uniformGLSLTypeStr(uniformVal);
+        const typeName = uniformGLSLTypeStr(uniformVal.val);
         uniformDeclarations.push(`uniform mediump ${typeName} ${name};`);
       }
 
@@ -196,8 +199,6 @@ export class Merger {
         if (fShader === null) {
           throw new Error("problem creating fragment shader");
         }
-
-        console.log("external funcs: " + externalFuncs.join("\n"));
 
         const fullCode =
           BOILERPLATE +
@@ -230,7 +231,7 @@ export class Merger {
         // we need to use the program here so we can get uniform locations
         // TODO check if the above statement is true
         this.gl.useProgram(program);
-        /*
+
         for (const name in e.uniforms) {
           const location = this.gl.getUniformLocation(program, name);
           if (location === null) {
@@ -238,7 +239,6 @@ export class Merger {
           }
           this.uniformLocs[name] = location;
         }
-        */
 
         // add the shader, the program and the repetitions to the lists
         this.fShaders.push(fShader);
@@ -277,47 +277,47 @@ export class Merger {
     }
   }
 
-  draw() {
-    /*
-    for (const program of this.programs) {
-      this.gl.useProgram(program);
+  // TODO send down shared uniforms
+  // TODO we want a map of a names to locations. we then want to go into the
+  // effect and get the value based on the name, and send that value down to the
+  // GPU based on the location
 
-      // TODO maybe get rid of this
-      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer);
-      // TODO maybe get rid of this too
-      this.gl.viewport(0, 0, this.gl.canvas.width, this.gl.canvas.height);
-      // allows us to write to `texFront`
-      this.gl.framebufferTexture2D(
-        this.gl.FRAMEBUFFER,
-        this.gl.COLOR_ATTACHMENT0,
-        this.gl.TEXTURE_2D,
-        this.texFront,
-        0
-      );
-      this.sendTexture(this.source.canvas);
-
-      console.log("drawing");
-
-      // allows us to read from `texBack`
-      this.gl.activeTexture(this.gl.TEXTURE0);
-      this.gl.bindTexture(this.gl.TEXTURE_2D, this.texBack);
-
-      // TODO does this need to be in the loop?
-      this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
-      // swap the textures
-      [this.texBack, this.texFront] = [this.texFront, this.texBack];
-
-      // go back to the default framebuffer object
-      this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+  applyUniforms(e: Effect) {
+    for (const name in e.uniforms) {
+      const loc = this.uniformLocs[name];
+      const val = e.uniforms[name].val;
+      if (e.uniforms[name].changed) {
+        e.uniforms[name].changed = false;
+        switch (uniformGLSLTypeNum(val)) {
+          case 1:
+            const float = val as RawFloat;
+            this.gl.uniform1f(loc, float);
+            break;
+          case 2:
+            const vec2 = val as RawVec2;
+            this.gl.uniform2f(loc, vec2[0], vec2[1]);
+            break;
+          case 3:
+            const vec3 = val as RawVec3;
+            this.gl.uniform3f(loc, vec3[0], vec3[1], vec3[2]);
+            break;
+          case 4:
+            const vec4 = val as RawVec4;
+            this.gl.uniform4f(loc, vec4[0], vec4[1], vec4[2], vec4[3]);
+        }
+      }
     }
-    */
+  }
 
+  draw() {
     let programIndex = 0;
     this.sendTexture(this.source);
     [this.texBack, this.texFront] = [this.texFront, this.texBack];
     for (const program of this.programs) {
+      const e = this.effects[programIndex];
       for (let i = 0; i < this.repeatNums[programIndex]; i++) {
         this.gl.useProgram(program);
+        this.applyUniforms(e);
         if (
           programIndex === this.programs.length - 1 &&
           i === this.repeatNums[programIndex] - 1

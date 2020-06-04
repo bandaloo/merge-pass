@@ -1,25 +1,26 @@
 import { glslFuncs } from "./glslfunctions";
 
-type RawFloat = number;
+export type RawFloat = number;
 type NamedFloat = [string, number];
-type Float = RawFloat | NamedFloat;
-type RawVec2 = [number, number];
+export type RawVec2 = [number, number];
 type NamedVec2 = [string, RawVec2];
-type Vec2 = RawVec2 | NamedVec2;
-type RawVec3 = [number, number, number];
+export type RawVec3 = [number, number, number];
 type NamedVec3 = [string, RawVec3];
-type Vec3 = RawVec3 | NamedVec3;
-type RawVec4 = [number, number, number, number];
+export type RawVec4 = [number, number, number, number];
 type NamedVec4 = [string, RawVec4];
-type Vec4 = RawVec4 | NamedVec4;
 
 type RawUniformVal = RawFloat | RawVec2 | RawVec3 | RawVec4;
 type NamedUniformVal = NamedFloat | NamedVec2 | NamedVec3 | NamedVec4;
 
 type UniformVal = RawUniformVal | NamedUniformVal;
 
+interface Source {
+  sections: string[];
+  values: UniformVal[];
+}
+
 interface UniformVals {
-  [name: string]: RawUniformVal;
+  [name: string]: { val: RawUniformVal; changed: boolean };
 }
 
 interface EffectOptions {
@@ -42,11 +43,7 @@ export class Effect {
   uniforms: UniformVals;
   externalFuncs: string[];
 
-  constructor(
-    sourceSections: string[],
-    values: UniformVal[],
-    options?: EffectOptions
-  ) {
+  constructor(source: Source, options?: EffectOptions) {
     this.needsDepthBuffer = options?.needsDepthBuffer ?? false;
     this.needsNeighborSample = options?.needsNeighborSample ?? false;
     this.needsCenterSample = options?.needsCenterSample ?? true;
@@ -56,20 +53,21 @@ export class Effect {
     this.externalFuncs = options?.externalFuncs ?? [];
 
     let sourceString = "";
-    if (sourceSections.length - values.length !== 1) {
+    if (source.sections.length - source.values.length !== 1) {
       throw new Error("wrong lengths for source and values");
     }
-    for (let i = 0; i < values.length; i++) {
-      sourceString += sourceSections[i] + this.processGLSLVal(values[i]);
+    for (let i = 0; i < source.values.length; i++) {
+      sourceString +=
+        source.sections[i] + this.processGLSLVal(source.values[i]);
     }
-    sourceString += sourceSections[sourceSections.length - 1];
+    sourceString += source.sections[source.sections.length - 1];
     this.fShaderSource = sourceString;
   }
 
-  // TODO test this
   setUniform(name: string, newVal: RawUniformVal) {
-    const oldVal = this.uniforms[name];
+    const oldVal = this.uniforms[name].val;
     if (oldVal === undefined) {
+      // TODO should these be errors instead of warnings?
       console.warn("tried to set uniform " + name + " which doesn't exist");
       return;
     }
@@ -79,7 +77,8 @@ export class Effect {
       console.warn("tried to set uniform " + name + " to a new type");
       return;
     }
-    this.uniforms[name] = newVal;
+    this.uniforms[name].val = newVal;
+    this.uniforms[name].changed = true;
   }
 
   processGLSLVal(val: UniformVal): string {
@@ -93,7 +92,7 @@ export class Effect {
       const namedVal = val as NamedUniformVal;
       const name = namedVal[0];
       const uniformVal = namedVal[1];
-      this.uniforms[name] = uniformVal;
+      this.uniforms[name] = { val: uniformVal, changed: true };
       return name;
     }
     // not a named value, so it can be inserted into code directly like a macro
@@ -102,19 +101,16 @@ export class Effect {
       .map((n) => toGLSLFloatString(n))
       .join(", ")})`;
   }
-
-  applyUniform() {}
 }
 
 // TODO making these effects subclasses could be more flexible
-// TODO consider how effects can potentially use functions outside
-export function darken(percent: number) {
-  if (percent < 0 || percent > 100) {
-    throw new Error("darkness percent must be between 0 and 100 (inclusive)");
+export function darken(portion: RawFloat | NamedFloat) {
+  if (portion < 0 || portion > 100) {
+    throw new Error("darkness portion must be between 0 and 1 (inclusive)");
   }
   return new Effect(
-    ...tag`void main() {
-  gl_FragColor = vec4(gl_FragColor.rgb * ${percent / 100}, gl_FragColor.a);
+    tag`void main() {
+  gl_FragColor = vec4(gl_FragColor.rgb * ${portion}, gl_FragColor.a);
 }`
   );
 }
@@ -130,11 +126,12 @@ export function invert() {
 
 // TODO this doesn't require sampling the first pixel; see if we can
 // optimize this out in the code gen
-export function blur5(direction: RawVec2) {
+*/
+export function blur5(direction: RawVec2 | NamedVec2) {
   return new Effect(
-    `void main() {
+    tag`void main() {
   vec2 uv = gl_FragCoord.xy / uResolution;
-  vec2 direction = ${this.processGLSLVal()}; 
+  vec2 direction = ${direction}; 
   gl_FragColor = vec4(0.0);
   vec2 off1 = vec2(1.3333333333333333) * direction;
   gl_FragColor += texture2D(uSampler, uv) * 0.29411764705882354;
@@ -147,6 +144,7 @@ export function blur5(direction: RawVec2) {
     }
   );
 }
+/*
 
 export function fuzzy() {
   return new Effect(
@@ -237,18 +235,15 @@ function toGLSLFloatString(num: number) {
   return str;
 }
 
-function uniformGLSLTypeNum(val: RawUniformVal) {
+export function uniformGLSLTypeNum(val: RawUniformVal) {
   if (typeof val === "number") {
     return 1;
   }
   return val.length;
 }
 
-function tag(
-  strings: TemplateStringsArray,
-  ...values: UniformVal[]
-): [string[], UniformVal[]] {
-  return [strings.concat([]), values];
+function tag(strings: TemplateStringsArray, ...values: UniformVal[]): Source {
+  return { sections: strings.concat([]), values: values };
 }
 
 /*

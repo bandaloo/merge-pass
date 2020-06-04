@@ -1,15 +1,5 @@
 import { Merger } from "./mergepass";
-import {
-  darken,
-  invert,
-  red,
-  nothing,
-  blur5,
-  repeat,
-  fuzzy,
-  brightness,
-  uniformTest,
-} from "./effect";
+import { darken, repeat, blur5 } from "./effect";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -30,17 +20,17 @@ window.onload = () => {
   //const merger = new Merger([invert(), darken(50)], source, gl);
   //const merger = new Merger([red()], source, gl);
   //const merger = new Merger([nothing()], source, gl);
-  // a new kind of blur?
   /*
   const merger = new Merger(
     [
-      repeat(blur5(8, 0), 3),
-      repeat(blur5(0, 8), 3),
-      repeat(blur5(4, 0), 2),
-      repeat(blur5(0, 4), 2),
-      repeat(blur5(2, 0), 1),
-      repeat(blur5(0, 2), 1),
-      brightness(0.3),
+      blur5([8, 0]),
+      blur5([0, 8]),
+      blur5([4, 0]),
+      blur5([0, 4]),
+      blur5([2, 0]),
+      blur5([0, 2]),
+      blur5([1, 0]),
+      blur5([0, 1]),
     ],
     sourceCanvas,
     gl
@@ -76,7 +66,9 @@ window.onload = () => {
   );
   */
 
-  const merger = new Merger([darken(50)], sourceCanvas, gl);
+  //const merger = new Merger([darken(50)], sourceCanvas, gl);
+  const darkenEffect = darken(["uDarkness", 0.5]);
+  const merger = new Merger([darkenEffect], sourceCanvas, gl);
 
   // TODO consider unlinking programs
 
@@ -85,7 +77,13 @@ window.onload = () => {
   source.fillStyle = "purple";
   source.fillRect(960 / 4 - 100, 540 / 4 - 100, 960 / 2, 540 / 2);
 
-  merger.draw();
+  const draw = (time: number) => {
+    merger.draw();
+    const darkness = 0.5 + Math.cos(time / 99) / 2;
+    //console.log(darkness);
+    darkenEffect.setUniform("uDarkness", darkness);
+    requestAnimationFrame(draw);
+  };
 
-  console.log("built and bundled");
+  draw(0);
 };
