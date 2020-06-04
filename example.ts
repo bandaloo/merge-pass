@@ -1,5 +1,14 @@
 import { Merger } from "./mergepass";
-import { darken, invert, red, nothing, blur5, repeat, fuzzy } from "./effect";
+import {
+  darken,
+  invert,
+  red,
+  nothing,
+  blur5,
+  repeat,
+  fuzzy,
+  brightness,
+} from "./effect";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -17,11 +26,24 @@ if (source === null) {
 
 // TODO get rid of onload if not necessary
 window.onload = () => {
-  // TODO make merger take in a TexImageSource rather than a canvas rendering context
   //const merger = new Merger([invert(), darken(50)], source, gl);
   //const merger = new Merger([red()], source, gl);
   //const merger = new Merger([nothing()], source, gl);
-  //const merger = new Merger([blur5(1, 1)], source, gl);
+  // a new kind of blur?
+  const merger = new Merger(
+    [
+      repeat(blur5(8, 0), 3),
+      repeat(blur5(0, 8), 3),
+      repeat(blur5(4, 0), 2),
+      repeat(blur5(0, 4), 2),
+      repeat(blur5(2, 0), 1),
+      repeat(blur5(0, 2), 1),
+      brightness(0.3),
+    ],
+    sourceCanvas,
+    gl
+  );
+  // TODO consider how things would be effected if source and destination weren't the same size
   //const merger = new Merger([repeat(blur5(1, 1), 1)], source, gl);
   //const merger = new Merger([invert(), repeat(darken(50), 3)], source, gl);
   /*
@@ -31,7 +53,7 @@ window.onload = () => {
     gl
   );
   */
-  const merger = new Merger([fuzzy()], sourceCanvas, gl);
+  //const merger = new Merger([fuzzy()], sourceCanvas, gl);
 
   // this creates three programs because blur is in the middle and needs 3 passes
   /*
@@ -54,11 +76,11 @@ window.onload = () => {
   // TODO consider unlinking programs
 
   source.fillStyle = "orange";
-  source.fillRect(0, 0, 960 - 100, 540 - 100);
+  source.fillRect(0, 0, 960, 540);
   source.fillStyle = "purple";
-  source.fillRect(960 / 4, 540 / 4, 960 / 2, 540 / 2);
+  source.fillRect(960 / 4 - 100, 540 / 4 - 100, 960 / 2, 540 / 2);
 
   merger.draw();
 
-  console.log("build and bundled");
+  console.log("built and bundled");
 };

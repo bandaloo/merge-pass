@@ -2,14 +2,18 @@
   "name": "@bandaloo/merge-pass",
   "version": "0.1.0",
   "description": "post-processing library that merges effects",
-  "main": "dist/bundle.js",
+  "main": "dist/index.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/bandaloo/merge-pass"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc --outDir dist",
     "bundle": "npx browserify dist/example.js -o dist/bundle.js",
     "buildwatch": "tsc -w --outDir dist",
     "bundlewatch": "node_modules/.bin/watchify dist/example.js -o dist/bundle.js",
-    "prepublish": "npm run build && npm run bundle"
+    "prepublish": "npm run build"
   },
   "author": "Cole Granof",
   "license": "MIT",

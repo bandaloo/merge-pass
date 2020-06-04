@@ -115,16 +115,17 @@ export class Merger {
       this.gl.CLAMP_TO_EDGE
     );
 
+    // TODO be able to choose LINEAR or NEAREST
     // how to map texture element
     this.gl.texParameteri(
       this.gl.TEXTURE_2D,
       this.gl.TEXTURE_MIN_FILTER,
-      this.gl.NEAREST
+      this.gl.LINEAR
     );
     this.gl.texParameteri(
       this.gl.TEXTURE_2D,
       this.gl.TEXTURE_MAG_FILTER,
-      this.gl.NEAREST
+      this.gl.LINEAR
     );
 
     return texture;
@@ -298,13 +299,6 @@ export class Merger {
           console.log("final render pass");
           // set to the default framebuffer
           this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
-          // TODO see if we need this
-          this.gl.viewport(
-            0,
-            0,
-            this.gl.drawingBufferWidth,
-            this.gl.drawingBufferHeight
-          );
         } else {
           console.log("intermediate render pass");
           // we have to bounce between two textures
@@ -317,19 +311,11 @@ export class Merger {
             this.texFront,
             0
           );
-          // TODO see if we need this
-          this.gl.viewport(
-            0,
-            0,
-            this.gl.drawingBufferWidth,
-            this.gl.drawingBufferHeight
-          );
-
-          // allows us to read from `texBack`
-          // default sampler is 0, so `uSampler` uniform will always sample from texture 0
-          this.gl.activeTexture(this.gl.TEXTURE0);
-          this.gl.bindTexture(this.gl.TEXTURE_2D, this.texBack);
         }
+        // allows us to read from `texBack`
+        // default sampler is 0, so `uSampler` uniform will always sample from texture 0
+        this.gl.activeTexture(this.gl.TEXTURE0);
+        this.gl.bindTexture(this.gl.TEXTURE_2D, this.texBack);
 
         [this.texBack, this.texFront] = [this.texFront, this.texBack];
         this.gl.drawArrays(this.gl.TRIANGLES, 0, 6);
@@ -337,7 +323,7 @@ export class Merger {
       programIndex++;
     }
     // swap the textures
-    [this.texBack, this.texFront] = [this.texFront, this.texBack];
+    //[this.texBack, this.texFront] = [this.texFront, this.texBack];
 
     // go back to the default framebuffer object
     this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);

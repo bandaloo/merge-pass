@@ -36,6 +36,7 @@ export class Effect {
   }
 }
 
+// TODO making these effects subclasses could be more flexible
 // TODO consider how effects can potentially use functions outside
 export function darken(percent: number) {
   if (percent < 0 || percent > 100) {
@@ -75,6 +76,49 @@ export function blur5(xDir: number, yDir: number) {
   });
 }
 
+export function fuzzy() {
+  return new Effect({
+    fShaderSource: `void main() {
+  gl_FragColor = vec4(random(gl_FragCoord.xy) * gl_FragColor.rgb, gl_FragColor.a);
+}`,
+    externalFuncs: [glslFuncs.random],
+  });
+}
+
+export function contrast(val: number) {
+  if (val <= 0) {
+    throw new Error("contrast must be > 0");
+  }
+  return new Effect({
+    fShaderSource: `void main() {
+  gl_FragColor.rgb /= gl_FragColor.a;
+  gl_FragColor.rgb = ((gl_FragColor.rgb - 0.5) * ${toGLSLFloatString(
+    val
+  )}) + 0.5;
+  gl_FragColor.rgb *= gl_FragColor.a;
+}`,
+  });
+}
+
+export function brightness(val: number) {
+  return new Effect({
+    fShaderSource: `void main() {
+  gl_FragColor.rgb /= gl_FragColor.a;
+  gl_FragColor.rgb += ${toGLSLFloatString(val)};
+  gl_FragColor.rgb *= gl_FragColor.a;
+}`,
+  });
+}
+
+// a single-pass blur is not actually particularly efficient, since we must
+// sample everything in the radius
+/*
+export function boxBlur(val: number) {
+  return new Effect({})
+}
+*/
+
+// test effects (get rid of these)
 export function red() {
   return new Effect({
     fShaderSource: `void main() {
@@ -87,15 +131,6 @@ export function nothing() {
   return new Effect({
     fShaderSource: `void main() {
 }`,
-  });
-}
-
-export function fuzzy() {
-  return new Effect({
-    fShaderSource: `void main() {
-  gl_FragColor = vec4(random(gl_FragCoord.xy) * gl_FragColor.rgb, gl_FragColor.a);
-}`,
-    externalFuncs: [glslFuncs.random],
   });
 }
 
