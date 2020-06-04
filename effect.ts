@@ -1,6 +1,8 @@
 import { glslFuncs } from "./glslfunctions";
 
-interface Uniforms {
+type UniformVal = number | number[];
+
+interface UniformVals {
   [name: string]: number | number[];
 }
 
@@ -9,8 +11,7 @@ interface EffectOptions {
   needsNeighborSample?: boolean;
   needsCenterSample?: boolean;
   repeatNum?: number;
-  fShaderSource: string;
-  uniforms?: Uniforms;
+  uniforms?: UniformVals;
   externalFuncs?: string[];
 }
 
@@ -22,18 +23,36 @@ export class Effect {
   needsCenterSample: boolean;
   repeatNum: number;
   fShaderSource: string;
-  uniforms: Uniforms;
+  uniforms: UniformVals;
   externalFuncs: string[];
 
-  constructor(options: EffectOptions) {
+  constructor(fShaderSource: string, options?: EffectOptions) {
+    this.fShaderSource = fShaderSource;
     this.needsDepthBuffer = options?.needsDepthBuffer ?? false;
     this.needsNeighborSample = options?.needsNeighborSample ?? false;
     this.needsCenterSample = options?.needsCenterSample ?? true;
     this.repeatNum = options?.repeatNum ?? 1;
-    this.fShaderSource = options.fShaderSource;
+    // TODO go through one by one verifying that all passed-in lengths for uniforms are are correct
     this.uniforms = options?.uniforms ?? {};
     this.externalFuncs = options?.externalFuncs ?? [];
   }
+
+  setUniform(name: string, newVal: UniformVal) {
+    const oldVal = this.uniforms[name];
+    if (oldVal === undefined) {
+      console.warn("tried to set uniform " + name + " which doesn't exist");
+      return;
+    }
+    const oldType = uniformGLSLTypeNum(oldVal);
+    const newType = uniformGLSLTypeNum(newVal);
+    if (oldType !== newType) {
+      console.warn("tried to set uniform " + name + " to a new type");
+      return;
+    }
+    this.uniforms[name] = newVal;
+  }
+
+  applyUniform() {}
 }
 
 // TODO making these effects subclasses could be more flexible
@@ -42,29 +61,27 @@ export function darken(percent: number) {
   if (percent < 0 || percent > 100) {
     throw new Error("darkness percent must be between 0 and 100 (inclusive)");
   }
-  return new Effect({
-    fShaderSource: `void main() {
+  return new Effect(
+    `void main() {
   float d = ${toGLSLFloatString(percent / 100)};
   gl_FragColor = vec4(d * gl_FragColor.rgb, gl_FragColor.a);
-}`,
-  });
+}`
+  );
 }
 
 export function invert() {
-  return new Effect({
-    fShaderSource: `void main() {
+  return new Effect(
+    `void main() {
   gl_FragColor = vec4(1.0 - gl_FragColor.rgb, gl_FragColor.a);
-}`,
-  });
+}`
+  );
 }
 
 // TODO this doesn't require sampling the first pixel; see if we can
 // optimize this out in the code gen
 export function blur5(xDir: number, yDir: number) {
-  return new Effect({
-    needsNeighborSample: true,
-    needsCenterSample: false,
-    fShaderSource: `void main() {
+  return new Effect(
+    `void main() {
   vec2 uv = gl_FragCoord.xy / uResolution;
   vec2 direction = vec2(${toGLSLFloatString(xDir)}, ${toGLSLFloatString(yDir)});
   gl_FragColor = vec4(0.0);
@@ -73,41 +90,45 @@ export function blur5(xDir: number, yDir: number) {
   gl_FragColor += texture2D(uSampler, uv + (off1 / uResolution)) * 0.35294117647058826;
   gl_FragColor += texture2D(uSampler, uv - (off1 / uResolution)) * 0.35294117647058826;
 }`,
-  });
+    {
+      needsNeighborSample: true,
+      needsCenterSample: false,
+    }
+  );
 }
 
 export function fuzzy() {
-  return new Effect({
-    fShaderSource: `void main() {
+  return new Effect(
+    `void main() {
   gl_FragColor = vec4(random(gl_FragCoord.xy) * gl_FragColor.rgb, gl_FragColor.a);
 }`,
-    externalFuncs: [glslFuncs.random],
-  });
+    { externalFuncs: [glslFuncs.random] }
+  );
 }
 
 export function contrast(val: number) {
   if (val <= 0) {
     throw new Error("contrast must be > 0");
   }
-  return new Effect({
-    fShaderSource: `void main() {
+  return new Effect(
+    `void main() {
   gl_FragColor.rgb /= gl_FragColor.a;
   gl_FragColor.rgb = ((gl_FragColor.rgb - 0.5) * ${toGLSLFloatString(
     val
   )}) + 0.5;
   gl_FragColor.rgb *= gl_FragColor.a;
-}`,
-  });
+}`
+  );
 }
 
 export function brightness(val: number) {
-  return new Effect({
-    fShaderSource: `void main() {
+  return new Effect(
+    `void main() {
   gl_FragColor.rgb /= gl_FragColor.a;
   gl_FragColor.rgb += ${toGLSLFloatString(val)};
   gl_FragColor.rgb *= gl_FragColor.a;
-}`,
-  });
+}`
+  );
 }
 
 // a single-pass blur is not actually particularly efficient, since we must
@@ -120,18 +141,33 @@ export function boxBlur(val: number) {
 
 // test effects (get rid of these)
 export function red() {
-  return new Effect({
-    fShaderSource: `void main() {
+  return new Effect(
+    `void main() {
   gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-}`,
-  });
+}`
+  );
 }
 
 export function nothing() {
-  return new Effect({
-    fShaderSource: `void main() {
+  return new Effect(
+    `void main() {
+}`
+  );
+}
+
+export function uniformTest() {
+  return new Effect(
+    `void main() {
 }`,
-  });
+    {
+      uniforms: {
+        uTestFloat: 1,
+        uTestVec2: [1, 2],
+        uTestVec3: [1, 2, 3],
+        uTestVec4: [1, 2, 3, 4],
+      },
+    }
+  );
 }
 
 export function repeat(effect: Effect, num: number) {
@@ -139,8 +175,24 @@ export function repeat(effect: Effect, num: number) {
   return effect;
 }
 
+// some helpers
+
 function toGLSLFloatString(num: number) {
   let str = "" + num;
   if (!str.includes(".")) str += ".";
   return str;
+}
+
+function uniformGLSLTypeNum(val: UniformVal) {
+  if (typeof val === "number") {
+    return 1;
+  }
+  return val.length;
+}
+
+export function uniformGLSLTypeStr(val: UniformVal) {
+  const num = uniformGLSLTypeNum(val);
+  if (num === 1) return "float";
+  if (num >= 2 && num <= 4) return "vec" + num;
+  throw new Error("cannot convert " + val + " to a GLSL type");
 }

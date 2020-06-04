@@ -1,4 +1,8 @@
-import { Effect } from "./effect";
+import { Effect, uniformGLSLTypeStr } from "./effect";
+
+interface UniformLocs {
+  [name: string]: WebGLUniformLocation;
+}
 
 const BOILERPLATE = `#ifdef GL_ES
 precision mediump float;
@@ -20,6 +24,9 @@ void main() {
 }\n`;
 
 // TODO send down shared uniforms
+// TODO we want a map of a names to locations. we then want to go into the
+// effect and get the value based on the name, and send that value down to the
+// GPU based on the location
 
 export class Merger {
   private effects: Effect[];
@@ -34,6 +41,7 @@ export class Merger {
   private texFront: WebGLTexture;
   private texBack: WebGLTexture;
   private framebuffer: WebGLFramebuffer;
+  private uniformLocs: UniformLocs = {};
 
   constructor(
     effects: Effect[],
@@ -147,6 +155,7 @@ export class Merger {
     let calls = "\n";
     let needsCenterSample = false;
     const externalFuncs: string[] = [];
+    const uniformDeclarations: string[] = [];
 
     // using this style of loop since we need to do something different on the
     // last element and also know the next element
@@ -171,7 +180,12 @@ export class Merger {
         if (!externalFuncs.includes(func)) externalFuncs.push(func);
       }
 
-      // TODO consider when to break off the merge
+      for (const name in e.uniforms) {
+        const uniformVal = e.uniforms[name];
+        const typeName = uniformGLSLTypeStr(uniformVal);
+        uniformDeclarations.push(`uniform mediump ${typeName} ${name};`);
+      }
+
       if (
         next === undefined ||
         (e.needsNeighborSample && e.repeatNum > 1) ||
@@ -188,6 +202,7 @@ export class Merger {
         const fullCode =
           BOILERPLATE +
           "\n" +
+          uniformDeclarations.join("\n") +
           externalFuncs.join("\n\n") +
           "\n" +
           code +
@@ -211,8 +226,19 @@ export class Merger {
         console.log("fragment shader info log");
         console.log(this.gl.getShaderInfoLog(fShader));
         this.gl.linkProgram(program);
-        // TODO do we need to call `useProgram` here?
+
+        // we need to use the program here so we can get uniform locations
+        // TODO check if the above statement is true
         this.gl.useProgram(program);
+        /*
+        for (const name in e.uniforms) {
+          const location = this.gl.getUniformLocation(program, name);
+          if (location === null) {
+            throw new Error("couldn't find uniform " + name);
+          }
+          this.uniformLocs[name] = location;
+        }
+        */
 
         // add the shader, the program and the repetitions to the lists
         this.fShaders.push(fShader);
@@ -246,6 +272,7 @@ export class Merger {
         calls = "\n";
         needsCenterSample = false;
         externalFuncs.length = 0;
+        uniformDeclarations.length = 0;
       }
     }
   }

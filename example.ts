@@ -8,6 +8,7 @@ import {
   repeat,
   fuzzy,
   brightness,
+  uniformTest,
 } from "./effect";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
@@ -30,6 +31,7 @@ window.onload = () => {
   //const merger = new Merger([red()], source, gl);
   //const merger = new Merger([nothing()], source, gl);
   // a new kind of blur?
+  /*
   const merger = new Merger(
     [
       repeat(blur5(8, 0), 3),
@@ -43,6 +45,7 @@ window.onload = () => {
     sourceCanvas,
     gl
   );
+  */
   // TODO consider how things would be effected if source and destination weren't the same size
   //const merger = new Merger([repeat(blur5(1, 1), 1)], source, gl);
   //const merger = new Merger([invert(), repeat(darken(50), 3)], source, gl);
@@ -72,6 +75,8 @@ window.onload = () => {
     gl
   );
   */
+
+  const merger = new Merger([uniformTest()], sourceCanvas, gl);
 
   // TODO consider unlinking programs
 
