@@ -1,0 +1,4 @@
+node_modules
+example.html
+.DS_Store
+.npmignore

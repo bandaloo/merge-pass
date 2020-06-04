@@ -5,14 +5,18 @@
   "main": "bundle.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node index.js",
-    "build": "tsc",
-    "bundle": "node_modules/.bin/watchify example.js -o bundle.js"
+    "build": "npx tsc --outDir dist",
+    "bundle": "npx browserify dist/example.js -o dist/bundle.js",
+    "buildwatch": "tsc -w --outDir dist",
+    "bundlewatch": "node_modules/.bin/watchify dist/example.js -o dist/bundle.js",
+    "prepublish": "npm run build && npm run bundle"
   },
   "author": "Cole Granof",
   "license": "MIT",
   "devDependencies": {
+    "browserify": "^16.5.1",
     "typescript": "^3.9.3",
     "watchify": "^3.11.1"
-  }
+  },
+  "types": "dist/*.ts"
 }
