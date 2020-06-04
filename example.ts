@@ -76,7 +76,7 @@ window.onload = () => {
   );
   */
 
-  const merger = new Merger([uniformTest()], sourceCanvas, gl);
+  const merger = new Merger([darken(50)], sourceCanvas, gl);
 
   // TODO consider unlinking programs
 

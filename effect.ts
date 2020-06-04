@@ -1,9 +1,25 @@
 import { glslFuncs } from "./glslfunctions";
 
-type UniformVal = number | number[];
+type RawFloat = number;
+type NamedFloat = [string, number];
+type Float = RawFloat | NamedFloat;
+type RawVec2 = [number, number];
+type NamedVec2 = [string, RawVec2];
+type Vec2 = RawVec2 | NamedVec2;
+type RawVec3 = [number, number, number];
+type NamedVec3 = [string, RawVec3];
+type Vec3 = RawVec3 | NamedVec3;
+type RawVec4 = [number, number, number, number];
+type NamedVec4 = [string, RawVec4];
+type Vec4 = RawVec4 | NamedVec4;
+
+type RawUniformVal = RawFloat | RawVec2 | RawVec3 | RawVec4;
+type NamedUniformVal = NamedFloat | NamedVec2 | NamedVec3 | NamedVec4;
+
+type UniformVal = RawUniformVal | NamedUniformVal;
 
 interface UniformVals {
-  [name: string]: number | number[];
+  [name: string]: RawUniformVal;
 }
 
 interface EffectOptions {
@@ -26,8 +42,11 @@ export class Effect {
   uniforms: UniformVals;
   externalFuncs: string[];
 
-  constructor(fShaderSource: string, options?: EffectOptions) {
-    this.fShaderSource = fShaderSource;
+  constructor(
+    sourceSections: string[],
+    values: UniformVal[],
+    options?: EffectOptions
+  ) {
     this.needsDepthBuffer = options?.needsDepthBuffer ?? false;
     this.needsNeighborSample = options?.needsNeighborSample ?? false;
     this.needsCenterSample = options?.needsCenterSample ?? true;
@@ -35,9 +54,20 @@ export class Effect {
     // TODO go through one by one verifying that all passed-in lengths for uniforms are are correct
     this.uniforms = options?.uniforms ?? {};
     this.externalFuncs = options?.externalFuncs ?? [];
+
+    let sourceString = "";
+    if (sourceSections.length - values.length !== 1) {
+      throw new Error("wrong lengths for source and values");
+    }
+    for (let i = 0; i < values.length; i++) {
+      sourceString += sourceSections[i] + this.processGLSLVal(values[i]);
+    }
+    sourceString += sourceSections[sourceSections.length - 1];
+    this.fShaderSource = sourceString;
   }
 
-  setUniform(name: string, newVal: UniformVal) {
+  // TODO test this
+  setUniform(name: string, newVal: RawUniformVal) {
     const oldVal = this.uniforms[name];
     if (oldVal === undefined) {
       console.warn("tried to set uniform " + name + " which doesn't exist");
@@ -52,6 +82,27 @@ export class Effect {
     this.uniforms[name] = newVal;
   }
 
+  processGLSLVal(val: UniformVal): string {
+    if (typeof val === "number") {
+      // this is a float
+      val;
+      return toGLSLFloatString(val);
+    }
+    if (typeof val[0] === "string") {
+      // this is a named value, so it should be inserted as a uniform
+      const namedVal = val as NamedUniformVal;
+      const name = namedVal[0];
+      const uniformVal = namedVal[1];
+      this.uniforms[name] = uniformVal;
+      return name;
+    }
+    // not a named value, so it can be inserted into code directly like a macro
+    const uniformVal = val as RawVec2 | RawVec3 | RawVec4;
+    return `vec${uniformVal.length}(${uniformVal
+      .map((n) => toGLSLFloatString(n))
+      .join(", ")})`;
+  }
+
   applyUniform() {}
 }
 
@@ -62,13 +113,13 @@ export function darken(percent: number) {
     throw new Error("darkness percent must be between 0 and 100 (inclusive)");
   }
   return new Effect(
-    `void main() {
-  float d = ${toGLSLFloatString(percent / 100)};
-  gl_FragColor = vec4(d * gl_FragColor.rgb, gl_FragColor.a);
+    ...tag`void main() {
+  gl_FragColor = vec4(gl_FragColor.rgb * ${percent / 100}, gl_FragColor.a);
 }`
   );
 }
 
+/*
 export function invert() {
   return new Effect(
     `void main() {
@@ -79,11 +130,11 @@ export function invert() {
 
 // TODO this doesn't require sampling the first pixel; see if we can
 // optimize this out in the code gen
-export function blur5(xDir: number, yDir: number) {
+export function blur5(direction: RawVec2) {
   return new Effect(
     `void main() {
   vec2 uv = gl_FragCoord.xy / uResolution;
-  vec2 direction = vec2(${toGLSLFloatString(xDir)}, ${toGLSLFloatString(yDir)});
+  vec2 direction = ${this.processGLSLVal()}; 
   gl_FragColor = vec4(0.0);
   vec2 off1 = vec2(1.3333333333333333) * direction;
   gl_FragColor += texture2D(uSampler, uv) * 0.29411764705882354;
@@ -106,7 +157,7 @@ export function fuzzy() {
   );
 }
 
-export function contrast(val: number) {
+export function contrast(val: RawFloat) {
   if (val <= 0) {
     throw new Error("contrast must be > 0");
   }
@@ -130,6 +181,7 @@ export function brightness(val: number) {
 }`
   );
 }
+*/
 
 // a single-pass blur is not actually particularly efficient, since we must
 // sample everything in the radius
@@ -140,6 +192,7 @@ export function boxBlur(val: number) {
 */
 
 // test effects (get rid of these)
+/*
 export function red() {
   return new Effect(
     `void main() {
@@ -169,6 +222,7 @@ export function uniformTest() {
     }
   );
 }
+*/
 
 export function repeat(effect: Effect, num: number) {
   effect.repeatNum = num;
@@ -183,14 +237,27 @@ function toGLSLFloatString(num: number) {
   return str;
 }
 
-function uniformGLSLTypeNum(val: UniformVal) {
+function uniformGLSLTypeNum(val: RawUniformVal) {
   if (typeof val === "number") {
     return 1;
   }
   return val.length;
 }
 
-export function uniformGLSLTypeStr(val: UniformVal) {
+function tag(
+  strings: TemplateStringsArray,
+  ...values: UniformVal[]
+): [string[], UniformVal[]] {
+  return [strings.concat([]), values];
+}
+
+/*
+function separator(strings: string[], ...values: UniformVals[]): [string[], UniformVals[]] {
+  return [strings, values];
+}
+*/
+
+export function uniformGLSLTypeStr(val: RawUniformVal) {
   const num = uniformGLSLTypeNum(val);
   if (num === 1) return "float";
   if (num >= 2 && num <= 4) return "vec" + num;
