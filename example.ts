@@ -2,7 +2,8 @@ import { Merger } from "./mergepass";
 import { Brightness } from "./effects/brightness";
 import { Blur } from "./effects/blur";
 import { Grain } from "./effects/grain";
-import { HueRotate } from "./effects/huerotate";
+import { HSBRotate } from "./effects/hsbrotate";
+import { HSB } from "./effects/hsb";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -21,13 +22,14 @@ if (source === null) {
 window.addEventListener("load", () => {
   // TODO don't need the mediump float probably
   const brightness = new Brightness(["uBrightness", 0.0]);
+  const hsb = new HSB([0, 0.1, 0], [0, 1, 0]);
   // uniforms not being set if they are first pass???
   // if uniform brightness is first, the second non-uniform brightness works fine, and effects things as normal
   const blur = new Blur(["uBlur", [1, 1]]).repeat(3);
   const grain = new Grain(0.1);
-  //const hueRotate = new HueRotate(50);
+  const hueRotate = new HSBRotate(0.1);
 
-  const merger = new Merger([brightness, blur, grain], sourceCanvas, gl);
+  const merger = new Merger([brightness, hsb, blur, grain], sourceCanvas, gl);
 
   // dwitter sim
   const C = Math.cos;
