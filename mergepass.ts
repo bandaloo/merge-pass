@@ -51,6 +51,8 @@ export class Merger {
   private texBack: WebGLTexture;
   private framebuffer: WebGLFramebuffer;
   private uniformLocs: UniformLocs = {};
+  /** effects grouped by program */
+  private lumpedEffects: Effect[][] = [];
 
   private options: MergerOptions | undefined;
 
@@ -161,14 +163,16 @@ export class Merger {
     let code = "";
     let calls = "\n";
     let needsCenterSample = false;
-    const externalFuncs: string[] = [];
-    const uniformDeclarations: string[] = [];
+    let externalFuncs: string[] = [];
+    let uniformDeclarations: string[] = [];
+    let effectLump: Effect[] = [];
 
     // using this style of loop since we need to do something different on the
     // last element and also know the next element
     for (let i = 0; i < this.effects.length; i++) {
       /** code for each function call to each shader pass */
       const e = this.effects[i];
+      effectLump.push(e);
       const next = this.effects[i + 1];
       needsCenterSample = needsCenterSample || e.needsCenterSample;
       // replace the main function
@@ -184,7 +188,7 @@ export class Merger {
       calls += "  " + forStr + replacedFunc + ";\n";
 
       for (const func of e.externalFuncs) {
-        if (!externalFuncs.includes(func)) externalFuncs.push(func);
+        if (!externalFuncs.includes(func)) externalFuncs.push("\n" + func);
       }
 
       for (const name in e.uniforms) {
@@ -267,16 +271,20 @@ export class Merger {
         // our vertices
         this.gl.vertexAttribPointer(position, 2, this.gl.FLOAT, false, 0, 0);
 
+        this.lumpedEffects.push(effectLump);
+
         console.log(fullCode);
 
         // clear the source code to start merging new shader source
         code = "";
         calls = "\n";
         needsCenterSample = false;
-        externalFuncs.length = 0;
-        uniformDeclarations.length = 0;
+        externalFuncs = [];
+        uniformDeclarations = [];
+        effectLump = [];
       }
     }
+    console.log(this.lumpedEffects);
   }
 
   applyUniforms(e: Effect) {
@@ -311,10 +319,12 @@ export class Merger {
     this.sendTexture(this.source);
     [this.texBack, this.texFront] = [this.texFront, this.texBack];
     for (const program of this.programs) {
-      const e = this.effects[programIndex];
-      for (let i = 0; i < this.repeatNums[programIndex]; i++) {
-        this.gl.useProgram(program);
+      this.gl.useProgram(program);
+      const effectLump = this.lumpedEffects[programIndex];
+      for (const e of effectLump) {
         this.applyUniforms(e);
+      }
+      for (let i = 0; i < this.repeatNums[programIndex]; i++) {
         if (
           programIndex === this.programs.length - 1 &&
           i === this.repeatNums[programIndex] - 1
