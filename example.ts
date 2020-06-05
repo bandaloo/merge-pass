@@ -1,5 +1,6 @@
 import { Merger } from "./mergepass";
-import { darken, repeat, blur5 } from "./effect";
+import { Brightness } from "./effects/brightness";
+import { Blur } from "./effects/blur";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -16,9 +17,8 @@ if (source === null) {
 }
 
 window.onload = () => {
-  // TODO consider unlinking programs
-  const darkenEffect = darken(["uDarkness", 0.5]);
-  const blurEffect = repeat(blur5(["uBlur", [1, 1]]), 3);
+  const darkenEffect = new Brightness(["uBrightness", 0]);
+  const blurEffect = new Blur(["uBlur", [1, 1]]).repeat(3);
 
   const merger = new Merger([blurEffect, darkenEffect], sourceCanvas, gl);
 
@@ -30,8 +30,7 @@ window.onload = () => {
   const draw = (time: number) => {
     merger.draw();
     const darkness = 0.5 + Math.cos(time / 99) / 2;
-    //console.log(darkness);
-    darkenEffect.setUniform("uDarkness", 0.5 + darkness / 3);
+    darkenEffect.setUniform("uBrightness", 0.5 + darkness / 3);
     blurEffect.setUniform("uBlur", [
       3 * Math.cos(time / 999),
       3 * Math.sin(time / 999),

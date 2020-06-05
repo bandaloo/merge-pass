@@ -30,6 +30,13 @@ void main() {
   gl_Position = vec4(aPosition, 0.0, 1.0);
 }\n`;
 
+type FilterMode = "linear" | "nearest";
+
+interface MergerOptions {
+  minFilterMode?: FilterMode;
+  maxFilterMode?: FilterMode;
+}
+
 export class Merger {
   private effects: Effect[];
   private fShaders: WebGLShader[] = [];
@@ -45,14 +52,18 @@ export class Merger {
   private framebuffer: WebGLFramebuffer;
   private uniformLocs: UniformLocs = {};
 
+  private options: MergerOptions | undefined;
+
   constructor(
     effects: Effect[],
     source: TexImageSource,
-    gl: WebGL2RenderingContext
+    gl: WebGL2RenderingContext,
+    options?: MergerOptions
   ) {
     this.effects = effects;
     this.source = source;
     this.gl = gl;
+    this.options = options;
 
     // set the viewport
     this.gl.viewport(
@@ -105,7 +116,6 @@ export class Merger {
     // bind the texture after creating it
     this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
 
-    //this.sendTexture(this.source.canvas);
     this.gl.texImage2D(
       this.gl.TEXTURE_2D,
       0,
@@ -118,17 +128,19 @@ export class Merger {
       null
     );
 
-    // TODO be able to choose LINEAR or NEAREST
+    const filterMode = (f: undefined | FilterMode) =>
+      f === undefined || f === "linear" ? this.gl.LINEAR : this.gl.NEAREST;
+
     // how to map texture element
     this.gl.texParameteri(
       this.gl.TEXTURE_2D,
       this.gl.TEXTURE_MIN_FILTER,
-      this.gl.LINEAR
+      filterMode(this.options?.minFilterMode)
     );
     this.gl.texParameteri(
       this.gl.TEXTURE_2D,
       this.gl.TEXTURE_MAG_FILTER,
-      this.gl.LINEAR
+      filterMode(this.options?.maxFilterMode)
     );
 
     return texture;

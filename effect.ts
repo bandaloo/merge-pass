@@ -1,56 +1,48 @@
-import { glslFuncs } from "./glslfunctions";
-
 export type RawFloat = number;
 type NamedFloat = [string, number];
+export type Float = RawFloat | NamedFloat;
+
 export type RawVec2 = [number, number];
 type NamedVec2 = [string, RawVec2];
+export type Vec2 = RawVec2 | NamedVec2;
+
 export type RawVec3 = [number, number, number];
 type NamedVec3 = [string, RawVec3];
+export type Vec3 = RawVec3 | NamedVec3;
+
 export type RawVec4 = [number, number, number, number];
 type NamedVec4 = [string, RawVec4];
+export type Vec4 = RawVec4 | NamedVec4;
 
 type RawUniformVal = RawFloat | RawVec2 | RawVec3 | RawVec4;
 type NamedUniformVal = NamedFloat | NamedVec2 | NamedVec3 | NamedVec4;
 
 type UniformVal = RawUniformVal | NamedUniformVal;
 
-interface Source {
+export interface Source {
   sections: string[];
   values: UniformVal[];
 }
 
-interface UniformVals {
+interface UniformValMap {
   [name: string]: { val: RawUniformVal; changed: boolean };
 }
 
-interface EffectOptions {
-  needsDepthBuffer?: boolean;
-  needsNeighborSample?: boolean;
-  needsCenterSample?: boolean;
-  repeatNum?: number;
-  externalFuncs?: string[];
-}
-
-export class Effect {
-  needsDepthBuffer: boolean;
-  needsNeighborSample: boolean;
-  needsCenterSample: boolean;
-  repeatNum: number;
+export abstract class Effect {
+  needsDepthBuffer: boolean = false;
+  needsNeighborSample: boolean = false;
+  needsCenterSample: boolean = true;
+  repeatNum: number = 1;
   fShaderSource: string;
-  uniforms: UniformVals = {};
-  externalFuncs: string[];
+  uniforms: UniformValMap = {};
+  externalFuncs: string[] = [];
 
-  constructor(source: Source, options?: EffectOptions) {
-    this.needsDepthBuffer = options?.needsDepthBuffer ?? false;
-    this.needsNeighborSample = options?.needsNeighborSample ?? false;
-    this.needsCenterSample = options?.needsCenterSample ?? true;
-    this.repeatNum = options?.repeatNum ?? 1;
-    this.externalFuncs = options?.externalFuncs ?? [];
-
+  constructor(source: Source) {
     let sourceString = "";
     if (source.sections.length - source.values.length !== 1) {
       throw new Error("wrong lengths for source and values");
     }
+    // put all of the values between all of the source sections
     for (let i = 0; i < source.values.length; i++) {
       sourceString +=
         source.sections[i] + this.processGLSLVal(source.values[i]);
@@ -62,7 +54,6 @@ export class Effect {
   setUniform(name: string, newVal: RawUniformVal) {
     const oldVal = this.uniforms[name].val;
     if (oldVal === undefined) {
-      // TODO should these be errors instead of warnings?
       console.warn("tried to set uniform " + name + " which doesn't exist");
       return;
     }
@@ -96,113 +87,11 @@ export class Effect {
       .map((n) => toGLSLFloatString(n))
       .join(", ")})`;
   }
-}
 
-// TODO making these effects subclasses could be more flexible
-export function darken(portion: RawFloat | NamedFloat) {
-  if (portion < 0 || portion > 100) {
-    throw new Error("darkness portion must be between 0 and 1 (inclusive)");
+  repeat(num: number) {
+    this.repeatNum = num;
+    return this;
   }
-  return new Effect(
-    tag`void main() {
-  gl_FragColor = vec4(gl_FragColor.rgb * ${portion}, gl_FragColor.a);
-}`
-  );
-}
-
-/*
-export function invert() {
-  return new Effect(
-    `void main() {
-  gl_FragColor = vec4(1.0 - gl_FragColor.rgb, gl_FragColor.a);
-}`
-  );
-}
-*/
-
-// adapted from https://github.com/Jam3/glsl-fast-gaussian-blur/blob/master/5.glsl
-export function blur5(direction: RawVec2 | NamedVec2) {
-  return new Effect(
-    tag`void main() {
-  vec2 uv = gl_FragCoord.xy / uResolution;
-  vec2 direction = ${direction}; 
-  gl_FragColor = vec4(0.0);
-  vec2 off1 = vec2(1.3333333333333333) * direction;
-  gl_FragColor += texture2D(uSampler, uv) * 0.29411764705882354;
-  gl_FragColor += texture2D(uSampler, uv + (off1 / uResolution)) * 0.35294117647058826;
-  gl_FragColor += texture2D(uSampler, uv - (off1 / uResolution)) * 0.35294117647058826;
-}`,
-    {
-      needsNeighborSample: true,
-      needsCenterSample: false,
-    }
-  );
-}
-/*
-export function fuzzy() {
-  return new Effect(
-    `void main() {
-  gl_FragColor = vec4(random(gl_FragCoord.xy) * gl_FragColor.rgb, gl_FragColor.a);
-}`,
-    { externalFuncs: [glslFuncs.random] }
-  );
-}
-
-export function contrast(val: RawFloat) {
-  if (val <= 0) {
-    throw new Error("contrast must be > 0");
-  }
-  return new Effect(
-    `void main() {
-  gl_FragColor.rgb /= gl_FragColor.a;
-  gl_FragColor.rgb = ((gl_FragColor.rgb - 0.5) * ${toGLSLFloatString(
-    val
-  )}) + 0.5;
-  gl_FragColor.rgb *= gl_FragColor.a;
-}`
-  );
-}
-
-export function brightness(val: number) {
-  return new Effect(
-    `void main() {
-  gl_FragColor.rgb /= gl_FragColor.a;
-  gl_FragColor.rgb += ${toGLSLFloatString(val)};
-  gl_FragColor.rgb *= gl_FragColor.a;
-}`
-  );
-}
-*/
-
-// a single-pass blur is not actually particularly efficient, since we must
-// sample everything in the radius
-/*
-export function boxBlur(val: number) {
-  return new Effect({})
-}
-*/
-
-// test effects (get rid of these)
-/*
-export function red() {
-  return new Effect(
-    `void main() {
-  gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
-}`
-  );
-}
-
-export function nothing() {
-  return new Effect(
-    `void main() {
-}`
-  );
-}
-*/
-
-export function repeat(effect: Effect, num: number) {
-  effect.repeatNum = num;
-  return effect;
 }
 
 // some helpers
@@ -226,12 +115,6 @@ export function tag(
 ): Source {
   return { sections: strings.concat([]), values: values };
 }
-
-/*
-function separator(strings: string[], ...values: UniformVals[]): [string[], UniformVals[]] {
-  return [strings, values];
-}
-*/
 
 export function uniformGLSLTypeStr(val: RawUniformVal) {
   const num = uniformGLSLTypeNum(val);
