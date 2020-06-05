@@ -25,7 +25,6 @@ uniform mediump vec2 uResolution;\n`;
 // need to use `uSampler` for anything other than the current pixel
 const FRAG_SET = `\n  gl_FragColor = texture2D(uSampler, gl_FragCoord.xy / uResolution);`;
 
-// TODO should boilerplate be prepended to this?
 const V_SOURCE = `attribute vec2 aPosition;
 void main() {
   gl_Position = vec4(aPosition, 0.0, 1.0);
@@ -117,13 +116,6 @@ export class Merger {
       this.gl.RGBA,
       this.gl.UNSIGNED_BYTE,
       null
-    );
-
-    // TODO see if this is needed with webgl2
-    this.gl.texParameteri(
-      this.gl.TEXTURE_2D,
-      this.gl.TEXTURE_WRAP_S,
-      this.gl.CLAMP_TO_EDGE
     );
 
     // TODO be able to choose LINEAR or NEAREST
@@ -229,7 +221,6 @@ export class Merger {
         this.gl.linkProgram(program);
 
         // we need to use the program here so we can get uniform locations
-        // TODO check if the above statement is true
         this.gl.useProgram(program);
 
         for (const name in e.uniforms) {
@@ -248,7 +239,6 @@ export class Merger {
         // the repeat number can just be 1
         this.repeatNums.push(e.needsNeighborSample ? e.repeatNum : 1);
 
-        // TODO see if width and height is right
         // set the uniform resolution (every program has this uniform)
         const uResolution = this.gl.getUniformLocation(program, "uResolution");
         this.gl.uniform2f(
@@ -276,11 +266,6 @@ export class Merger {
       }
     }
   }
-
-  // TODO send down shared uniforms
-  // TODO we want a map of a names to locations. we then want to go into the
-  // effect and get the value based on the name, and send that value down to the
-  // GPU based on the location
 
   applyUniforms(e: Effect) {
     for (const name in e.uniforms) {
@@ -323,11 +308,9 @@ export class Merger {
           i === this.repeatNums[programIndex] - 1
         ) {
           // we are on the final pass of the final program, so draw to screen
-          console.log("final render pass");
           // set to the default framebuffer
           this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
         } else {
-          console.log("intermediate render pass");
           // we have to bounce between two textures
           this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer);
           // use the framebuffer to write to front texture

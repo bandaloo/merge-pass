@@ -28,19 +28,16 @@ interface EffectOptions {
   needsNeighborSample?: boolean;
   needsCenterSample?: boolean;
   repeatNum?: number;
-  uniforms?: UniformVals;
   externalFuncs?: string[];
 }
 
 export class Effect {
-  // TODO make this class have an instance of options rather than all this
-  // repeated code
   needsDepthBuffer: boolean;
   needsNeighborSample: boolean;
   needsCenterSample: boolean;
   repeatNum: number;
   fShaderSource: string;
-  uniforms: UniformVals;
+  uniforms: UniformVals = {};
   externalFuncs: string[];
 
   constructor(source: Source, options?: EffectOptions) {
@@ -48,8 +45,6 @@ export class Effect {
     this.needsNeighborSample = options?.needsNeighborSample ?? false;
     this.needsCenterSample = options?.needsCenterSample ?? true;
     this.repeatNum = options?.repeatNum ?? 1;
-    // TODO go through one by one verifying that all passed-in lengths for uniforms are are correct
-    this.uniforms = options?.uniforms ?? {};
     this.externalFuncs = options?.externalFuncs ?? [];
 
     let sourceString = "";
@@ -123,10 +118,9 @@ export function invert() {
 }`
   );
 }
-
-// TODO this doesn't require sampling the first pixel; see if we can
-// optimize this out in the code gen
 */
+
+// adapted from https://github.com/Jam3/glsl-fast-gaussian-blur/blob/master/5.glsl
 export function blur5(direction: RawVec2 | NamedVec2) {
   return new Effect(
     tag`void main() {
@@ -145,7 +139,6 @@ export function blur5(direction: RawVec2 | NamedVec2) {
   );
 }
 /*
-
 export function fuzzy() {
   return new Effect(
     `void main() {
@@ -205,21 +198,6 @@ export function nothing() {
 }`
   );
 }
-
-export function uniformTest() {
-  return new Effect(
-    `void main() {
-}`,
-    {
-      uniforms: {
-        uTestFloat: 1,
-        uTestVec2: [1, 2],
-        uTestVec3: [1, 2, 3],
-        uTestVec4: [1, 2, 3, 4],
-      },
-    }
-  );
-}
 */
 
 export function repeat(effect: Effect, num: number) {
@@ -242,7 +220,10 @@ export function uniformGLSLTypeNum(val: RawUniformVal) {
   return val.length;
 }
 
-function tag(strings: TemplateStringsArray, ...values: UniformVal[]): Source {
+export function tag(
+  strings: TemplateStringsArray,
+  ...values: UniformVal[]
+): Source {
   return { sections: strings.concat([]), values: values };
 }
 
