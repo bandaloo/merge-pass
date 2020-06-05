@@ -19,16 +19,15 @@ if (source === null) {
 }
 
 window.addEventListener("load", () => {
-  const brightness = new Brightness(["uBrightness", 0]);
+  // TODO don't need the mediump float probably
+  const brightness = new Brightness(["uBrightness", 0.0]);
+  // uniforms not being set if they are first pass???
+  // if uniform brightness is first, the second non-uniform brightness works fine, and effects things as normal
   const blur = new Blur(["uBlur", [1, 1]]).repeat(3);
   const grain = new Grain(0.1);
-  const hueRotate = new HueRotate(100);
+  //const hueRotate = new HueRotate(50);
 
-  const merger = new Merger(
-    [brightness, hueRotate, blur, grain],
-    sourceCanvas,
-    gl
-  );
+  const merger = new Merger([brightness, blur, grain], sourceCanvas, gl);
 
   // dwitter sim
   const C = Math.cos;

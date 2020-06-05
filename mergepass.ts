@@ -239,12 +239,14 @@ export class Merger {
         // we need to use the program here so we can get uniform locations
         this.gl.useProgram(program);
 
-        for (const name in e.uniforms) {
-          const location = this.gl.getUniformLocation(program, name);
-          if (location === null) {
-            throw new Error("couldn't find uniform " + name);
+        for (const effect of effectLump) {
+          for (const name in effect.uniforms) {
+            const location = this.gl.getUniformLocation(program, name);
+            if (location === null) {
+              throw new Error("couldn't find uniform " + name);
+            }
+            this.uniformLocs[name] = location;
           }
-          this.uniformLocs[name] = location;
         }
 
         // add the shader, the program and the repetitions to the lists
