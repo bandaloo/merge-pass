@@ -188,7 +188,8 @@ export class Merger {
       calls += "  " + forStr + replacedFunc + ";\n";
 
       for (const func of e.externalFuncs) {
-        if (!externalFuncs.includes(func)) externalFuncs.push("\n" + func);
+        if (!externalFuncs.includes("\n" + func))
+          externalFuncs.push("\n" + func);
       }
 
       for (const name in e.uniforms) {
@@ -212,6 +213,7 @@ export class Merger {
           BOILERPLATE +
           "\n" +
           uniformDeclarations.join("\n") +
+          "\n" +
           externalFuncs.join("\n\n") +
           "\n" +
           code +
@@ -244,6 +246,9 @@ export class Merger {
             const location = this.gl.getUniformLocation(program, name);
             if (location === null) {
               throw new Error("couldn't find uniform " + name);
+            }
+            if (this.uniformLocs[name] !== undefined) {
+              throw new Error("uniforms have to all have unique names");
             }
             this.uniformLocs[name] = location;
           }

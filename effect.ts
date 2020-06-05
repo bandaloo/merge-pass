@@ -17,7 +17,7 @@ export type Vec4 = RawVec4 | NamedVec4;
 type RawUniformVal = RawFloat | RawVec2 | RawVec3 | RawVec4;
 type NamedUniformVal = NamedFloat | NamedVec2 | NamedVec3 | NamedVec4;
 
-type UniformVal = RawUniformVal | NamedUniformVal;
+export type UniformVal = RawUniformVal | NamedUniformVal;
 
 export interface Source {
   sections: string[];
@@ -73,6 +73,7 @@ export abstract class Effect {
       val;
       return toGLSLFloatString(val);
     }
+    // TODO rewrite this with the helper functions at bottom of file
     if (typeof val[0] === "string") {
       // this is a named value, so it should be inserted as a uniform
       const namedVal = val as NamedUniformVal;

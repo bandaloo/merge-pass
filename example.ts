@@ -2,7 +2,7 @@ import { Merger } from "./mergepass";
 import { Brightness } from "./effects/brightness";
 import { Blur } from "./effects/blur";
 import { Grain } from "./effects/grain";
-import { HSBRotate } from "./effects/hsbrotate";
+import { HSBAdd, HueAdd, SaturationAdd } from "./effects/hsbadd";
 import { HSB } from "./effects/hsb";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
@@ -27,9 +27,14 @@ window.addEventListener("load", () => {
   // if uniform brightness is first, the second non-uniform brightness works fine, and effects things as normal
   const blur = new Blur(["uBlur", [1, 1]]).repeat(3);
   const grain = new Grain(0.1);
-  const hueRotate = new HSBRotate(0.1);
+  const hueAdd = new HueAdd(0.1);
+  const saturationAdd = new SaturationAdd(-0.3);
 
-  const merger = new Merger([brightness, hsb, blur, grain], sourceCanvas, gl);
+  const merger = new Merger(
+    [saturationAdd, hueAdd, blur, grain, brightness],
+    sourceCanvas,
+    gl
+  );
 
   // dwitter sim
   const C = Math.cos;
