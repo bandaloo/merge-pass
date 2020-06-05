@@ -52,7 +52,7 @@ export abstract class Effect {
   }
 
   setUniform(name: string, newVal: RawUniformVal) {
-    const oldVal = this.uniforms[name].val;
+    const oldVal = this.uniforms[name]?.val;
     if (oldVal === undefined) {
       console.warn("tried to set uniform " + name + " which doesn't exist");
       return;
