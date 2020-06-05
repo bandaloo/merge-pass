@@ -31,14 +31,14 @@ window.addEventListener("load", () => {
   const hsv = new HSV([0, 0.1, 0], [0, 1, 0]);
   const blur = new Blur(["uBlur", [1, 1]]).repeat(3);
   const grain = new Grain(0.1);
-  const hueAdd = new HueAdd(0.1);
+  const hueAdd = new HueAdd(["uHue", 0]);
   const saturationAdd = new SaturationAdd(-0.3);
   const hue = new Hue(0.7);
   const saturation = new Saturation(0.5);
   const value = new Value(["uValue", 0.5]);
 
   const merger = new Merger(
-    [saturation, hue, value, blur, grain, brightness],
+    [hueAdd, blur, grain, brightness],
     sourceCanvas,
     gl
   );
@@ -58,7 +58,7 @@ window.addEventListener("load", () => {
     merger.draw();
     brightness.setUniform("uBrightness", 0.3 * Math.cos(time / 2000));
     blur.setUniform("uBlur", [Math.cos(time / 1000) ** 8, 0]);
-    value.setUniform("uValue", Math.cos(time / 1000) ** 8);
+    hueAdd.setUniform("uHue", t / 9);
 
     // draw insane stripes
     const i = ~~(t * 9);

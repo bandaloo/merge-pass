@@ -8,4 +8,5 @@ export * from "./effects/contrast";
 export * from "./effects/grain";
 export * from "./effects/passthrough";
 export * from "./effects/hsv";
-export * from "./effects/hsbadd";
+export * from "./effects/hsvadd";
+export * from "./effects/hsvhelpers";
