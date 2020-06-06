@@ -2,6 +2,11 @@
 
 [live example](https://www.bandaloo.fun/merge-pass-temp/example.html)
 
+**Right now, this package is in pre-alpha so I wouldn't recommend using it for
+anything big yet. However, if you want to try it out, you are more than
+welcome. Also, if you have any ideas for post-processing effects you would
+like to see included in the library, please let me know!**
+
 This library allows you to easily run a post-processing effect on an image or
 canvas. It does so by generating shaders to apply the effect in as few passes
 as possible.
@@ -81,7 +86,7 @@ const merger = new MP.Merger(
 // | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas` so it is actually
 // pretty flexible
 
-// let's draw something interesting and kick of a draw loop
+// let's draw something interesting and kick off a draw loop
 
 let steps = 0;
 
