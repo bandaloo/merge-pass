@@ -12,7 +12,7 @@ export class Blur extends Effect {
   gl_FragColor += texture2D(uSampler, uv + (off1 / uResolution)) * 0.35294117647058826;
   gl_FragColor += texture2D(uSampler, uv - (off1 / uResolution)) * 0.35294117647058826;
 }`);
-    this.needsNeighborSample = true;
-    this.needsCenterSample = false;
+    this.needs.neighborSample = true;
+    this.needs.centerSample = false;
   }
 }

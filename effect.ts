@@ -1,3 +1,5 @@
+import { EffectLoop, UniformLocs, WebGLProgramElement } from "./mergepass";
+
 export type RawFloat = number;
 type NamedFloat = [string, number];
 export type Float = RawFloat | NamedFloat;
@@ -28,10 +30,19 @@ interface UniformValMap {
   [name: string]: { val: RawUniformVal; changed: boolean };
 }
 
+interface Needs {
+  depthBuffer: boolean;
+  neighborSample: boolean;
+  centerSample: boolean;
+}
+
 export abstract class Effect {
-  needsDepthBuffer: boolean = false;
-  needsNeighborSample: boolean = false;
-  needsCenterSample: boolean = true;
+  needs: Needs = {
+    depthBuffer: false,
+    neighborSample: false,
+    centerSample: true,
+  };
+  // TODO get rid of this since we have loops now
   repeatNum: number = 1;
   fShaderSource: string;
   uniforms: UniformValMap = {};
@@ -89,9 +100,53 @@ export abstract class Effect {
       .join(", ")})`;
   }
 
+  getNeeds(name: "neighborSample" | "centerSample" | "depthBuffer") {
+    return this.needs[name];
+  }
+
+  // TODO get rid of this
   repeat(num: number) {
     this.repeatNum = num;
-    return this;
+    return {};
+  }
+
+  genPrograms(
+    gl: WebGL2RenderingContext,
+    vShader: WebGLShader,
+    uniformLocs: UniformLocs
+  ): WebGLProgramElement {
+    return new EffectLoop([this], { num: this.repeatNum }).genPrograms(
+      gl,
+      vShader,
+      uniformLocs
+    );
+  }
+
+  applyUniforms(gl: WebGL2RenderingContext, uniformLocs: UniformLocs) {
+    for (const name in this.uniforms) {
+      const loc = uniformLocs[name];
+      const val = this.uniforms[name].val;
+      if (this.uniforms[name].changed) {
+        this.uniforms[name].changed = false;
+        switch (uniformGLSLTypeNum(val)) {
+          case 1:
+            const float = val as RawFloat;
+            gl.uniform1f(loc, float);
+            break;
+          case 2:
+            const vec2 = val as RawVec2;
+            gl.uniform2f(loc, vec2[0], vec2[1]);
+            break;
+          case 3:
+            const vec3 = val as RawVec3;
+            gl.uniform3f(loc, vec3[0], vec3[1], vec3[2]);
+            break;
+          case 4:
+            const vec4 = val as RawVec4;
+            gl.uniform4f(loc, vec4[0], vec4[1], vec4[2], vec4[3]);
+        }
+      }
+    }
   }
 }
 

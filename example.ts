@@ -29,7 +29,7 @@ window.addEventListener("load", () => {
   // TODO don't need the mediump float probably
   const brightness = new Brightness(["uBrightness", 0.0]);
   const hsv = new HSV([0, 0.1, 0], [0, 1, 0]);
-  const blur = new Blur(["uBlur", [1, 1]]).repeat(3);
+  const blur = new Blur(["uBlur", [1, 1]]);
   const grain = new Grain(0.1);
   const hueAdd = new HueAdd(["uHue", 0]);
   const saturationAdd = new SaturationAdd(-0.3);
