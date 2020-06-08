@@ -3,28 +3,28 @@ import { EffectLoop, UniformLocs, WebGLProgramElement } from "./mergepass";
 export type RawFloat = number;
 type NamedFloat = [string, number];
 type DefaultFloat = [number];
-export type Float = RawFloat | NamedFloat;
+export type Float = RawFloat | NamedFloat | DefaultFloat;
 
 export type RawVec2 = [number, number];
 type NamedVec2 = [string, RawVec2];
 type DefaultVec2 = [RawVec2];
-export type Vec2 = RawVec2 | NamedVec2;
+export type Vec2 = RawVec2 | NamedVec2 | DefaultVec2;
 
 export type RawVec3 = [number, number, number];
 type NamedVec3 = [string, RawVec3];
 type DefaultVec3 = [RawVec3];
-export type Vec3 = RawVec3 | NamedVec3;
+export type Vec3 = RawVec3 | NamedVec3 | DefaultVec3;
 
 export type RawVec4 = [number, number, number, number];
 type NamedVec4 = [string, RawVec4];
 type DefaultVec4 = [RawVec4];
-export type Vec4 = RawVec4 | NamedVec4;
+export type Vec4 = RawVec4 | NamedVec4 | DefaultVec4;
 
 type DefaultUniformVal = DefaultFloat | DefaultVec2 | DefaultVec3 | DefaultVec4;
 type RawUniformVal = RawFloat | RawVec2 | RawVec3 | RawVec4;
 type NamedUniformVal = NamedFloat | NamedVec2 | NamedVec3 | NamedVec4;
 
-export type UniformVal = RawUniformVal | NamedUniformVal;
+export type UniformVal = RawUniformVal | NamedUniformVal | DefaultUniformVal;
 
 export interface Source {
   sections: string[];
@@ -46,6 +46,8 @@ interface Needs {
 }
 
 export abstract class Effect {
+  /** used to give each effect a unique id */
+  static count = 0;
   needs: Needs = {
     depthBuffer: false,
     neighborSample: false,
@@ -57,8 +59,14 @@ export abstract class Effect {
   uniforms: UniformValMap = {};
   externalFuncs: string[] = [];
   defaultNameMap: DefaultNameMap = {};
+  id: number;
+  idStr: string;
 
   constructor(source: Source, defaultNames: string[]) {
+    this.id = Effect.count;
+    this.idStr = "_id_" + this.id;
+    // TODO check to see if user-defined name includes this
+    Effect.count++;
     let sourceString = "";
     if (source.sections.length - source.values.length !== 1) {
       throw new Error("wrong lengths for source and values");
@@ -72,37 +80,28 @@ export abstract class Effect {
     for (let i = 0; i < source.values.length; i++) {
       sourceString +=
         source.sections[i] +
-        this.processGLSLVal(source.values[i], defaultNames[i]);
+        this.processGLSLVal(source.values[i], defaultNames[i] + this.idStr);
     }
     sourceString += source.sections[source.sections.length - 1];
     this.fShaderSource = sourceString;
   }
 
   setUniform(name: string, newVal: RawUniformVal) {
-    /*
-    const mapping = this.defaultNameMap[name];
-    if (mapping === undefined) {
-      console.log(this.defaultNameMap);
-      //console.warn("no mapping for name" + name);
-      return;
-    }
-    */
-    //const oldVal = this.uniforms[name]?.val;
     // if name does not exist, try mapping default name to new name
     if (this.uniforms[name]?.val === undefined) {
       name = this.defaultNameMap[name];
     }
     const oldVal = this.uniforms[name]?.val;
+    // TODO should these really be warnings?
     if (oldVal === undefined) {
-      console.warn("tried to set uniform " + name + " which doesn't exist");
-      return;
+      throw new Error("tried to set uniform " + name + " which doesn't exist");
     }
     const oldType = uniformGLSLTypeNum(oldVal);
     const newType = uniformGLSLTypeNum(newVal);
     if (oldType !== newType) {
-      console.warn("tried to set uniform " + name + " to a new type");
-      return;
+      throw new Error("tried to set uniform " + name + " to a new type");
     }
+    // TODO check for trying to name variable of already existing default name
     this.uniforms[name].val = newVal;
     this.uniforms[name].changed = true;
   }

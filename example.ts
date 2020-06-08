@@ -10,6 +10,7 @@ import {
   Saturation,
   Value,
 } from "./effects/hsvhelpers";
+import { PowerBlur } from "./effects/powerblur";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -30,7 +31,7 @@ window.addEventListener("load", () => {
   const brightness = new Brightness(["uBrightness", 0.0]);
   const hsv = new HSV([0, 0.1, 0], [0, 1, 0]);
   const blur = new Blur(["uBlur", [1, 1]]);
-  const blur2 = new Blur(["uBlurUp", [0, 8]]);
+  const blur2 = new Blur([[0, 8]]);
   const blur3 = new Blur(["uBlurSide", [8, 0]]);
   const grain = new Grain(0.1);
   const hueAdd = new HueAdd(["uHue", 0]);
@@ -41,26 +42,21 @@ window.addEventListener("load", () => {
 
   const merger = new Merger(
     [
-      hueAdd,
       new EffectLoop([blur2, blur3], {
-        num: 4,
-        func: (i) => {
-          blur2.setUniform("uBlurUp", [0, 8 / 2 ** i]);
-          blur3.setUniform("uBlurSide", [8 / 2 ** i, 0]);
-        },
+        num: 1,
       }),
-      grain,
-      brightness,
     ],
     sourceCanvas,
     gl
   );
 
-  console.log(
-    new EffectLoop([blur2, new EffectLoop([blur3], { num: 2 })], {
-      num: 2,
-    }).getSampleNum()
+  /*
+  const merger = new Merger(
+    [hueAdd, grain, new PowerBlur(16)],
+    sourceCanvas,
+    gl
   );
+  */
 
   // dwitter sim
   const C = Math.cos;
@@ -74,16 +70,11 @@ window.addEventListener("load", () => {
   const draw = (time: number) => {
     const t = steps / 60;
     steps++;
-    merger.draw();
-    brightness.setUniform("uBrightness", 0.3 * Math.cos(time / 2000));
-    blur.setUniform("uBlur", [Math.cos(time / 1000) ** 8, 0]);
-    hueAdd.setUniform("uHue", t / 9);
+    //brightness.setUniform("uBrightness", 0.3 * Math.cos(time / 2000));
+    //blur.setUniform("uBlur", [Math.cos(time / 1000) ** 8, 0]);
+    //hueAdd.setUniform("uHue", t / 9);
 
     // draw insane stripes
-    x.fillStyle = "red";
-    x.fillRect(0, 0, 960, 540);
-    x.fillStyle = "blue";
-    x.fillRect(960 / 4, 540 / 4, 960 / 2, 540 / 2);
     /*
     const i = ~~(t * 9);
     const j = ~~(i / 44);
@@ -92,9 +83,32 @@ window.addEventListener("load", () => {
     x.fillRect(k * 24, 0, 24, k + 2);
     x.drawImage(c, 0, k + 2);
     */
-
     requestAnimationFrame(draw);
   };
+  x.fillStyle = "red";
+  x.fillRect(0, 0, 960, 540);
+  x.fillStyle = "blue";
+  x.fillRect(960 / 4, 540 / 4, 960 / 2, 540 / 2);
+
+  setTimeout(() => {
+    console.log("draw");
+    merger.draw();
+  }, 1000);
+
+  setTimeout(() => {
+    console.log("draw");
+    merger.draw();
+  }, 2000);
+
+  setTimeout(() => {
+    console.log("draw");
+    merger.draw();
+  }, 3000);
+
+  setTimeout(() => {
+    console.log("draw");
+    merger.draw();
+  }, 4000);
 
   draw(0);
 });

@@ -1,4 +1,4 @@
-import { Effect, tag, Vec2 } from "../effect";
+import { Effect, tag, Vec2, RawVec2 } from "../effect";
 
 // adapted from https://github.com/Jam3/glsl-fast-gaussian-blur/blob/master/5.glsl
 export class Blur extends Effect {
@@ -17,5 +17,9 @@ export class Blur extends Effect {
     );
     this.needs.neighborSample = true;
     this.needs.centerSample = false;
+  }
+
+  setDirection(direction: RawVec2) {
+    this.setUniform("uDirection" + this.idStr, direction);
   }
 }
