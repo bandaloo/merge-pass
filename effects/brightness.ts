@@ -7,7 +7,8 @@ export class Brightness extends Effect {
   gl_FragColor.rgb /= gl_FragColor.a;
   gl_FragColor.rgb += ${val};
   gl_FragColor.rgb *= gl_FragColor.a;
-}`
+}`,
+      ["uBrightness"]
     );
   }
 }

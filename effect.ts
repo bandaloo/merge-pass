@@ -2,20 +2,25 @@ import { EffectLoop, UniformLocs, WebGLProgramElement } from "./mergepass";
 
 export type RawFloat = number;
 type NamedFloat = [string, number];
+type DefaultFloat = [number];
 export type Float = RawFloat | NamedFloat;
 
 export type RawVec2 = [number, number];
 type NamedVec2 = [string, RawVec2];
+type DefaultVec2 = [RawVec2];
 export type Vec2 = RawVec2 | NamedVec2;
 
 export type RawVec3 = [number, number, number];
 type NamedVec3 = [string, RawVec3];
+type DefaultVec3 = [RawVec3];
 export type Vec3 = RawVec3 | NamedVec3;
 
 export type RawVec4 = [number, number, number, number];
 type NamedVec4 = [string, RawVec4];
+type DefaultVec4 = [RawVec4];
 export type Vec4 = RawVec4 | NamedVec4;
 
+type DefaultUniformVal = DefaultFloat | DefaultVec2 | DefaultVec3 | DefaultVec4;
 type RawUniformVal = RawFloat | RawVec2 | RawVec3 | RawVec4;
 type NamedUniformVal = NamedFloat | NamedVec2 | NamedVec3 | NamedVec4;
 
@@ -28,6 +33,10 @@ export interface Source {
 
 interface UniformValMap {
   [name: string]: { val: RawUniformVal; changed: boolean };
+}
+
+interface DefaultNameMap {
+  [name: string]: string;
 }
 
 interface Needs {
@@ -47,22 +56,42 @@ export abstract class Effect {
   fShaderSource: string;
   uniforms: UniformValMap = {};
   externalFuncs: string[] = [];
+  defaultNameMap: DefaultNameMap = {};
 
-  constructor(source: Source) {
+  constructor(source: Source, defaultNames: string[]) {
     let sourceString = "";
     if (source.sections.length - source.values.length !== 1) {
       throw new Error("wrong lengths for source and values");
     }
+    if (source.values.length !== defaultNames.length) {
+      throw new Error(
+        "default names list length doesn't match values list length"
+      );
+    }
     // put all of the values between all of the source sections
     for (let i = 0; i < source.values.length; i++) {
       sourceString +=
-        source.sections[i] + this.processGLSLVal(source.values[i]);
+        source.sections[i] +
+        this.processGLSLVal(source.values[i], defaultNames[i]);
     }
     sourceString += source.sections[source.sections.length - 1];
     this.fShaderSource = sourceString;
   }
 
   setUniform(name: string, newVal: RawUniformVal) {
+    /*
+    const mapping = this.defaultNameMap[name];
+    if (mapping === undefined) {
+      console.log(this.defaultNameMap);
+      //console.warn("no mapping for name" + name);
+      return;
+    }
+    */
+    //const oldVal = this.uniforms[name]?.val;
+    // if name does not exist, try mapping default name to new name
+    if (this.uniforms[name]?.val === undefined) {
+      name = this.defaultNameMap[name];
+    }
     const oldVal = this.uniforms[name]?.val;
     if (oldVal === undefined) {
       console.warn("tried to set uniform " + name + " which doesn't exist");
@@ -78,19 +107,28 @@ export abstract class Effect {
     this.uniforms[name].changed = true;
   }
 
-  processGLSLVal(val: UniformVal): string {
+  processGLSLVal(
+    val: UniformVal | DefaultUniformVal,
+    defaultName: string
+  ): string {
+    // transform `DefaultUniformVal` to `NamedUniformVal`
+    if (typeof val !== "number" && val.length === 1) {
+      const namedVal = [defaultName, val[0]] as NamedUniformVal;
+      val = namedVal;
+    }
     if (typeof val === "number") {
       // this is a float
       val;
       return toGLSLFloatString(val);
     }
-    // TODO rewrite this with the helper functions at bottom of file
     if (typeof val[0] === "string") {
       // this is a named value, so it should be inserted as a uniform
       const namedVal = val as NamedUniformVal;
       const name = namedVal[0];
       const uniformVal = namedVal[1];
       this.uniforms[name] = { val: uniformVal, changed: true };
+      // add the name mapping
+      this.defaultNameMap[defaultName] = name;
       return name;
     }
     // not a named value, so it can be inserted into code directly like a macro
@@ -98,6 +136,8 @@ export abstract class Effect {
     return `vec${uniformVal.length}(${uniformVal
       .map((n) => toGLSLFloatString(n))
       .join(", ")})`;
+
+    // add the mapping of default name to new name
   }
 
   getNeeds(name: "neighborSample" | "centerSample" | "depthBuffer") {

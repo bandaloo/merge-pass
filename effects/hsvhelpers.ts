@@ -22,42 +22,42 @@ function genHSVSource(
 
 export class HueAdd extends Effect {
   constructor(num: Float) {
-    super(genHSVSource("x", "+", num));
+    super(genHSVSource("x", "+", num), ["uHueAdd"]);
     this.externalFuncs = [glslFuncs.hsv2rgb, glslFuncs.rgb2hsv];
   }
 }
 
 export class SaturationAdd extends Effect {
   constructor(num: Float) {
-    super(genHSVSource("y", "+", num));
+    super(genHSVSource("y", "+", num), ["uSatAdd"]);
     this.externalFuncs = [glslFuncs.hsv2rgb, glslFuncs.rgb2hsv];
   }
 }
 
 export class ValueAdd extends Effect {
   constructor(num: Float) {
-    super(genHSVSource("z", "+", num));
+    super(genHSVSource("z", "+", num), ["uValAdd"]);
     this.externalFuncs = [glslFuncs.hsv2rgb, glslFuncs.rgb2hsv];
   }
 }
 
 export class Hue extends Effect {
   constructor(num: Float) {
-    super(genHSVSource("x", "", num));
+    super(genHSVSource("x", "", num), ["uHue"]);
     this.externalFuncs = [glslFuncs.hsv2rgb, glslFuncs.rgb2hsv];
   }
 }
 
 export class Saturation extends Effect {
   constructor(num: Float) {
-    super(genHSVSource("y", "", num));
+    super(genHSVSource("y", "", num), ["uSat"]);
     this.externalFuncs = [glslFuncs.hsv2rgb, glslFuncs.rgb2hsv];
   }
 }
 
 export class Value extends Effect {
   constructor(num: Float) {
-    super(genHSVSource("z", "", num));
+    super(genHSVSource("z", "", num), ["uVal"]);
     this.externalFuncs = [glslFuncs.hsv2rgb, glslFuncs.rgb2hsv];
   }
 }
