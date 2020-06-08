@@ -45,7 +45,6 @@ window.addEventListener("load", () => {
       new EffectLoop([blur2, blur3], {
         num: 4,
         func: (i) => {
-          console.log("test");
           blur2.setUniform("uBlurUp", [0, 8 / 2 ** i]);
           blur3.setUniform("uBlurSide", [8 / 2 ** i, 0]);
         },
@@ -53,7 +52,6 @@ window.addEventListener("load", () => {
       grain,
       brightness,
     ],
-    //[new EffectLoop([blur], { num: 2 })],
     sourceCanvas,
     gl
   );
