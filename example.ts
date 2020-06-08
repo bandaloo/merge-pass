@@ -1,4 +1,4 @@
-import { Merger } from "./mergepass";
+import { Merger, EffectLoop } from "./mergepass";
 import { Brightness } from "./effects/brightness";
 import { Blur } from "./effects/blur";
 import { Grain } from "./effects/grain";
@@ -30,6 +30,8 @@ window.addEventListener("load", () => {
   const brightness = new Brightness(["uBrightness", 0.0]);
   const hsv = new HSV([0, 0.1, 0], [0, 1, 0]);
   const blur = new Blur(["uBlur", [1, 1]]);
+  const blur2 = new Blur([0, 8]);
+  const blur3 = new Blur([8, 0]);
   const grain = new Grain(0.1);
   const hueAdd = new HueAdd(["uHue", 0]);
   const saturationAdd = new SaturationAdd(-0.3);
@@ -38,7 +40,8 @@ window.addEventListener("load", () => {
   const value = new Value(["uValue", 0.5]);
 
   const merger = new Merger(
-    [hueAdd, blur, grain, brightness],
+    [hueAdd, new EffectLoop([blur2, blur3], { num: 2 }), grain, brightness],
+    //[new EffectLoop([blur], { num: 2 })],
     sourceCanvas,
     gl
   );
@@ -61,12 +64,18 @@ window.addEventListener("load", () => {
     hueAdd.setUniform("uHue", t / 9);
 
     // draw insane stripes
+    x.fillStyle = "red";
+    x.fillRect(0, 0, 960, 540);
+    x.fillStyle = "blue";
+    x.fillRect(960 / 4, 540 / 4, 960 / 2, 540 / 2);
+    /*
     const i = ~~(t * 9);
     const j = ~~(i / 44);
     const k = i % 44;
     x.fillStyle = `hsl(${(k & j) * i},40%,${50 + C(t) * 10}%`;
     x.fillRect(k * 24, 0, 24, k + 2);
     x.drawImage(c, 0, k + 2);
+    */
 
     requestAnimationFrame(draw);
   };

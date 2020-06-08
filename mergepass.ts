@@ -13,6 +13,7 @@ interface LoopInfo {
   func?: (arg0: number) => void;
 }
 
+// TODO move to its own file
 export class CodeBuilder {
   private funcs: string[] = [];
   private calls: string[] = [];
@@ -32,10 +33,11 @@ export class CodeBuilder {
     this.addEffectLoop(effectLoop);
   }
 
-  private addEffectLoop(effectLoop: EffectLoop) {
-    const needsLoop = effectLoop.repeat.num > 1;
+  private addEffectLoop(effectLoop: EffectLoop, topLevel = true) {
+    const needsLoop = !topLevel && effectLoop.repeat.num > 1;
     if (needsLoop) {
-      const forStart = `for (int i${this.counter} = 0; i < ${effectLoop.repeat.num}; i++) {`;
+      const iName = "i" + this.counter;
+      const forStart = `for (int ${iName} = 0; ${iName} < ${effectLoop.repeat.num}; ${iName}++) {`;
       this.calls.push(forStart);
     }
     for (const e of effectLoop.effects) {
@@ -58,7 +60,7 @@ export class CodeBuilder {
           this.uniformDeclarations.push(`uniform mediump ${typeName} ${name};`);
         }
       } else {
-        this.addEffectLoop(e);
+        this.addEffectLoop(e, false);
       }
     }
     if (needsLoop) {
@@ -221,22 +223,23 @@ class WebGLProgramLoop {
     // we also obviously have to use the program
     for (let i = 0; i < this.repeat.num; i++) {
       if (this.program instanceof WebGLProgram) {
+        gl.useProgram(this.program);
         // effects list is populated
         if (i === 0) {
           for (const effect of this.effects) {
             effect.applyUniforms(gl, uniformLocs);
           }
         }
-        gl.useProgram(this.program);
         /** to see if we are on last element */
         if (i === this.repeat.num - 1 && this.last) {
           // we are on the final pass of the final loop, so draw screen by
           // setting to the default framebuffer
+          //console.log("we are on the last");
           // TODO this is redundant
-          console.log("we are on the last");
           gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         } else {
-          console.log("intermediate step");
+          //console.log("intermediate step");
+          //console.log(this.program);
           // we have to bounce between two textures
           gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
           // use the framebuffer to write to front texture
@@ -253,6 +256,7 @@ class WebGLProgramLoop {
           gl.bindTexture(gl.TEXTURE_2D, tex.back);
 
           // swap the textures
+          //console.log("swapping textures");
           [tex.back, tex.front] = [tex.front, tex.back];
           gl.drawArrays(gl.TRIANGLES, 0, 6);
         }
@@ -325,7 +329,7 @@ export class Merger {
   private options: MergerOptions | undefined;
 
   constructor(
-    effects: Effect[],
+    effects: (Effect | EffectLoop)[],
     source: TexImageSource,
     gl: WebGL2RenderingContext,
     options?: MergerOptions
@@ -383,6 +387,8 @@ export class Merger {
 
     // find the final program
     let atBottom = false;
+
+    console.log(this.programLoop);
     let currProgramLoop = this.programLoop;
     while (!atBottom) {
       if (currProgramLoop.program instanceof WebGLProgram) {
@@ -393,11 +399,9 @@ export class Merger {
       } else {
         // set the current program loop to the last in the list
         currProgramLoop =
-          currProgramLoop.program[currProgramLoop.program.length];
+          currProgramLoop.program[currProgramLoop.program.length - 1];
       }
     }
-
-    console.log(this.programLoop);
   }
 
   private makeTexture() {
@@ -623,6 +627,8 @@ export class Merger {
 
   draw() {
     this.sendTexture(this.source);
+    // swap textures before beginning draw
+    [this.tex.back, this.tex.front] = [this.tex.front, this.tex.back];
     this.programLoop.draw(
       this.gl,
       this.tex,
