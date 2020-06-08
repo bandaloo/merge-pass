@@ -30,8 +30,8 @@ window.addEventListener("load", () => {
   const brightness = new Brightness(["uBrightness", 0.0]);
   const hsv = new HSV([0, 0.1, 0], [0, 1, 0]);
   const blur = new Blur(["uBlur", [1, 1]]);
-  const blur2 = new Blur([0, 8]);
-  const blur3 = new Blur([8, 0]);
+  const blur2 = new Blur(["uBlurUp", [0, 8]]);
+  const blur3 = new Blur(["uBlurSide", [8, 0]]);
   const grain = new Grain(0.1);
   const hueAdd = new HueAdd(["uHue", 0]);
   const saturationAdd = new SaturationAdd(-0.3);
@@ -40,7 +40,19 @@ window.addEventListener("load", () => {
   const value = new Value(["uValue", 0.5]);
 
   const merger = new Merger(
-    [hueAdd, new EffectLoop([blur2, blur3], { num: 2 }), grain, brightness],
+    [
+      hueAdd,
+      new EffectLoop([blur2, blur3], {
+        num: 4,
+        func: (i) => {
+          console.log("test");
+          blur2.setUniform("uBlurUp", [0, 8 / 2 ** i]);
+          blur3.setUniform("uBlurSide", [8 / 2 ** i, 0]);
+        },
+      }),
+      grain,
+      brightness,
+    ],
     //[new EffectLoop([blur], { num: 2 })],
     sourceCanvas,
     gl

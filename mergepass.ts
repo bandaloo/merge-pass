@@ -291,6 +291,7 @@ class WebGLProgramLoop {
   ) {
     for (let i = 0; i < this.repeat.num; i++) {
       if (this.program instanceof WebGLProgram) {
+        // TODO move this out of loop
         gl.useProgram(this.program);
         // effects list is populated
         if (i === 0) {
@@ -329,10 +330,14 @@ class WebGLProgramLoop {
           gl.drawArrays(gl.TRIANGLES, 0, 6);
         }
         // go back to the default framebuffer object
+        // TODO can we remove this?
         gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         // use our last program as the draw program
         gl.drawArrays(gl.TRIANGLES, 0, 6);
       } else {
+        if (this.repeat.func !== undefined) {
+          this.repeat.func(i);
+        }
         for (const p of this.program) {
           p.draw(gl, tex, framebuffer, uniformLocs);
         }
