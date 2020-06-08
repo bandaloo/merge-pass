@@ -159,6 +159,50 @@ export class EffectLoop {
     return bools.reduce((acc: boolean, curr: boolean) => acc || curr);
   }
 
+  // TODO test (maybe rewrite) this
+  getSampleNum(mult = 1) {
+    mult *= this.repeat.num;
+    let acc = 0;
+    for (const e of this.effects) {
+      acc += e.getSampleNum(mult);
+    }
+    return acc;
+  }
+
+  /** places effects into loops broken up by sampling effects */
+  regroup() {
+    let sampleCount = 0;
+    /** number of samples in all previous */
+    let prevSampleCount = 0;
+    let prevEffects: EffectElement[] = [];
+    const regroupedEffects: EffectElement[] = [];
+    const breakOff = () => {
+      if (prevEffects.length > 0) {
+        // break off all previous effects into their own loop
+        if (prevEffects.length === 1) {
+          // this is to prevent wrapping in another effect loop
+          regroupedEffects.push(prevEffects[0]);
+        } else {
+          regroupedEffects.push(new EffectLoop(prevEffects, { num: 1 }));
+        }
+        sampleCount -= prevSampleCount;
+        prevEffects = [];
+      }
+    };
+    for (const e of this.effects) {
+      const sampleNum = e.getSampleNum();
+      prevSampleCount = sampleCount;
+      sampleCount += sampleNum;
+      console.log(sampleCount);
+      if (sampleCount > 1) breakOff();
+      prevEffects.push(e);
+    }
+    // push on all the straggling effects after the grouping is done
+    breakOff();
+    return regroupedEffects;
+  }
+
+  /*
   internalLoopNeedsSample() {
     const bools: boolean[] = this.effects.map(
       (e) =>
@@ -168,6 +212,7 @@ export class EffectLoop {
     );
     return bools.reduce((acc: boolean, curr: boolean) => acc || curr);
   }
+  */
 
   /** recursive descent parser for turning effects into programs */
   genPrograms(
@@ -175,12 +220,37 @@ export class EffectLoop {
     vShader: WebGLShader,
     uniformLocs: UniformLocs
   ): WebGLProgramLoop {
-    // TODO: what we REALLY want to check is if any internal loops need a
-    // neighbor sample
+    if (this.getSampleNum() / this.repeat.num <= 1) {
+      // if this group only samples neighbors at most once, create program
+      console.log(this);
+      console.log("building!");
+      const codeBuilder = new CodeBuilder(this);
+      return codeBuilder.compileProgram(gl, vShader, uniformLocs);
+    }
+    // otherwise, regroup and try again on regrouped loops
+    // TODO should it be getSampleNum(1)?
+    //console.log(this.getSampleNum());
+    //console.log(this.effects);
+    this.effects = this.regroup();
+    console.log("regroup");
+    console.log(this.effects);
+    return new WebGLProgramLoop(
+      this.effects.map((e) => e.genPrograms(gl, vShader, uniformLocs)),
+      this.repeat
+    );
+    /*
+    for (const e of this.effects) {
+      if (e.getSampleNum() <= 1) {
+        // if this group only samples neighbors at most once, create program
+        const codeBuilder = new CodeBuilder(this);
+        codeBuilder.compileProgram(gl, vShader, uniformLocs);
+      }
+    }
+    */
+    /*
     if (!this.internalLoopNeedsSample()) {
       // if this loop does not need to sample neighbors, create program
       const codeBuilder = new CodeBuilder(this);
-      // TODO come back to this
       return codeBuilder.compileProgram(gl, vShader, uniformLocs);
     } else {
       // return a loop of all effect element program elements
@@ -191,6 +261,7 @@ export class EffectLoop {
       );
       // TODO revisit this (don't want to have to pass in [])
     }
+    */
   }
 }
 
@@ -200,13 +271,12 @@ class WebGLProgramLoop {
   program: WebGLProgramElement;
   repeat: LoopInfo;
   effects: Effect[];
-  // TODO set the last program loop before trying to draw
   last = false;
 
   constructor(
     program: WebGLProgramElement,
     repeat: LoopInfo,
-    effects: Effect[]
+    effects: Effect[] = []
   ) {
     this.program = program;
     this.repeat = repeat;
@@ -219,8 +289,6 @@ class WebGLProgramLoop {
     framebuffer: WebGLFramebuffer,
     uniformLocs: UniformLocs
   ) {
-    // TODO there obviously needs to be a recursive draw here somewhere
-    // we also obviously have to use the program
     for (let i = 0; i < this.repeat.num; i++) {
       if (this.program instanceof WebGLProgram) {
         gl.useProgram(this.program);
@@ -394,7 +462,6 @@ export class Merger {
       if (currProgramLoop.program instanceof WebGLProgram) {
         // we traveled right and hit a program, so it must be the last
         currProgramLoop.last = true;
-        console.log(currProgramLoop);
         atBottom = true;
       } else {
         // set the current program loop to the last in the list

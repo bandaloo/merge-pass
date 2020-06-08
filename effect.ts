@@ -110,11 +110,16 @@ export abstract class Effect {
     return {};
   }
 
+  getSampleNum(mult = 1) {
+    return this.needs.neighborSample ? mult : 0;
+  }
+
   genPrograms(
     gl: WebGL2RenderingContext,
     vShader: WebGLShader,
     uniformLocs: UniformLocs
   ): WebGLProgramElement {
+    console.log("gen programs in effect");
     return new EffectLoop([this], { num: this.repeatNum }).genPrograms(
       gl,
       vShader,

@@ -46,6 +46,12 @@ window.addEventListener("load", () => {
     gl
   );
 
+  console.log(
+    new EffectLoop([blur2, new EffectLoop([blur3], { num: 2 })], {
+      num: 2,
+    }).getSampleNum()
+  );
+
   // dwitter sim
   const C = Math.cos;
   const S = Math.sin;
