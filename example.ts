@@ -40,6 +40,7 @@ window.addEventListener("load", () => {
   const saturation = new Saturation(0.5);
   const value = new Value(["uValue", 0.5]);
 
+  /*
   const merger = new Merger(
     [
       new EffectLoop([blur2, blur3], {
@@ -49,14 +50,11 @@ window.addEventListener("load", () => {
     sourceCanvas,
     gl
   );
-
-  /*
-  const merger = new Merger(
-    [hueAdd, grain, new PowerBlur(16)],
-    sourceCanvas,
-    gl
-  );
   */
+
+  const powerBlur = new PowerBlur(16);
+
+  const merger = new Merger([hueAdd, powerBlur, grain], sourceCanvas, gl);
 
   // dwitter sim
   const C = Math.cos;
@@ -70,21 +68,23 @@ window.addEventListener("load", () => {
   const draw = (time: number) => {
     const t = steps / 60;
     steps++;
-    //brightness.setUniform("uBrightness", 0.3 * Math.cos(time / 2000));
+    brightness.setUniform("uBrightness", 0.3 * Math.cos(time / 2000));
     //blur.setUniform("uBlur", [Math.cos(time / 1000) ** 8, 0]);
-    //hueAdd.setUniform("uHue", t / 9);
+    hueAdd.setUniform("uHue", t / 9);
+    powerBlur.setSize(64 * Math.cos(time / 1000) ** 8);
 
     // draw insane stripes
-    /*
     const i = ~~(t * 9);
     const j = ~~(i / 44);
     const k = i % 44;
     x.fillStyle = `hsl(${(k & j) * i},40%,${50 + C(t) * 10}%`;
     x.fillRect(k * 24, 0, 24, k + 2);
     x.drawImage(c, 0, k + 2);
-    */
+    merger.draw();
     requestAnimationFrame(draw);
   };
+
+  /*
   x.fillStyle = "red";
   x.fillRect(0, 0, 960, 540);
   x.fillStyle = "blue";
@@ -109,6 +109,7 @@ window.addEventListener("load", () => {
     console.log("draw");
     merger.draw();
   }, 4000);
+  */
 
   draw(0);
 });

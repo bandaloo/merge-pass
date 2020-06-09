@@ -254,10 +254,8 @@ class WebGLProgramLoop {
           // TODO need to send `this.last` all the way down
           // we are on the final pass of the final loop, so draw screen by
           // setting to the default framebuffer
-          console.log("we are on the last");
           gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         } else {
-          console.log("intermediate step");
           // we have to bounce between two textures
           gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
           // use the framebuffer to write to front texture
