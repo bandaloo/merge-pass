@@ -1,4 +1,5 @@
-import { EffectLoop, UniformLocs, WebGLProgramElement } from "./mergepass";
+import { EffectLoop, UniformLocs } from "./mergepass";
+import { WebGLProgramElement } from "./webglprogramloop";
 
 export type RawFloat = number;
 type NamedFloat = [string, number];

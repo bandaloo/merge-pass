@@ -1,11 +1,20 @@
 import { Effect, uniformGLSLTypeStr } from "./effect";
-import {
-  EffectLoop,
-  UniformLocs,
-  BOILERPLATE,
-  FRAG_SET,
-  WebGLProgramLoop,
-} from "./mergepass";
+import { EffectLoop, UniformLocs } from "./mergepass";
+import { WebGLProgramLoop } from "./webglprogramloop";
+
+// the line below, which gets placed as the first line of `main`, enables allows
+// multiple shaders to be chained together, which works for shaders that don't
+// need to use `uSampler` for anything other than the current pixel
+const FRAG_SET = `  gl_FragColor = texture2D(uSampler, gl_FragCoord.xy / uResolution);\n`;
+
+export const BOILERPLATE = `#ifdef GL_ES
+precision mediump float;
+#endif
+
+uniform sampler2D uSampler;
+uniform mediump float uTime;
+uniform mediump vec2 uResolution;\n`;
+
 export class CodeBuilder {
   private funcs: string[] = [];
   private calls: string[] = [];
