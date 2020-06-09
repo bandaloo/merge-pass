@@ -53,8 +53,6 @@ export abstract class Effect {
     neighborSample: false,
     centerSample: true,
   };
-  // TODO get rid of this since we have loops now
-  repeatNum: number = 1;
   fShaderSource: string;
   uniforms: UniformValMap = {};
   externalFuncs: string[] = [];
@@ -111,9 +109,11 @@ export abstract class Effect {
     defaultName: string
   ): string {
     // transform `DefaultUniformVal` to `NamedUniformVal`
+    let defaulted = false;
     if (typeof val !== "number" && val.length === 1) {
       const namedVal = [defaultName, val[0]] as NamedUniformVal;
       val = namedVal;
+      defaulted = true;
     }
     if (typeof val === "number") {
       // this is a float
@@ -124,6 +124,16 @@ export abstract class Effect {
       // this is a named value, so it should be inserted as a uniform
       const namedVal = val as NamedUniformVal;
       const name = namedVal[0];
+      if (!defaulted && name.includes("_id_")) {
+        throw new Error("cannot set a named uniform that has _id_ in it");
+      }
+      if (/^i[0-9]+$/g.test(name)) {
+        throw new Error(
+          "cannot name a uniform that matches regex ^i[0-9]+$" +
+            "since that's reserved for name of index" +
+            "in for loops of generated code"
+        );
+      }
       const uniformVal = namedVal[1];
       this.uniforms[name] = { val: uniformVal, changed: true };
       // add the name mapping
