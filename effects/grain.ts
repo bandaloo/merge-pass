@@ -1,4 +1,4 @@
-import { Effect, tag, Float } from "../effect";
+import { Effect, tag, Float, RawFloat } from "../effect";
 import { glslFuncs } from "..";
 
 export class Grain extends Effect {
@@ -10,5 +10,9 @@ export class Grain extends Effect {
       ["uGrain"]
     );
     this.externalFuncs = [glslFuncs.random];
+  }
+
+  setGrain(grain: RawFloat) {
+    this.setUniform("uGrain" + this.idStr, grain);
   }
 }

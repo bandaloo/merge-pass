@@ -1,4 +1,4 @@
-import { Effect, tag, Float } from "../effect";
+import { Effect, tag, Float, RawFloat } from "../effect";
 
 export class Contrast extends Effect {
   constructor(val: Float) {
@@ -13,5 +13,9 @@ export class Contrast extends Effect {
 }`,
       ["uContrast"]
     );
+  }
+
+  setContrast(contrast: RawFloat) {
+    this.setUniform("uContrast" + this.idStr, contrast);
   }
 }

@@ -20,8 +20,6 @@ export class CodeBuilder {
 
   constructor(effectLoop: EffectLoop) {
     this.baseLoop = effectLoop;
-    //this.includeCenterSample = effectLoop.getNeeds("centerSample");
-    //this.repeatNum = effectLoop.repeat.num;
     this.addEffectLoop(effectLoop, 1);
   }
 
@@ -33,7 +31,10 @@ export class CodeBuilder {
     const needsLoop = !topLevel && effectLoop.repeat.num > 1;
     if (needsLoop) {
       const iName = "i" + this.counter;
-      const forStart = `for (int ${iName} = 0; ${iName} < ${effectLoop.repeat.num}; ${iName}++) {`;
+      indentLevel++;
+      const forStart =
+        "  ".repeat(indentLevel - 1) +
+        `for (int ${iName} = 0; ${iName} < ${effectLoop.repeat.num}; ${iName}++) {`;
       this.calls.push(forStart);
     }
     for (const e of effectLoop.effects) {
@@ -56,11 +57,11 @@ export class CodeBuilder {
           this.uniformDeclarations.push(`uniform mediump ${typeName} ${name};`);
         }
       } else {
-        this.addEffectLoop(e, indentLevel + 1, false);
+        this.addEffectLoop(e, indentLevel, false);
       }
     }
     if (needsLoop) {
-      this.calls.push("}");
+      this.calls.push("  ".repeat(indentLevel - 1) + "}");
     }
   }
 
@@ -241,7 +242,7 @@ class WebGLProgramLoop {
     tex: { front: WebGLTexture; back: WebGLTexture },
     framebuffer: WebGLFramebuffer,
     uniformLocs: UniformLocs,
-    last = false
+    last: boolean
   ) {
     for (let i = 0; i < this.repeat.num; i++) {
       const newLast = i === this.repeat.num - 1;
@@ -315,7 +316,7 @@ uniform mediump vec2 uResolution;\n`;
 // the line below, which gets placed as the first line of `main`, enables allows
 // multiple shaders to be chained together, which works for shaders that don't
 // need to use `uSampler` for anything other than the current pixel
-const FRAG_SET = `  gl_FragColor = texture2D(uSampler, gl_FragCoord.xy / uResolution);`;
+const FRAG_SET = `  gl_FragColor = texture2D(uSampler, gl_FragCoord.xy / uResolution);\n`;
 
 const V_SOURCE = `attribute vec2 aPosition;
 void main() {
@@ -414,7 +415,7 @@ export class Merger {
           currProgramLoop.program[currProgramLoop.program.length - 1];
       }
     }
-    console.log("program loop");
+    // TODO get rid of this (or make it only log when verbose)
     console.log(this.programLoop);
   }
 
@@ -481,7 +482,8 @@ export class Merger {
       this.gl,
       this.tex,
       this.framebuffer,
-      this.uniformLocs
+      this.uniformLocs,
+      this.programLoop.last
     );
   }
 }

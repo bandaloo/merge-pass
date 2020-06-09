@@ -2,7 +2,6 @@ import { EffectLoop } from "../mergepass";
 import { Blur } from "./blur";
 
 export class PowerBlur extends EffectLoop {
-  // TODO would this be a useful helper function?
   static baseLog = (x: number, y: number) => Math.log(y) / Math.log(x);
 
   private size: number;
@@ -11,9 +10,6 @@ export class PowerBlur extends EffectLoop {
     const blurSide = new Blur([[size, 0]]);
     const blurUp = new Blur([[0, size]]);
     const reps = Math.ceil(PowerBlur.baseLog(2, size));
-    console.log("info");
-    console.log(reps);
-    console.log(size);
     super([blurSide, blurUp], {
       num: reps + 1,
     });

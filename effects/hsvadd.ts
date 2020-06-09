@@ -1,6 +1,5 @@
 import { Vec3 } from "../effect";
 import { HSV } from "./hsv";
-import {} from "../glslfunctions";
 
 export class HSVAdd extends HSV {
   constructor(vec: Vec3) {

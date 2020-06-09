@@ -31,8 +31,8 @@ window.addEventListener("load", () => {
   const brightness = new Brightness(["uBrightness", 0.0]);
   const hsv = new HSV([0, 0.1, 0], [0, 1, 0]);
   const blur = new Blur(["uBlur", [1, 1]]);
-  const blur2 = new Blur([[0, 8]]);
-  const blur3 = new Blur(["uBlurSide", [8, 0]]);
+  const blur2 = new Blur([[0, 0]]);
+  const blur3 = new Blur(["uBlurSide", [0, 8]]);
   const grain = new Grain(0.1);
   const hueAdd = new HueAdd(["uHue", 0]);
   const saturationAdd = new SaturationAdd(-0.3);
@@ -40,21 +40,20 @@ window.addEventListener("load", () => {
   const saturation = new Saturation(0.5);
   const value = new Value(["uValue", 0.5]);
 
-  /*
   const merger = new Merger(
     [
-      new EffectLoop([blur2, blur3], {
+      new EffectLoop([hueAdd, new EffectLoop([grain], { num: 2 })], {
         num: 1,
       }),
     ],
     sourceCanvas,
     gl
   );
-  */
+  //const merger = new Merger([hue, grain], sourceCanvas, gl);
 
   const powerBlur = new PowerBlur(16);
 
-  const merger = new Merger([hueAdd, powerBlur, grain], sourceCanvas, gl);
+  //const merger = new Merger([hueAdd, powerBlur, grain], sourceCanvas, gl);
 
   // dwitter sim
   const C = Math.cos;
@@ -94,4 +93,5 @@ window.addEventListener("load", () => {
 
   draw(0);
 });
+
 glCanvas.addEventListener("click", () => glCanvas.requestFullscreen());
