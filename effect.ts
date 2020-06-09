@@ -135,18 +135,14 @@ export abstract class Effect {
     return `vec${uniformVal.length}(${uniformVal
       .map((n) => toGLSLFloatString(n))
       .join(", ")})`;
-
-    // add the mapping of default name to new name
   }
 
   getNeeds(name: "neighborSample" | "centerSample" | "depthBuffer") {
     return this.needs[name];
   }
 
-  // TODO get rid of this
   repeat(num: number) {
-    this.repeatNum = num;
-    return {};
+    return new EffectLoop([this], { num: num });
   }
 
   getSampleNum(mult = 1) {
@@ -159,7 +155,7 @@ export abstract class Effect {
     uniformLocs: UniformLocs
   ): WebGLProgramElement {
     console.log("gen programs in effect");
-    return new EffectLoop([this], { num: this.repeatNum }).genPrograms(
+    return new EffectLoop([this], { num: 1 }).genPrograms(
       gl,
       vShader,
       uniformLocs
