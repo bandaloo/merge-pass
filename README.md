@@ -7,14 +7,15 @@ anything big yet. However, if you want to try it out, you are more than
 welcome. Also, if you have any ideas for post-processing effects you would
 like to see included in the library, please let me know!**
 
-This library allows you to easily run a post-processing effect on an image or
-canvas. It does so by generating shaders to apply the effect in as few passes
-as possible.
+This library allows you to easily run a combination of post-processing
+effects on an image or canvas. It does so by generating shaders to apply the
+effect in as few passes as possible.
 
 ## Code Example
 
 ```javascript
 import * as MP from "@bandaloo/merge-pass";
+import { EffectLoop } from "@bandaloo/merge-pass";
 
 // for simplicity, we imported everything as `MP` but you can also easily import
 // only what you need
@@ -46,47 +47,64 @@ if (source === null) {
 
 // let's create our first effect
 
-const brightness = new MP.Brightness(["uBrightness", 0.0]);
-
-// we could have done `new MP.Brightness(0.0)` but but we wrapped it in another
-// list to make that value a uniform and give it a name. the package comes with
-// type information for these tuples. basically, a `Float` is either just a
-// number or `[string, number]` and the same goes with vectors; a `Vec2` is
-// either `[number, number]` or `[string, [number, number]]`. you would omit the
-// name if you didn't need to change that value dynamically; the generated code
-// will also be also little more efficient
-
-// the blur will pingpong between two textures 3 times for a stronger effect
-
-const blur = new MP.Blur(["uBlur", [1, 1]]).repeat(3);
-
-// we don't need to adjust the grain level dynamically so we pass in an unnamed value
-
 const grain = new MP.Grain(0.1);
 
-// we attach a uniform for the hue effect so we can rotate it over time
+// by default, we will not be able to change the grain level in the above
+// effect; if we want the value to be a uniform so we can change it, we could
+// wrap it in a list and include a name like this:
 
 const hueAdd = new MP.HueAdd(["uHue", 0]);
 
-// create the merger with your source canvas
+// we can leave off the name and still make the value mutable. in the line
+// below, we could have done `MP.Blur(["uBlur", [1, 0]])` but we did it this
+// way instead:
 
-const merger = new MP.Merger(
-  [blur, hueAdd, grain, brightness],
-  sourceCanvas,
-  gl
-);
+const horizontalBlur = new MP.Blur([[1, 0]]);
 
-// this particular merger will have compiled two webgl program. the blur pass is
-// in its own program since it needs to sample its neighbors on multiple passes.
-// the last three effects can be smashed together into a single shader (look at
-// the console for the generated code)
+// `repeat` returns an `EffectLoop` that repeats the effect the given amount of times
+
+const horizontalBlurLoop = horizontalBlur.repeat(2);
+
+// let's also create a vertical blur and a loop that repeats it twice
+
+const verticalBlur = new MP.Blur([[0, 1]]);
+
+const verticalBlurLoop = verticalBlur.repeat(2);
+
+// let's put both of these blurs into a loop that repeats twice
+
+const totalBlurLoop = new EffectLoop([horizontalBlurLoop, verticalBlurLoop], {
+  num: 2,
+  func: (pass) => {
+    // `func` is optional, but it lets you pass in a callback that does
+    // something (like change a uniform) on each loop. this particular function
+    // doesn't do anything. `pass` increments from zero on every loop. this is
+    // useful internally; it's okay if you never find a use for this as a user
+  },
+});
+
+// create the merger with your source canvas and target rendering context
+
+const merger = new MP.Merger([totalBlurLoop, hueAdd, grain], sourceCanvas, gl, {
+  minFilterMode: "linear", // could also be "nearest"
+  maxFilterMode: "linear", // could also be "nearest"
+  edgeMode: "clamp", // cloud also be "wrap"
+});
+
+// in this example, the merger will compile the `hueAdd` effect and the `grain`
+// effect into a single program, since they can be done in one pass by a single
+// shader
+
+// you can leave off the options object at the end. in this example, the options
+// object being passed in is actually just the default values, so it would be
+// the same if you simply got rid of the last argument
 
 // instead of a canvas for the source, you can pass anything of type
 // `TexImageSource`, which includes: `ImageBitmap | ImageData | HTMLImageElement
 // | HTMLCanvasElement | HTMLVideoElement | OffscreenCanvas` so it is actually
 // pretty flexible
 
-// let's draw something interesting and kick off a draw loop
+// let's draw something interesting and kick of a draw loop
 
 let steps = 0;
 
@@ -99,9 +117,21 @@ const draw = (time) => {
   // these are only sent down when the program is in use and when the values
   // have changed
 
-  brightness.setUniform("uBrightness", 0.3 * Math.cos(time / 2000));
-  blur.setUniform("uBlur", [Math.cos(time / 1000) ** 8, 0]);
-  hueAdd.setUniform("uHue", t / 9);
+  const blurSize = Math.cos(time / 1000) ** 8;
+
+  hueAdd.setUniform("uHue", t / 9); // we can set a uniform by name
+
+  // we can also set uniforms with member functions on the effect, which allows
+  // you to set mutable values we didn't give a specfic name
+
+  horizontalBlur.setDirection([blurSize, 0]);
+  verticalBlur.setDirection([0, blurSize]);
+
+  // reminder that we can't do `grain.setGrain(0.2)` because we made the grain
+  // amount immutable when we created it; our merger compiled the shader with
+  // the grain level as a hard-coded as 0.1, and not as a uniform. if we want to
+  // change the grain level dynamically, we could have done `new Grain[[0.1]]`
+  // or `new Grain["uGrain", [0.1]]`
 
   // draw crazy stripes (adapted from my dweet https://www.dwitter.net/d/18968)
 
@@ -115,5 +145,8 @@ const draw = (time) => {
   requestAnimationFrame(draw);
 };
 
-draw(0);
+// run the draw function when everything is loaded
+window.onload = () => {
+  draw(0);
+};
 ```
