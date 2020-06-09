@@ -84,32 +84,13 @@ window.addEventListener("load", () => {
     requestAnimationFrame(draw);
   };
 
-  /*
-  x.fillStyle = "red";
+  x.fillStyle = "black";
   x.fillRect(0, 0, 960, 540);
-  x.fillStyle = "blue";
-  x.fillRect(960 / 4, 540 / 4, 960 / 2, 540 / 2);
-
-  setTimeout(() => {
-    console.log("draw");
-    merger.draw();
-  }, 1000);
-
-  setTimeout(() => {
-    console.log("draw");
-    merger.draw();
-  }, 2000);
-
-  setTimeout(() => {
-    console.log("draw");
-    merger.draw();
-  }, 3000);
-
-  setTimeout(() => {
-    console.log("draw");
-    merger.draw();
-  }, 4000);
-  */
+  x.font = "99px monospace";
+  x.fillStyle = "white";
+  x.textAlign = "center";
+  x.textBaseline = "middle";
+  x.fillText("hello world", 960 / 2, 540 / 4);
 
   draw(0);
 });

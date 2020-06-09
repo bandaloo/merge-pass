@@ -22,10 +22,14 @@ export class CodeBuilder {
     this.baseLoop = effectLoop;
     //this.includeCenterSample = effectLoop.getNeeds("centerSample");
     //this.repeatNum = effectLoop.repeat.num;
-    this.addEffectLoop(effectLoop);
+    this.addEffectLoop(effectLoop, 1);
   }
 
-  private addEffectLoop(effectLoop: EffectLoop, topLevel = true) {
+  private addEffectLoop(
+    effectLoop: EffectLoop,
+    indentLevel: number,
+    topLevel = true
+  ) {
     const needsLoop = !topLevel && effectLoop.repeat.num > 1;
     if (needsLoop) {
       const iName = "i" + this.counter;
@@ -37,7 +41,7 @@ export class CodeBuilder {
         this.effects.push(e);
         const name = `effect${this.counter}()`;
         const func = e.fShaderSource.replace(/main\s*\(\)/, name);
-        this.calls.push(name + ";");
+        this.calls.push("  ".repeat(indentLevel) + name + ";");
         this.counter++;
         this.funcs.push(func);
 
@@ -52,7 +56,7 @@ export class CodeBuilder {
           this.uniformDeclarations.push(`uniform mediump ${typeName} ${name};`);
         }
       } else {
-        this.addEffectLoop(e, false);
+        this.addEffectLoop(e, indentLevel + 1, false);
       }
     }
     if (needsLoop) {
@@ -77,7 +81,7 @@ export class CodeBuilder {
       this.externalFuncs.join("") +
       "\n" +
       this.funcs.join("\n") +
-      "\nvoid main () {" +
+      "\nvoid main () {\n" +
       (this.baseLoop.getNeeds("centerSample") ? FRAG_SET : "") +
       this.calls.join("\n") +
       "\n}";
@@ -311,7 +315,7 @@ uniform mediump vec2 uResolution;\n`;
 // the line below, which gets placed as the first line of `main`, enables allows
 // multiple shaders to be chained together, which works for shaders that don't
 // need to use `uSampler` for anything other than the current pixel
-const FRAG_SET = `\n  gl_FragColor = texture2D(uSampler, gl_FragCoord.xy / uResolution);`;
+const FRAG_SET = `  gl_FragColor = texture2D(uSampler, gl_FragCoord.xy / uResolution);`;
 
 const V_SOURCE = `attribute vec2 aPosition;
 void main() {
