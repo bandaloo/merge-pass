@@ -13,6 +13,7 @@ import {
 import { PowerBlur } from "./effects/powerblur";
 import { DotExpr } from "./expressions/dotexpr";
 import { MulExpr } from "./expressions/mulexpr";
+import { LenExpr } from "./expressions/lenexpr";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -43,7 +44,8 @@ window.addEventListener("load", () => {
   const value = new Value(["uValue", 0.5]);
 
   const mul = new MulExpr(0.5, 1);
-  const mulBrightness = new Brightness(mul);
+  const len = new LenExpr([0.1, 0.1]);
+  const mulBrightness = new Brightness(len);
 
   /*
   const merger = new Merger(
@@ -62,7 +64,7 @@ window.addEventListener("load", () => {
 
   // TODO throw a better error when the list is empty
   const merger = new Merger(
-    [hueAdd, powerBlur, grain, mulBrightness],
+    [powerBlur, hueAdd, grain, mulBrightness],
     sourceCanvas,
     gl
   );
