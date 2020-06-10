@@ -11,6 +11,8 @@ import {
   Value,
 } from "./effects/hsvhelpers";
 import { PowerBlur } from "./effects/powerblur";
+import { DotExpr } from "./expressions/dotexpr";
+import { MulExpr } from "./expressions/mulexpr";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -40,6 +42,9 @@ window.addEventListener("load", () => {
   const saturation = new Saturation(0.5);
   const value = new Value(["uValue", 0.5]);
 
+  const mul = new MulExpr(0.5, 1);
+  const mulBrightness = new Brightness(mul);
+
   /*
   const merger = new Merger(
     [
@@ -55,7 +60,12 @@ window.addEventListener("load", () => {
 
   const powerBlur = new PowerBlur(8);
 
-  const merger = new Merger([hueAdd, powerBlur, grain], sourceCanvas, gl);
+  // TODO throw a better error when the list is empty
+  const merger = new Merger(
+    [hueAdd, powerBlur, grain, mulBrightness],
+    sourceCanvas,
+    gl
+  );
 
   // dwitter sim
   const C = Math.cos;

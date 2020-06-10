@@ -18,6 +18,7 @@ uniform mediump vec2 uResolution;\n`;
 export class CodeBuilder {
   private funcs: string[] = [];
   private calls: string[] = [];
+  // TODO make it add all external functions of sub-expressions
   private externalFuncs: string[] = [];
   private uniformDeclarations: string[] = [];
   private counter = 0;

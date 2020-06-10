@@ -1,6 +1,7 @@
 import { EffectLoop } from "../mergepass";
 import { Blur } from "./blur";
 
+/** fast approximate blur good for large blur radius */
 export class PowerBlur extends EffectLoop {
   static baseLog = (x: number, y: number) => Math.log(y) / Math.log(x);
 

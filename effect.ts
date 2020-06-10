@@ -1,30 +1,39 @@
 import { EffectLoop, UniformLocs } from "./mergepass";
 import { WebGLProgramElement } from "./webglprogramloop";
+import { Expr, parse } from "./effects/expression";
 
 export type RawFloat = number;
 type NamedFloat = [string, number];
 type DefaultFloat = [number];
-export type Float = RawFloat | NamedFloat | DefaultFloat;
+export type Float = RawFloat | NamedFloat | DefaultFloat | Expr<Float>;
 
 export type RawVec2 = [number, number];
 type NamedVec2 = [string, RawVec2];
 type DefaultVec2 = [RawVec2];
-export type Vec2 = RawVec2 | NamedVec2 | DefaultVec2;
+export type Vec2 = RawVec2 | NamedVec2 | DefaultVec2 | Expr<Vec2>;
 
 export type RawVec3 = [number, number, number];
 type NamedVec3 = [string, RawVec3];
 type DefaultVec3 = [RawVec3];
-export type Vec3 = RawVec3 | NamedVec3 | DefaultVec3;
+export type Vec3 = RawVec3 | NamedVec3 | DefaultVec3 | Expr<Vec3>;
 
 export type RawVec4 = [number, number, number, number];
 type NamedVec4 = [string, RawVec4];
 type DefaultVec4 = [RawVec4];
-export type Vec4 = RawVec4 | NamedVec4 | DefaultVec4;
+export type Vec4 = RawVec4 | NamedVec4 | DefaultVec4 | Expr<Vec4>;
 
-type DefaultUniformVal = DefaultFloat | DefaultVec2 | DefaultVec3 | DefaultVec4;
-type RawUniformVal = RawFloat | RawVec2 | RawVec3 | RawVec4;
-type NamedUniformVal = NamedFloat | NamedVec2 | NamedVec3 | NamedVec4;
+export type Vec = Vec2 | Vec3 | Vec4;
+export type RawVec = RawVec2 | RawVec3 | RawVec4;
 
+export type DefaultUniformVal =
+  | DefaultFloat
+  | DefaultVec2
+  | DefaultVec3
+  | DefaultVec4;
+export type RawUniformVal = RawFloat | RawVec2 | RawVec3 | RawVec4;
+export type NamedUniformVal = NamedFloat | NamedVec2 | NamedVec3 | NamedVec4;
+
+// TODO expand this to include expressions of specific types
 export type UniformVal = RawUniformVal | NamedUniformVal | DefaultUniformVal;
 
 export interface Source {
@@ -32,11 +41,13 @@ export interface Source {
   values: UniformVal[];
 }
 
-interface UniformValMap {
+// TODO don't really want to expose this
+export interface UniformValMap {
   [name: string]: { val: RawUniformVal; changed: boolean };
 }
 
-interface DefaultNameMap {
+// TODO don't really want to expose this
+export interface DefaultNameMap {
   [name: string]: string;
 }
 
@@ -46,6 +57,7 @@ interface Needs {
   centerSample: boolean;
 }
 
+// TODO should this have `implements EffectLike`?
 export abstract class Effect {
   /** used to give each effect a unique id */
   static count = 0;
@@ -78,6 +90,7 @@ export abstract class Effect {
     for (let i = 0; i < source.values.length; i++) {
       sourceString +=
         source.sections[i] +
+        // TODO more like process GLSL expression, now
         this.processGLSLVal(source.values[i], defaultNames[i] + this.idStr);
     }
     sourceString += source.sections[source.sections.length - 1];
@@ -106,6 +119,8 @@ export abstract class Effect {
     val: UniformVal | DefaultUniformVal,
     defaultName: string
   ): string {
+    return parse(val, defaultName, this);
+    /*
     // transform `DefaultUniformVal` to `NamedUniformVal`
     let defaulted = false;
     if (typeof val !== "number" && val.length === 1) {
@@ -143,6 +158,7 @@ export abstract class Effect {
     return `vec${uniformVal.length}(${uniformVal
       .map((n) => toGLSLFloatString(n))
       .join(", ")})`;
+    */
   }
 
   getNeeds(name: "neighborSample" | "centerSample" | "depthBuffer") {
@@ -200,6 +216,7 @@ export abstract class Effect {
 
 // some helpers
 
+// TODO remove
 function toGLSLFloatString(num: number) {
   let str = "" + num;
   if (!str.includes(".")) str += ".";
@@ -220,6 +237,7 @@ export function tag(
   return { sections: strings.concat([]), values: values };
 }
 
+// TODO move this to codebuilder
 export function uniformGLSLTypeStr(val: RawUniformVal) {
   const num = uniformGLSLTypeNum(val);
   if (num === 1) return "float";
