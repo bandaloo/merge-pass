@@ -27,7 +27,7 @@ if (source === null) {
 }
 
 window.addEventListener("load", () => {
-  // TODO don't need the mediump float probably
+  // TODO check if we need mediump float (it already doesn't work on mobile)
   const brightness = new Brightness(["uBrightness", 0.0]);
   const hsv = new HSV([0, 0.1, 0], [0, 1, 0]);
   const blur = new Blur(["uBlur", [1, 1]]);

@@ -64,7 +64,6 @@ export abstract class Effect {
   constructor(source: Source, defaultNames: string[]) {
     this.id = Effect.count;
     this.idStr = "_id_" + this.id;
-    // TODO check to see if user-defined name includes this
     Effect.count++;
     let sourceString = "";
     if (source.sections.length - source.values.length !== 1) {
@@ -91,7 +90,6 @@ export abstract class Effect {
       name = this.defaultNameMap[name];
     }
     const oldVal = this.uniforms[name]?.val;
-    // TODO should these really be warnings?
     if (oldVal === undefined) {
       throw new Error("tried to set uniform " + name + " which doesn't exist");
     }
@@ -100,7 +98,6 @@ export abstract class Effect {
     if (oldType !== newType) {
       throw new Error("tried to set uniform " + name + " to a new type");
     }
-    // TODO check for trying to name variable of already existing default name
     this.uniforms[name].val = newVal;
     this.uniforms[name].changed = true;
   }

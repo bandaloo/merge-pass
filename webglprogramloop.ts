@@ -28,11 +28,15 @@ export class WebGLProgramLoop {
     uniformLocs: UniformLocs,
     last: boolean
   ) {
+    let used = false;
     for (let i = 0; i < this.repeat.num; i++) {
       const newLast = i === this.repeat.num - 1;
       if (this.program instanceof WebGLProgram) {
         // TODO figure out way to move this from loop
-        gl.useProgram(this.program);
+        if (!used) {
+          gl.useProgram(this.program);
+          used = true;
+        }
         // effects list is populated
         if (i === 0) {
           for (const effect of this.effects) {
@@ -40,7 +44,6 @@ export class WebGLProgramLoop {
           }
         }
         if (newLast && last && this.last) {
-          // TODO need to send `this.last` all the way down
           // we are on the final pass of the final loop, so draw screen by
           // setting to the default framebuffer
           gl.bindFramebuffer(gl.FRAMEBUFFER, null);
