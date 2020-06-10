@@ -24,7 +24,6 @@ export class CodeBuilder {
   /** flat array of effects within loop for attaching uniforms */
   private effects: Effect[] = [];
   private baseLoop: EffectLoop;
-  // TODO indentation level?
   constructor(effectLoop: EffectLoop) {
     this.baseLoop = effectLoop;
     this.addEffectLoop(effectLoop, 1);

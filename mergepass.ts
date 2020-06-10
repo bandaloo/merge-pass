@@ -75,7 +75,6 @@ export class EffectLoop {
       return codeBuilder.compileProgram(gl, vShader, uniformLocs);
     }
     // otherwise, regroup and try again on regrouped loops
-    // TODO should it be getSampleNum(1)?
     this.effects = this.regroup();
     return new WebGLProgramLoop(
       this.effects.map((e) => e.genPrograms(gl, vShader, uniformLocs)),
