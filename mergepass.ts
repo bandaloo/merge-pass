@@ -1,5 +1,6 @@
-import { Effect } from "./effect";
 import { CodeBuilder } from "./codebuilder";
+import { Vec4, Needs } from "./effect";
+import { Expr } from "./effects/expression";
 import { WebGLProgramLoop } from "./webglprogramloop";
 
 export interface LoopInfo {
@@ -7,7 +8,10 @@ export interface LoopInfo {
   func?: (arg0: number) => void;
 }
 
+// TODO have this implement an interface that includes `getSampleNum` and `getNeeds`
+
 export class EffectLoop {
+  // TODO change name of this
   effects: EffectElement[];
   repeat: LoopInfo;
 
@@ -17,7 +21,7 @@ export class EffectLoop {
   }
 
   /** returns true if any sub-effects need neighbor sample down the tree */
-  getNeeds(name: "neighborSample" | "centerSample" | "depthBuffer") {
+  getNeeds(name: keyof Needs) {
     const bools: boolean[] = this.effects.map((e) => e.getNeeds(name));
     return bools.reduce((acc: boolean, curr: boolean) => acc || curr);
   }
@@ -83,7 +87,7 @@ export class EffectLoop {
   }
 }
 
-type EffectElement = Effect | EffectLoop;
+type EffectElement = Expr<Vec4> | EffectLoop;
 
 // TODO we don't really want to export this at the package level
 export interface UniformLocs {
@@ -118,7 +122,7 @@ export class Merger {
   private options: MergerOptions | undefined;
 
   constructor(
-    effects: (Effect | EffectLoop)[],
+    effects: (Expr<Vec4> | EffectLoop)[],
     source: TexImageSource,
     gl: WebGL2RenderingContext,
     options?: MergerOptions

@@ -1,6 +1,4 @@
-import { EffectLoop, UniformLocs } from "./mergepass";
-import { WebGLProgramElement } from "./webglprogramloop";
-import { Expr, parse, BuildInfo } from "./effects/expression";
+import { BuildInfo, Expr, uniformGLSLTypeNum } from "./effects/expression";
 
 export type RawFloat = number;
 type NamedFloat = [string, number];
@@ -33,7 +31,7 @@ export type DefaultUniformVal =
 export type RawUniformVal = RawFloat | RawVec2 | RawVec3 | RawVec4;
 export type NamedUniformVal = NamedFloat | NamedVec2 | NamedVec3 | NamedVec4;
 
-// TODO expand this to include expressions of specific types
+// isn't this encompassed by `FullExpr<UniformVal>`?
 export type UniformVal =
   | RawUniformVal
   | NamedUniformVal
@@ -55,7 +53,7 @@ export interface DefaultNameMap {
   [name: string]: string;
 }
 
-interface Needs {
+export interface Needs {
   depthBuffer: boolean;
   neighborSample: boolean;
   centerSample: boolean;
@@ -78,10 +76,13 @@ export abstract class Effect {
   id: number;
   idStr: string;
   /** gets populated after parse is called; useful for code builder */
+  /*
   bi: BuildInfo = {
     externalFuncs: new Set(),
     uniformTypes: {},
+    exprs: [],
   };
+  */
 
   constructor(source: Source, defaultNames: string[]) {
     this.id = Effect.count;
@@ -93,7 +94,7 @@ export abstract class Effect {
     }
     if (source.values.length !== defaultNames.length) {
       throw new Error(
-        "default names list length doesn't match values list length"
+        "default names list length doesn't match values list length!"
       );
     }
     // put all of the values between all of the source sections
@@ -131,7 +132,8 @@ export abstract class Effect {
     val: UniformVal | DefaultUniformVal,
     defaultName: string
   ): string {
-    return parse(val, defaultName, this, this.bi);
+    //return vparse(val, defaultName, this, this.bi);
+    return "TODO get rid of this (this is a stub)";
     /*
     // transform `DefaultUniformVal` to `NamedUniformVal`
     let defaulted = false;
@@ -173,6 +175,7 @@ export abstract class Effect {
     */
   }
 
+  /*
   getNeeds(name: "neighborSample" | "centerSample" | "depthBuffer") {
     return this.needs[name];
   }
@@ -196,7 +199,10 @@ export abstract class Effect {
       uniformLocs
     );
   }
+  */
 
+  // TODO remove
+  /*
   applyUniforms(gl: WebGL2RenderingContext, uniformLocs: UniformLocs) {
     for (const name in this.uniforms) {
       const loc = uniformLocs[name];
@@ -223,6 +229,7 @@ export abstract class Effect {
       }
     }
   }
+  */
 }
 
 // some helpers
@@ -236,24 +243,19 @@ function toGLSLFloatString(num: number) {
 }
 */
 
+/*
 export function uniformGLSLTypeNum(val: RawUniformVal) {
   if (typeof val === "number") {
     return 1;
   }
   return val.length;
 }
+*/
 
+// TODO move this
 export function tag(
   strings: TemplateStringsArray,
   ...values: UniformVal[]
 ): Source {
   return { sections: strings.concat([]), values: values };
-}
-
-// TODO move this to codebuilder
-export function uniformGLSLTypeStr(val: RawUniformVal) {
-  const num = uniformGLSLTypeNum(val);
-  if (num === 1) return "float";
-  if (num >= 2 && num <= 4) return "vec" + num;
-  throw new Error("cannot convert " + val + " to a GLSL type");
 }

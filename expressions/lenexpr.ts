@@ -1,15 +1,11 @@
-import { Expr, parse, BuildInfo } from "../effects/expression";
-import { Float, Vec } from "../effect";
+import { Float, tag, Vec } from "../effect";
+import { Expr } from "../effects/expression";
 
 export class LenExpr extends Expr<Float> {
   vec: Vec;
 
   constructor(vec: Vec) {
-    super();
+    super(tag`(length(${vec}))`, ["uVec"]);
     this.vec = vec;
-  }
-
-  parse(bi: BuildInfo): string {
-    return `(length(${parse(this.vec, "uVecLen" + this.idStr, this, bi)}))`;
   }
 }

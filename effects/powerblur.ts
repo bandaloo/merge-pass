@@ -7,11 +7,12 @@ export class PowerBlur extends EffectLoop {
 
   private size: number;
 
+  // TODO update this to work with expressions as effects!
   constructor(size: number) {
     const blurSide = new Blur([[size, 0]]);
     const blurUp = new Blur([[0, size]]);
     const reps = Math.ceil(PowerBlur.baseLog(2, size));
-    super([blurSide, blurUp], {
+    super([], {
       num: reps + 1,
     });
     this.size = size;

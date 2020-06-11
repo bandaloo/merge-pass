@@ -1,22 +1,13 @@
-import { Expr, parse, BuildInfo } from "../effects/expression";
-import { Float, Vec, Effect } from "../effect";
+import { Float, tag, Vec } from "../effect";
+import { Expr } from "../effects/expression";
 
 export class ScaleExpr extends Expr<Float> {
   scalar: Float;
   vec: Vec;
 
   constructor(scalar: Float, vec: Vec) {
-    super();
+    super(tag`(${scalar} * ${vec})`, ["uScalar", "uVec"]);
     this.scalar = scalar;
     this.vec = vec;
-  }
-
-  parse(bi: BuildInfo): string {
-    return `(${parse(
-      this.scalar,
-      "uScalarScale" + this.idStr,
-      this,
-      bi
-    )} * ${parse(this.vec, "uVecScale" + this.idStr, this, bi)})`;
   }
 }

@@ -1,7 +1,7 @@
-import { Effect, uniformGLSLTypeStr } from "./effect";
+import { UniformVal } from "./effect";
+import { BuildInfo, Expr } from "./effects/expression";
 import { EffectLoop, UniformLocs } from "./mergepass";
 import { WebGLProgramLoop } from "./webglprogramloop";
-import { EffectLike } from "./effects/expression";
 
 // the line below, which gets placed as the first line of `main`, enables allows
 // multiple shaders to be chained together, which works for shaders that don't
@@ -17,7 +17,7 @@ uniform mediump float uTime;
 uniform mediump vec2 uResolution;\n`;
 
 export class CodeBuilder {
-  private funcs: string[] = [];
+  //private funcs: string[] = [];
   private calls: string[] = [];
   // TODO make it add all external functions of sub-expressions
   //private externalFuncs: string[] = [];
@@ -25,16 +25,36 @@ export class CodeBuilder {
   private externalFuncs: Set<string> = new Set();
   private uniformDeclarations: Set<string> = new Set();
   private counter = 0;
-  /** flat array of effects within loop for attaching uniforms */
-  private effects: Effect[] = [];
+  /** flat array of expressions within loop for attaching uniforms */
+  private exprs: Expr<UniformVal>[];
   private baseLoop: EffectLoop;
+  //private uniformLocs: UniformLocs = {};
+  //private uniformNames: string[];
   constructor(effectLoop: EffectLoop) {
     this.baseLoop = effectLoop;
-    this.addEffectLoop(effectLoop, 1);
+    const buildInfo: BuildInfo = {
+      uniformTypes: {},
+      externalFuncs: new Set<string>(),
+      exprs: [],
+      needs: { centerSample: false, neighborSample: false, depthBuffer: false },
+    };
+    console.log(effectLoop);
+    this.addEffectLoop(effectLoop, 1, buildInfo);
+    // add all the types to uniform declarations from the `BuildInfo` instance
+    for (const name in buildInfo.uniformTypes) {
+      const typeName = buildInfo.uniformTypes[name];
+      this.uniformDeclarations.add(`uniform mediump ${typeName} ${name};`);
+    }
+    //this.uniformNames = Object.keys(buildInfo.uniformTypes);
+    // add all external functions from the `BuildInfo` instance
+    buildInfo.externalFuncs.forEach((func) => this.externalFuncs.add(func));
+    this.exprs = buildInfo.exprs;
   }
+
   private addEffectLoop(
     effectLoop: EffectLoop,
     indentLevel: number,
+    buildInfo: BuildInfo,
     topLevel = true
   ) {
     const needsLoop = !topLevel && effectLoop.repeat.num > 1;
@@ -48,25 +68,19 @@ export class CodeBuilder {
     }
 
     for (const e of effectLoop.effects) {
-      if (e instanceof Effect) {
-        this.effects.push(e);
-        const name = `effect${this.counter}()`;
-        const func = e.fShaderSource.replace(/main\s*\(\)/, name);
-        this.calls.push("  ".repeat(indentLevel) + name + ";");
+      if (e instanceof Expr) {
+        console.log("test!");
+        e.eparse(buildInfo);
+        //this.exprs.push(e);
+        //const name = `effect${this.counter}()`;
+        //const func = e.sourceCode.replace(/main\s*\(\)/, name);
+        this.calls.push(
+          "  ".repeat(indentLevel) + "gl_FragColor = " + e.sourceCode + ";"
+        );
         this.counter++;
-        this.funcs.push(func);
-
-        // add the external functions of sub-expressions
-        e.bi.externalFuncs.forEach((func) => this.externalFuncs.add(func));
-        // add the external functions of main effect
-        e.externalFuncs.forEach((func) => this.externalFuncs.add(func));
-
-        for (const name in e.bi.uniformTypes) {
-          const typeName = e.bi.uniformTypes[name];
-          this.uniformDeclarations.add(`uniform mediump ${typeName} ${name};`);
-        }
+        //this.funcs.push(func);
       } else {
-        this.addEffectLoop(e, indentLevel, false);
+        this.addEffectLoop(e, indentLevel, buildInfo, false);
       }
     }
     if (needsLoop) {
@@ -89,9 +103,11 @@ export class CodeBuilder {
       [...this.uniformDeclarations].join("\n") +
       [...this.externalFuncs].join("") +
       "\n" +
-      this.funcs.join("\n") +
+      //this.funcs.join("\n") +
       "\nvoid main () {\n" +
-      (this.baseLoop.getNeeds("centerSample") ? FRAG_SET : "") +
+      // TODO replace with needs from buildinfo
+      //(this.baseLoop.getNeeds("centerSample") ? FRAG_SET : "") +
+      FRAG_SET +
       this.calls.join("\n") +
       "\n}";
     gl.shaderSource(fShader, fullCode);
@@ -114,8 +130,9 @@ export class CodeBuilder {
     gl.useProgram(program);
     console.log(fullCode);
     // find all uniform locations and add them to the dictionary
-    for (const effect of this.effects) {
-      for (const name in effect.uniforms) {
+    // TODO do we even still need this because of `BuildInfo`?
+    for (const expr of this.exprs) {
+      for (const name in expr.uniformValChangeMap) {
         const location = gl.getUniformLocation(program, name);
         if (location === null) {
           throw new Error("couldn't find uniform " + name);
@@ -124,6 +141,7 @@ export class CodeBuilder {
         if (uniformLocs[name] !== undefined) {
           throw new Error("uniforms have to all have unique names");
         }
+        // assign the name to the location
         uniformLocs[name] = location;
       }
     }
@@ -138,6 +156,6 @@ export class CodeBuilder {
     // In this example, we only use one array buffer, where we're storing
     // our vertices
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-    return new WebGLProgramLoop(program, this.baseLoop.repeat, this.effects);
+    return new WebGLProgramLoop(program, this.baseLoop.repeat, this.exprs);
   }
 }

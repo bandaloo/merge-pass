@@ -1,6 +1,5 @@
 import { Effect, tag, Vec2, RawVec2 } from "../effect";
 
-// adapted from https://github.com/Jam3/glsl-fast-gaussian-blur/blob/master/5.glsl
 export class Blur extends Effect {
   constructor(direction: Vec2) {
     super(
@@ -16,8 +15,7 @@ export class Blur extends Effect {
       ["uDirection"]
     );
     this.needs.neighborSample = true;
-    // TODO change this back!!!
-    this.needs.centerSample = true;
+    this.needs.centerSample = false;
   }
 
   setDirection(direction: RawVec2) {

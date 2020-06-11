@@ -4,21 +4,17 @@ import {
   NamedUniformVal,
   UniformValMap as UniformValChangeMap,
   RawVec,
-  Effect,
-  uniformGLSLTypeStr,
+  RawUniformVal,
+  RawFloat,
+  RawVec2,
+  RawVec3,
+  RawVec4,
 } from "../effect";
+import { UniformLocs, EffectLoop } from "../mergepass";
+import { WebGLProgramElement } from "../webglprogramloop";
 
 // TODO see if we need this later
-export type FullExpr<T> = Expr<T> | T;
-
-/** effects and expressions satisfy this */
-export interface EffectLike {
-  // TODO rename this
-  uniforms: UniformValChangeMap;
-  defaultNameMap: DefaultNameMap;
-  externalFuncs: string[];
-  // TODO include needs
-}
+//export type FullExpr<T> = Expr<T> | T;
 
 interface UniformTypeMap {
   // TODO give a proper type that only denotes type names
@@ -29,24 +25,27 @@ interface UniformTypeMap {
 export interface BuildInfo {
   uniformTypes: UniformTypeMap;
   externalFuncs: Set<string>;
+  exprs: Expr<UniformVal>[];
+  needs: Needs;
 }
 
-// TODO make this a member function of expression once effects are finished
 /**
- * turn an expression (which can be a float or vec) into a string
- * @param val the expression that gets parsed
+ * turn a value (can be expression or primitive) into a string
+ * @param val the value that gets parsed
  * @param defaultName what to name it if it is unnamed uniform
- * @param e the expression or effect that gets added to
- * @param bi the top level effect to add uniforms and functions to
+ * @param e the enclosing expression
+ * @param buildInfo the top level effect to add uniforms and functions to
  */
-export function parse(
-  val: FullExpr<UniformVal>,
+export function vparse(
+  val: UniformVal,
   defaultName: string,
-  e: EffectLike,
-  bi: BuildInfo
+  e: Expr<UniformVal>,
+  buildInfo: BuildInfo
 ): string {
+  // parse the expression if it's an expression
+  console.log("in vparse");
   if (val instanceof Expr) {
-    return val.parse(bi);
+    return val.eparse(buildInfo);
   }
   // transform `DefaultUniformVal` to `NamedUniformVal`
   let defaulted = false;
@@ -74,13 +73,12 @@ export function parse(
           "in for loops of generated code"
       );
     }
+    // get the `RawUniformVal` from the `NamedUniformVal`
     const uniformVal = namedVal[1];
     // set to true so they are set to their default values on first draw
-    e.uniforms[name] = { val: uniformVal, changed: true };
+    e.uniformValChangeMap[name] = { val: uniformVal, changed: true };
     // add the new type to the map
-    bi.uniformTypes[name] = uniformGLSLTypeStr(uniformVal);
-    // add each of the external funcs to the builder
-    e.externalFuncs.forEach((func) => bi.externalFuncs.add(func));
+    buildInfo.uniformTypes[name] = uniformGLSLTypeStr(uniformVal);
     // add the name mapping
     e.defaultNameMap[defaultName] = name;
     return name;
@@ -98,19 +96,147 @@ function toGLSLFloatString(num: number) {
   return str;
 }
 
-export abstract class Expr<T> implements EffectLike {
+// add sceneBuffer
+interface Needs {
+  depthBuffer: boolean;
+  neighborSample: boolean;
+  centerSample: boolean;
+}
+
+export interface SourceLists {
+  sections: string[];
+  values: UniformVal[];
+}
+
+// TODO is this generic necessary?
+export abstract class Expr<T> {
   static count = 0;
-  idStr: string;
-  uniforms: UniformValChangeMap = {};
+  id: string;
+  needs: Needs = {
+    depthBuffer: false,
+    neighborSample: false,
+    centerSample: true,
+  };
+  defaultNames: string[];
+  uniformValChangeMap: UniformValChangeMap = {};
   defaultNameMap: DefaultNameMap = {};
   externalFuncs: string[] = [];
+  sourceLists: SourceLists;
+  sourceCode: string = "";
 
-  constructor() {
-    // TODO make it so you can't have _ex_ in the name
-    this.idStr = "_ex_" + Expr.count;
+  constructor(sourceLists: SourceLists, defaultNames: string[]) {
+    this.id = "_id_" + Expr.count;
     Expr.count++;
+    if (sourceLists.sections.length - sourceLists.values.length !== 1) {
+      // this cannot happen if you use `tag` to destructure a template string
+      throw new Error("wrong lengths for source and values");
+    }
+    if (sourceLists.values.length !== defaultNames.length) {
+      console.log(sourceLists.values);
+      console.log(sourceLists.sections);
+      console.log(defaultNames);
+      throw new Error(
+        "default names list length doesn't match values list length!"
+      );
+    }
+    this.sourceLists = sourceLists;
+    this.defaultNames = defaultNames;
   }
 
-  /** converts expr to string, adding to effect dependencies */
-  abstract parse(bi: BuildInfo): string;
+  applyUniforms(gl: WebGL2RenderingContext, uniformLocs: UniformLocs) {
+    for (const name in this.uniformValChangeMap) {
+      const loc = uniformLocs[name];
+      const val = this.uniformValChangeMap[name].val;
+      if (this.uniformValChangeMap[name].changed) {
+        this.uniformValChangeMap[name].changed = false;
+        switch (uniformGLSLTypeNum(val)) {
+          case 1:
+            const float = val as RawFloat;
+            gl.uniform1f(loc, float);
+            break;
+          case 2:
+            const vec2 = val as RawVec2;
+            gl.uniform2f(loc, vec2[0], vec2[1]);
+            break;
+          case 3:
+            const vec3 = val as RawVec3;
+            gl.uniform3f(loc, vec3[0], vec3[1], vec3[2]);
+            break;
+          case 4:
+            const vec4 = val as RawVec4;
+            gl.uniform4f(loc, vec4[0], vec4[1], vec4[2], vec4[3]);
+        }
+      }
+    }
+  }
+
+  /** expression and loops both implement this */
+  getNeeds(name: keyof Needs) {
+    return this.needs[name];
+  }
+
+  // TODO why can't it infer return type?
+  repeat(num: number): EffectLoop {
+    return new EffectLoop([this], { num: num });
+  }
+
+  getSampleNum(mult = 1) {
+    return this.needs.neighborSample ? mult : 0;
+  }
+
+  genPrograms(
+    gl: WebGL2RenderingContext,
+    vShader: WebGLShader,
+    uniformLocs: UniformLocs
+  ): WebGLProgramElement {
+    return new EffectLoop([this], { num: 1 }).genPrograms(
+      gl,
+      vShader,
+      uniformLocs
+    );
+  }
+
+  /** parses this expression into a string, adding info as it recurses */
+  eparse(buildInfo: BuildInfo): string {
+    console.log("pushing expr to buildinfo!");
+    buildInfo.exprs.push(this);
+    const updateNeed = (name: keyof Needs) =>
+      (buildInfo.needs[name] = buildInfo.needs[name] || this.needs[name]);
+    updateNeed("centerSample");
+    updateNeed("neighborSample");
+    updateNeed("depthBuffer");
+    // add each of the external funcs to the builder
+    console.log(this.externalFuncs);
+    this.externalFuncs.forEach((func) => buildInfo.externalFuncs.add(func));
+    // put all of the values between all of the source sections
+    for (let i = 0; i < this.sourceLists.values.length; i++) {
+      this.sourceCode +=
+        this.sourceLists.sections[i] +
+        vparse(
+          this.sourceLists.values[i],
+          this.defaultNames[i] + this.id,
+          this,
+          buildInfo
+        );
+    }
+    // TODO does sourceCode have to be a member?
+    this.sourceCode += this.sourceLists.sections[
+      this.sourceLists.sections.length - 1
+    ];
+    return this.sourceCode;
+  }
+}
+
+export function uniformGLSLTypeNum(val: RawUniformVal) {
+  if (typeof val === "number") {
+    return 1;
+  }
+  return val.length;
+}
+
+export function uniformGLSLTypeStr(val: RawUniformVal) {
+  const num = uniformGLSLTypeNum(val);
+  if (num === 1) return "float";
+  if (num >= 2 && num <= 4) return "vec" + num;
+  throw new Error("cannot convert " + val + " to a GLSL type");
 }

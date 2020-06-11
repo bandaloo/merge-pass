@@ -1,4 +1,5 @@
-import { Effect } from "./effect";
+import { Vec4 } from "./effect";
+import { Expr } from "./effects/expression";
 import { LoopInfo, UniformLocs } from "./mergepass";
 
 export type WebGLProgramElement = WebGLProgram | WebGLProgramLoop[];
@@ -6,18 +7,19 @@ export type WebGLProgramElement = WebGLProgram | WebGLProgramLoop[];
 export class WebGLProgramLoop {
   program: WebGLProgramElement;
   repeat: LoopInfo;
-  effects: Effect[];
+  effects: Expr<Vec4>[];
   last = false;
 
   constructor(
     program: WebGLProgramElement,
     repeat: LoopInfo,
-    effects: Effect[] = []
+    effects: Expr<Vec4>[] = []
   ) {
     this.program = program;
     this.repeat = repeat;
     this.effects = effects;
   }
+
   draw(
     gl: WebGL2RenderingContext,
     tex: {

@@ -15,8 +15,8 @@ import { DotExpr } from "./expressions/dotexpr";
 import { MulExpr } from "./expressions/mulexpr";
 import { LenExpr } from "./expressions/lenexpr";
 import { vec } from "./expressions/vecexprs";
-import { RedExpr } from "./expressions/rgbexprs";
 import { ScaleExpr } from "./expressions/scaleexpr";
+import { BlurExpr } from "./expressions/blurexpr";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -34,25 +34,25 @@ if (source === null) {
 
 window.addEventListener("load", () => {
   // TODO check if we need mediump float (it already doesn't work on mobile)
-  const brightness = new Brightness(["uBrightness", 0.0]);
-  const hsv = new HSV([0, 0.1, 0], [0, 1, 0]);
-  const blur = new Blur(["uBlur", [1, 1]]);
-  const blur2 = new Blur([[0, 0]]);
-  const blur3 = new Blur(["uBlurSide", [0, 8]]);
-  const grain = new Grain(0.1);
-  const hueAdd = new HueAdd(["uHue", 0]);
-  const saturationAdd = new SaturationAdd(-0.3);
-  const hue = new Hue(0.7);
-  const saturation = new Saturation(0.5);
-  const value = new Value(["uValue", 0.5]);
+  //const brightness = new Brightness(["uBrightness", 0.0]);
+  //const hsv = new HSV([0, 0.1, 0], [0, 1, 0]);
+  //const blur = new Blur(["uBlur", [1, 1]]);
+  //const blur2 = new Blur([[0, 0]]);
+  //const blur3 = new Blur(["uBlurSide", [0, 8]]);
+  //const grain = new Grain(0.1);
+  //const hueAdd = new HueAdd(["uHue", 0]);
+  //const saturationAdd = new SaturationAdd(-0.3);
+  //const hue = new Hue(0.7);
+  //const saturation = new Saturation(0.5);
+  //const value = new Value(["uValue", 0.5]);
 
   //const mul = new MulExpr(0.5, 1);
   //const len = new LenExpr(["uTest", [0.1, 0.1]]);
   //const mulBrightness = new Brightness(len);
 
-  let vecExpr;
+  //let vecExpr;
 
-  const redBlur = new Blur(new ScaleExpr(4, vec(new RedExpr(), 0))).repeat(3);
+  //const redBlur = new Blur(new ScaleExpr(4, vec(new RedExpr(), 0))).repeat(3);
 
   /*
   const merger = new Merger(
@@ -70,7 +70,8 @@ window.addEventListener("load", () => {
   //const powerBlur = new PowerBlur(8);
 
   // TODO throw a better error when the list is empty
-  const merger = new Merger([brightness, redBlur], sourceCanvas, gl);
+  const blur = new BlurExpr([1, 0]);
+  const merger = new Merger([blur], sourceCanvas, gl);
 
   // dwitter sim
   const C = Math.cos;
@@ -86,7 +87,7 @@ window.addEventListener("load", () => {
     steps++;
     //brightness.setUniform("uBrightness", 0.3 * Math.cos(time / 2000));
     //blur.setUniform("uBlur", [Math.cos(time / 1000) ** 8, 0]);
-    hueAdd.setUniform("uHue", t / 9);
+    //hueAdd.setUniform("uHue", t / 9);
     //powerBlur.setSize(8 * Math.cos(time / 1000) ** 8);
 
     // draw insane stripes

@@ -34,10 +34,10 @@ export const glslFuncs = {
               d / (q.x + e),
               q.x);
 }`,
-  gauss5: `void gauss5(vec2 dir, vec4 col) {
-  vec2 uv = gl_FragCoord / uResolution;
+  gauss5: `vec4 gauss5(vec2 dir) {
+  vec2 uv = gl_FragCoord.xy / uResolution;
   vec2 direction = dir;
-  col = vec4(0.0);
+  vec4 col = vec4(0.0);
   vec2 off1 = vec2(1.3333333333333333) * direction;
   col += texture2D(uSampler, uv) * 0.29411764705882354;
   col += texture2D(uSampler, uv + (off1 / uResolution)) * 0.35294117647058826;

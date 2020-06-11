@@ -1,21 +1,33 @@
-import { Expr, BuildInfo, parse } from "../effects/expression";
-import { Float, Vec2, Vec4, Vec3 } from "../effect";
+import { Float, Vec2, Vec3, Vec4 } from "../effect";
+import { Expr } from "../effects/expression";
 
 class VecExpr<Vec> extends Expr<Vec> {
   components: Float[];
 
   constructor(...components: Float[]) {
-    super();
+    // TODO test this
+    const sections = ["(vec" + components.length];
+    for (let i = 0; i < components.length - 1; i++) {
+      sections.push(", ");
+    }
+    const defaultNames = [];
+    for (let i = 0; i < components.length; i++) {
+      defaultNames.push("uComp" + i);
+    }
+    sections.push(")");
+    super({ sections: sections, values: components }, defaultNames);
     this.components = components;
   }
 
-  parse(bi: BuildInfo): string {
+  /*
+  eparse(bi: BuildInfo): string {
     let counter = 0;
     const list = this.components.map((comp) => {
-      return parse(comp, "uComp" + counter++ + this.idStr, this, bi);
+      return vparse(comp, "uComp" + counter++ + this.id, this, bi);
     });
     return `(vec${this.components.length}(${list.join(", ")}))`;
   }
+  */
 }
 
 export function vec(...components: Float[]) {
