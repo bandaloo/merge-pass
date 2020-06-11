@@ -14,6 +14,9 @@ import { PowerBlur } from "./effects/powerblur";
 import { DotExpr } from "./expressions/dotexpr";
 import { MulExpr } from "./expressions/mulexpr";
 import { LenExpr } from "./expressions/lenexpr";
+import { vec } from "./expressions/vecexprs";
+import { RedExpr } from "./expressions/rgbexprs";
+import { ScaleExpr } from "./expressions/scaleexpr";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -43,9 +46,13 @@ window.addEventListener("load", () => {
   const saturation = new Saturation(0.5);
   const value = new Value(["uValue", 0.5]);
 
-  const mul = new MulExpr(0.5, 1);
-  const len = new LenExpr([0.1, 0.1]);
-  const mulBrightness = new Brightness(len);
+  //const mul = new MulExpr(0.5, 1);
+  //const len = new LenExpr(["uTest", [0.1, 0.1]]);
+  //const mulBrightness = new Brightness(len);
+
+  let vecExpr;
+
+  const redBlur = new Blur(new ScaleExpr(4, vec(new RedExpr(), 0))).repeat(3);
 
   /*
   const merger = new Merger(
@@ -60,14 +67,10 @@ window.addEventListener("load", () => {
   */
   //const merger = new Merger([hue, grain], sourceCanvas, gl);
 
-  const powerBlur = new PowerBlur(8);
+  //const powerBlur = new PowerBlur(8);
 
   // TODO throw a better error when the list is empty
-  const merger = new Merger(
-    [powerBlur, hueAdd, grain, mulBrightness],
-    sourceCanvas,
-    gl
-  );
+  const merger = new Merger([brightness, redBlur], sourceCanvas, gl);
 
   // dwitter sim
   const C = Math.cos;
@@ -81,10 +84,10 @@ window.addEventListener("load", () => {
   const draw = (time: number) => {
     const t = steps / 60;
     steps++;
-    brightness.setUniform("uBrightness", 0.3 * Math.cos(time / 2000));
+    //brightness.setUniform("uBrightness", 0.3 * Math.cos(time / 2000));
     //blur.setUniform("uBlur", [Math.cos(time / 1000) ** 8, 0]);
     hueAdd.setUniform("uHue", t / 9);
-    powerBlur.setSize(8 * Math.cos(time / 1000) ** 8);
+    //powerBlur.setSize(8 * Math.cos(time / 1000) ** 8);
 
     // draw insane stripes
     const i = ~~(t * 9);

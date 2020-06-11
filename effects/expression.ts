@@ -2,33 +2,51 @@ import {
   UniformVal,
   DefaultNameMap,
   NamedUniformVal,
-  UniformValMap,
+  UniformValMap as UniformValChangeMap,
   RawVec,
+  Effect,
+  uniformGLSLTypeStr,
 } from "../effect";
 
 // TODO see if we need this later
 export type FullExpr<T> = Expr<T> | T;
 
 /** effects and expressions satisfy this */
-interface EffectLike {
-  uniforms: UniformValMap;
+export interface EffectLike {
+  // TODO rename this
+  uniforms: UniformValChangeMap;
   defaultNameMap: DefaultNameMap;
+  externalFuncs: string[];
+  // TODO include needs
 }
 
-// TODO find a better spot for this
+interface UniformTypeMap {
+  // TODO give a proper type that only denotes type names
+  [name: string]: string;
+}
+
+/** info needed to generate proper declarations */
+export interface BuildInfo {
+  uniformTypes: UniformTypeMap;
+  externalFuncs: Set<string>;
+}
+
+// TODO make this a member function of expression once effects are finished
 /**
  * turn an expression (which can be a float or vec) into a string
  * @param val the expression that gets parsed
  * @param defaultName what to name it if it is unnamed uniform
  * @param e the expression or effect that gets added to
+ * @param bi the top level effect to add uniforms and functions to
  */
 export function parse(
   val: FullExpr<UniformVal>,
   defaultName: string,
-  e: EffectLike // basically a stand-in for this
+  e: EffectLike,
+  bi: BuildInfo
 ): string {
   if (val instanceof Expr) {
-    return val.parse();
+    return val.parse(bi);
   }
   // transform `DefaultUniformVal` to `NamedUniformVal`
   let defaulted = false;
@@ -39,13 +57,13 @@ export function parse(
   }
   if (typeof val === "number") {
     // this is a float
-    val;
     return toGLSLFloatString(val);
   }
   if (typeof val[0] === "string") {
     // this is a named value, so it should be inserted as a uniform
     const namedVal = val as NamedUniformVal;
     const name = namedVal[0];
+    // TODO what else should it not include?
     if (!defaulted && name.includes("_id_")) {
       throw new Error("cannot set a named uniform that has _id_ in it");
     }
@@ -57,7 +75,12 @@ export function parse(
       );
     }
     const uniformVal = namedVal[1];
+    // set to true so they are set to their default values on first draw
     e.uniforms[name] = { val: uniformVal, changed: true };
+    // add the new type to the map
+    bi.uniformTypes[name] = uniformGLSLTypeStr(uniformVal);
+    // add each of the external funcs to the builder
+    e.externalFuncs.forEach((func) => bi.externalFuncs.add(func));
     // add the name mapping
     e.defaultNameMap[defaultName] = name;
     return name;
@@ -76,8 +99,18 @@ function toGLSLFloatString(num: number) {
 }
 
 export abstract class Expr<T> implements EffectLike {
-  uniforms: UniformValMap = {};
+  static count = 0;
+  idStr: string;
+  uniforms: UniformValChangeMap = {};
   defaultNameMap: DefaultNameMap = {};
+  externalFuncs: string[] = [];
+
+  constructor() {
+    // TODO make it so you can't have _ex_ in the name
+    this.idStr = "_ex_" + Expr.count;
+    Expr.count++;
+  }
+
   /** converts expr to string, adding to effect dependencies */
-  abstract parse(): string;
+  abstract parse(bi: BuildInfo): string;
 }

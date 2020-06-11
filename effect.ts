@@ -1,6 +1,6 @@
 import { EffectLoop, UniformLocs } from "./mergepass";
 import { WebGLProgramElement } from "./webglprogramloop";
-import { Expr, parse } from "./effects/expression";
+import { Expr, parse, BuildInfo } from "./effects/expression";
 
 export type RawFloat = number;
 type NamedFloat = [string, number];
@@ -34,14 +34,18 @@ export type RawUniformVal = RawFloat | RawVec2 | RawVec3 | RawVec4;
 export type NamedUniformVal = NamedFloat | NamedVec2 | NamedVec3 | NamedVec4;
 
 // TODO expand this to include expressions of specific types
-export type UniformVal = RawUniformVal | NamedUniformVal | DefaultUniformVal;
+export type UniformVal =
+  | RawUniformVal
+  | NamedUniformVal
+  | DefaultUniformVal
+  | Expr<UniformVal>;
 
 export interface Source {
   sections: string[];
   values: UniformVal[];
 }
 
-// TODO don't really want to expose this
+// this should be on expression
 export interface UniformValMap {
   [name: string]: { val: RawUniformVal; changed: boolean };
 }
@@ -68,10 +72,16 @@ export abstract class Effect {
   };
   fShaderSource: string;
   uniforms: UniformValMap = {};
+  // TODO can we get rid of external funcs because of build info?
   externalFuncs: string[] = [];
   defaultNameMap: DefaultNameMap = {};
   id: number;
   idStr: string;
+  /** gets populated after parse is called; useful for code builder */
+  bi: BuildInfo = {
+    externalFuncs: new Set(),
+    uniformTypes: {},
+  };
 
   constructor(source: Source, defaultNames: string[]) {
     this.id = Effect.count;
@@ -97,6 +107,8 @@ export abstract class Effect {
     this.fShaderSource = sourceString;
   }
 
+  // TODO add a function that can add to `externalFuncs` without duplicate
+
   setUniform(name: string, newVal: RawUniformVal) {
     // if name does not exist, try mapping default name to new name
     if (this.uniforms[name]?.val === undefined) {
@@ -119,7 +131,7 @@ export abstract class Effect {
     val: UniformVal | DefaultUniformVal,
     defaultName: string
   ): string {
-    return parse(val, defaultName, this);
+    return parse(val, defaultName, this, this.bi);
     /*
     // transform `DefaultUniformVal` to `NamedUniformVal`
     let defaulted = false;
@@ -178,7 +190,6 @@ export abstract class Effect {
     vShader: WebGLShader,
     uniformLocs: UniformLocs
   ): WebGLProgramElement {
-    console.log("gen programs in effect");
     return new EffectLoop([this], { num: 1 }).genPrograms(
       gl,
       vShader,
@@ -217,11 +228,13 @@ export abstract class Effect {
 // some helpers
 
 // TODO remove
+/*
 function toGLSLFloatString(num: number) {
   let str = "" + num;
   if (!str.includes(".")) str += ".";
   return str;
 }
+*/
 
 export function uniformGLSLTypeNum(val: RawUniformVal) {
   if (typeof val === "number") {

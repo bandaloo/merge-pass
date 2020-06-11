@@ -1,4 +1,4 @@
-import { Expr, parse } from "../effects/expression";
+import { Expr, parse, BuildInfo } from "../effects/expression";
 import { Float } from "../effect";
 
 export class MulExpr extends Expr<Float> {
@@ -11,11 +11,12 @@ export class MulExpr extends Expr<Float> {
     this.right = right;
   }
 
-  parse(): string {
-    return `(${parse(this.left, "uLeftMul", this)} * ${parse(
+  parse(bi: BuildInfo): string {
+    return `(${parse(this.left, "uLeftMul" + this.idStr, this, bi)} * ${parse(
       this.right,
-      "uRightMul",
-      this
+      "uRightMul" + this.idStr,
+      this,
+      bi
     )})`;
   }
 }

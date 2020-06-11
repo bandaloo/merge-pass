@@ -1,6 +1,7 @@
 import { Effect, uniformGLSLTypeStr } from "./effect";
 import { EffectLoop, UniformLocs } from "./mergepass";
 import { WebGLProgramLoop } from "./webglprogramloop";
+import { EffectLike } from "./effects/expression";
 
 // the line below, which gets placed as the first line of `main`, enables allows
 // multiple shaders to be chained together, which works for shaders that don't
@@ -19,8 +20,10 @@ export class CodeBuilder {
   private funcs: string[] = [];
   private calls: string[] = [];
   // TODO make it add all external functions of sub-expressions
-  private externalFuncs: string[] = [];
-  private uniformDeclarations: string[] = [];
+  //private externalFuncs: string[] = [];
+  //private uniformDeclarations: string[] = [];
+  private externalFuncs: Set<string> = new Set();
+  private uniformDeclarations: Set<string> = new Set();
   private counter = 0;
   /** flat array of effects within loop for attaching uniforms */
   private effects: Effect[] = [];
@@ -43,6 +46,7 @@ export class CodeBuilder {
         `for (int ${iName} = 0; ${iName} < ${effectLoop.repeat.num}; ${iName}++) {`;
       this.calls.push(forStart);
     }
+
     for (const e of effectLoop.effects) {
       if (e instanceof Effect) {
         this.effects.push(e);
@@ -51,14 +55,15 @@ export class CodeBuilder {
         this.calls.push("  ".repeat(indentLevel) + name + ";");
         this.counter++;
         this.funcs.push(func);
-        for (const func of e.externalFuncs) {
-          if (!this.externalFuncs.includes("\n" + func))
-            this.externalFuncs.push("\n" + func);
-        }
-        for (const name in e.uniforms) {
-          const uniformVal = e.uniforms[name];
-          const typeName = uniformGLSLTypeStr(uniformVal.val);
-          this.uniformDeclarations.push(`uniform mediump ${typeName} ${name};`);
+
+        // add the external functions of sub-expressions
+        e.bi.externalFuncs.forEach((func) => this.externalFuncs.add(func));
+        // add the external functions of main effect
+        e.externalFuncs.forEach((func) => this.externalFuncs.add(func));
+
+        for (const name in e.bi.uniformTypes) {
+          const typeName = e.bi.uniformTypes[name];
+          this.uniformDeclarations.add(`uniform mediump ${typeName} ${name};`);
         }
       } else {
         this.addEffectLoop(e, indentLevel, false);
@@ -68,6 +73,7 @@ export class CodeBuilder {
       this.calls.push("  ".repeat(indentLevel - 1) + "}");
     }
   }
+
   compileProgram(
     gl: WebGL2RenderingContext,
     vShader: WebGLShader,
@@ -80,8 +86,8 @@ export class CodeBuilder {
     }
     const fullCode =
       BOILERPLATE +
-      this.uniformDeclarations.join("\n") +
-      this.externalFuncs.join("") +
+      [...this.uniformDeclarations].join("\n") +
+      [...this.externalFuncs].join("") +
       "\n" +
       this.funcs.join("\n") +
       "\nvoid main () {\n" +
@@ -114,6 +120,7 @@ export class CodeBuilder {
         if (location === null) {
           throw new Error("couldn't find uniform " + name);
         }
+        // makes sure you don't declare uniform with same name
         if (uniformLocs[name] !== undefined) {
           throw new Error("uniforms have to all have unique names");
         }

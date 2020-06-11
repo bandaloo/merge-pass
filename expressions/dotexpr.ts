@@ -1,4 +1,4 @@
-import { Expr, parse } from "../effects/expression";
+import { Expr, parse, BuildInfo } from "../effects/expression";
 import { Effect, Vec } from "../effect";
 
 export class DotExpr<T extends Vec> extends Expr<T> {
@@ -11,12 +11,13 @@ export class DotExpr<T extends Vec> extends Expr<T> {
     this.right = right;
   }
 
-  parse() {
+  parse(bi: BuildInfo) {
     // TODO prettier formatting here sucks so much
-    return `(${parse(this.left, "uLeft", this)} * ${parse(
+    return `(${parse(this.left, "uLeft" + this.idStr, this, bi)} * ${parse(
       this.right,
-      "uRight",
-      this
+      "uRight" + this.idStr,
+      this,
+      bi
     )})`;
   }
 }

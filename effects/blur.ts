@@ -16,7 +16,8 @@ export class Blur extends Effect {
       ["uDirection"]
     );
     this.needs.neighborSample = true;
-    this.needs.centerSample = false;
+    // TODO change this back!!!
+    this.needs.centerSample = true;
   }
 
   setDirection(direction: RawVec2) {
