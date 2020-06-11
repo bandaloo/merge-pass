@@ -1,3 +1,4 @@
+/*
 import { Effect, tag } from "..";
 
 class Passthrough extends Effect {
@@ -9,3 +10,4 @@ class Passthrough extends Effect {
     );
   }
 }
+*/

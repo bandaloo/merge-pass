@@ -1,3 +1,4 @@
+/*
 import { Effect, tag, Vec2, RawVec2 } from "../effect";
 
 export class Blur extends Effect {
@@ -22,3 +23,4 @@ export class Blur extends Effect {
     this.setUniform("uDirection" + this.idStr, direction);
   }
 }
+*/

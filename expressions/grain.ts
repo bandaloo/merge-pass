@@ -1,3 +1,4 @@
+/*
 import { Effect, tag, Float, RawFloat } from "../effect";
 import { glslFuncs } from "..";
 
@@ -16,3 +17,4 @@ export class Grain extends Effect {
     this.setUniform("uGrain" + this.idStr, grain);
   }
 }
+*/

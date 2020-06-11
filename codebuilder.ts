@@ -69,7 +69,6 @@ export class CodeBuilder {
 
     for (const e of effectLoop.effects) {
       if (e instanceof Expr) {
-        console.log("test!");
         e.eparse(buildInfo);
         //this.exprs.push(e);
         //const name = `effect${this.counter}()`;

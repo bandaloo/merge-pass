@@ -2,6 +2,7 @@ import {
   UniformVal,
   DefaultNameMap,
   NamedUniformVal,
+  // TODO fix this
   UniformValMap as UniformValChangeMap,
   RawVec,
   RawUniformVal,
@@ -108,7 +109,7 @@ export interface SourceLists {
   values: UniformVal[];
 }
 
-// TODO is this generic necessary?
+// TODO get rid of the generic (it isn't used) and make subclasses
 export abstract class Expr<T> {
   static count = 0;
   id: string;
@@ -194,6 +195,24 @@ export abstract class Expr<T> {
       vShader,
       uniformLocs
     );
+  }
+
+  setUniform(name: string, newVal: RawUniformVal) {
+    // if name does not exist, try mapping default name to new name
+    if (this.uniformValChangeMap[name]?.val === undefined) {
+      name = this.defaultNameMap[name];
+    }
+    const oldVal = this.uniformValChangeMap[name]?.val;
+    if (oldVal === undefined) {
+      throw new Error("tried to set uniform " + name + " which doesn't exist");
+    }
+    const oldType = uniformGLSLTypeNum(oldVal);
+    const newType = uniformGLSLTypeNum(newVal);
+    if (oldType !== newType) {
+      throw new Error("tried to set uniform " + name + " to a new type");
+    }
+    this.uniformValChangeMap[name].val = newVal;
+    this.uniformValChangeMap[name].changed = true;
   }
 
   /** parses this expression into a string, adding info as it recurses */

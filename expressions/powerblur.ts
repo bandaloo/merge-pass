@@ -1,7 +1,7 @@
+/*
 import { EffectLoop } from "../mergepass";
 import { Blur } from "./blur";
 
-/** fast approximate blur good for large blur radius */
 export class PowerBlur extends EffectLoop {
   static baseLog = (x: number, y: number) => Math.log(y) / Math.log(x);
 
@@ -9,8 +9,8 @@ export class PowerBlur extends EffectLoop {
 
   // TODO update this to work with expressions as effects!
   constructor(size: number) {
-    const blurSide = new Blur([[size, 0]]);
-    const blurUp = new Blur([[0, size]]);
+    //const blurSide = new Blur([[size, 0]]);
+    //const blurUp = new Blur([[0, size]]);
     const reps = Math.ceil(PowerBlur.baseLog(2, size));
     super([], {
       num: reps + 1,
@@ -18,8 +18,8 @@ export class PowerBlur extends EffectLoop {
     this.size = size;
     this.repeat.func = (i) => {
       const distance = this.size / 2 ** i;
-      blurSide.setDirection([distance, 0]);
-      blurUp.setDirection([0, distance]);
+      //blurSide.setDirection([distance, 0]);
+      //blurUp.setDirection([0, distance]);
     };
   }
 
@@ -28,3 +28,4 @@ export class PowerBlur extends EffectLoop {
     this.repeat.num = Math.ceil(PowerBlur.baseLog(2, size));
   }
 }
+*/

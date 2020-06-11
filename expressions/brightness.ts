@@ -1,3 +1,4 @@
+/*
 import { Effect, tag, Float, RawFloat } from "../effect";
 
 export class Brightness extends Effect {
@@ -16,3 +17,4 @@ export class Brightness extends Effect {
     this.setUniform("uBrightness" + this.idStr, brightness);
   }
 }
+*/

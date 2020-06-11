@@ -34,6 +34,7 @@ export const glslFuncs = {
               d / (q.x + e),
               q.x);
 }`,
+  // adapted from https://github.com/Jam3/glsl-fast-gaussian-blur/blob/master/5.glsl
   gauss5: `vec4 gauss5(vec2 dir) {
   vec2 uv = gl_FragCoord.xy / uResolution;
   vec2 direction = dir;
@@ -43,5 +44,21 @@ export const glslFuncs = {
   col += texture2D(uSampler, uv + (off1 / uResolution)) * 0.35294117647058826;
   col += texture2D(uSampler, uv - (off1 / uResolution)) * 0.35294117647058826;
   return col;
+}`,
+  contrast: `vec4 contrast(float val, vec4 col)
+  col.rgb /= col.a;
+  col.rgb = ((col.rgb - 0.5) * val) + 0.5;
+  col.rgb *= col.a;
+  return col;`,
+  hsvmask: `void main(vec4 mask, vec4 components, vec4 col) {
+  vec3 hsv = rgb2hsv(col.rgb);
+  vec3 m = mask;
+  hsv.xyz = (vec3(1., 1., 1.) - m) * components + m * hsv.xyz;
+  vec3 rgb = hsv2rgb(hsv);
+  col = vec4(rgb.r, rgb.g, rgb.b, gl_FragColor.a);
+  return col;
+}`,
+  setxyz: `vec4 setxyz (vec3 comp, vec3 mask, vec4 col) {
+  col.xyz = (vec3(1., 1., 1.) - mask) * comp + m * hsv.xyz;
 }`,
 };

@@ -1,3 +1,4 @@
+/*
 import { UniformVal, Source, Effect, Float, RawFloat } from "../effect";
 import { glslFuncs } from "../glslfunctions";
 
@@ -85,3 +86,4 @@ export class Value extends Effect {
     this.setUniform("uValAdd", val);
   }
 }
+*/

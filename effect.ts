@@ -59,9 +59,8 @@ export interface Needs {
   centerSample: boolean;
 }
 
-// TODO should this have `implements EffectLike`?
+/*
 export abstract class Effect {
-  /** used to give each effect a unique id */
   static count = 0;
   needs: Needs = {
     depthBuffer: false,
@@ -75,14 +74,11 @@ export abstract class Effect {
   defaultNameMap: DefaultNameMap = {};
   id: number;
   idStr: string;
-  /** gets populated after parse is called; useful for code builder */
-  /*
   bi: BuildInfo = {
     externalFuncs: new Set(),
     uniformTypes: {},
     exprs: [],
   };
-  */
 
   constructor(source: Source, defaultNames: string[]) {
     this.id = Effect.count;
@@ -134,7 +130,6 @@ export abstract class Effect {
   ): string {
     //return vparse(val, defaultName, this, this.bi);
     return "TODO get rid of this (this is a stub)";
-    /*
     // transform `DefaultUniformVal` to `NamedUniformVal`
     let defaulted = false;
     if (typeof val !== "number" && val.length === 1) {
@@ -172,10 +167,8 @@ export abstract class Effect {
     return `vec${uniformVal.length}(${uniformVal
       .map((n) => toGLSLFloatString(n))
       .join(", ")})`;
-    */
   }
 
-  /*
   getNeeds(name: "neighborSample" | "centerSample" | "depthBuffer") {
     return this.needs[name];
   }
@@ -199,10 +192,8 @@ export abstract class Effect {
       uniformLocs
     );
   }
-  */
 
   // TODO remove
-  /*
   applyUniforms(gl: WebGL2RenderingContext, uniformLocs: UniformLocs) {
     for (const name in this.uniforms) {
       const loc = uniformLocs[name];
@@ -229,8 +220,8 @@ export abstract class Effect {
       }
     }
   }
-  */
 }
+*/
 
 // some helpers
 
