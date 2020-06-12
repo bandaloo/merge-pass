@@ -1,5 +1,4 @@
 import { CodeBuilder } from "./codebuilder";
-import { Vec4 } from "./exprtypes";
 import { WebGLProgramLoop } from "./webglprogramloop";
 import { Needs, ExprVec4 } from "./expressions/expr";
 

@@ -1,24 +1,25 @@
-import { Float, Vec, RawFloat } from "../exprtypes";
-import { ExprVec2, tag, VecExpr, ExprVec4, ExprVec3 } from "./expr";
-import { getVecSize } from "./vecexprs";
+import { Float, RawFloat } from "../exprtypes";
+import { tag, VecExpr, Expr } from "./expr";
+import { Operator } from "../operator";
 
-class ScaleExpr extends ExprVec4 {
-  vec: Vec;
+export class ScaleExpr<T extends Expr> extends Operator<T> {
+  vec: T;
 
-  constructor(scalar: Float, vec: Vec) {
-    super(tag`(${scalar} * ${vec})`, ["uScalar", "uVec"]);
+  constructor(scalar: Float, vec: T) {
+    super(vec, tag`(${scalar} * ${vec})`, ["uScalar", "uVec"]);
     this.vec = vec;
-  }
-
-  getSize() {
-    return getVecSize(this.vec);
   }
 
   setScalar(scalar: RawFloat) {
     this.setUniform("uScalar" + this.id, scalar);
   }
 
-  // TODO should there be a setVec?
+  // TODO this should be part of an interface
+  /*
+  r() {
+    return (this as unknown) as T;
+  }
+  */
 }
 
 export function scale<T extends VecExpr>(scalar: Float, vec: T) {

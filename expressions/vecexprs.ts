@@ -1,11 +1,4 @@
-import {
-  Float,
-  Vec,
-  NamedUniformVal,
-  NamedVec,
-  RawVec,
-  DefaultVec,
-} from "../exprtypes";
+import { Float, Vec, NamedVec, RawVec, DefaultVec } from "../exprtypes";
 import { ExprVec2, ExprVec3, ExprVec4, VecExpr, SourceLists } from "./expr";
 
 function vecSourceList(...components: Float[]): [SourceLists, string[]] {
@@ -30,7 +23,7 @@ export function vec3(...components: Float[]) {
 }
 
 export function vec4(...components: Float[]) {
-  return new ExprVec3(...vecSourceList(...components));
+  return new ExprVec4(...vecSourceList(...components));
 }
 
 export function getVecSize(vec: Vec): number {
@@ -39,19 +32,21 @@ export function getVecSize(vec: Vec): number {
     return vec.getSize();
   }
 
-  if (typeof vec[0] === "string") {
+  let arr = vec as RawVec | NamedVec | DefaultVec;
+
+  if (typeof arr[0] === "string") {
     // named
-    const namedVec = vec as NamedVec;
+    const namedVec = arr as NamedVec;
     return namedVec[1].length;
   }
 
-  if (typeof vec[0] === "number") {
+  if (typeof arr[0] === "number") {
     // raw
-    const rawVec = vec as RawVec;
+    const rawVec = arr as RawVec;
     return rawVec.length;
   }
 
   // default
-  const defaultVec = vec as DefaultVec;
+  const defaultVec = arr as DefaultVec;
   return defaultVec[0].length;
 }

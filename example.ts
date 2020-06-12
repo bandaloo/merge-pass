@@ -1,5 +1,4 @@
 import * as MP from "./index";
-import { vec } from "./expressions/vecexprs";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -55,8 +54,16 @@ window.addEventListener("load", () => {
   // TODO throw a better error when the list is empty
   const blur = new MP.BlurExpr([1, 0]);
   const fragColExpr = new MP.FragColorExpr();
+  /*
   const merger = new MP.Merger(
     [new MP.BlurExpr(MP.scale(3, MP.vec2(1, 0))).repeat(2)],
+    sourceCanvas,
+    gl
+  );
+  */
+  let s;
+  const merger = new MP.Merger(
+    [new MP.BlurExpr((s = MP.scale(2, MP.vec2(1, 0)))).repeat(2)],
     sourceCanvas,
     gl
   );

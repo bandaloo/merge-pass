@@ -255,9 +255,7 @@ export abstract class VecExpr extends Expr {
 }
 
 export class ExprFloat extends Expr {
-  constructor(sourceLists: SourceLists, defaultNames: string[]) {
-    super(sourceLists, defaultNames);
-  }
+  private float = undefined; // brand for nominal typing
 
   getSize() {
     return 1;
@@ -265,9 +263,7 @@ export class ExprFloat extends Expr {
 }
 
 export class ExprVec2 extends VecExpr {
-  constructor(sourceLists: SourceLists, defaultNames: string[]) {
-    super(sourceLists, defaultNames);
-  }
+  private vec2 = undefined; // brand for nominal typing
 
   getSize() {
     return 2;
@@ -275,6 +271,8 @@ export class ExprVec2 extends VecExpr {
 }
 
 export class ExprVec3 extends VecExpr {
+  private vec3: void; // brand for nominal typing
+
   constructor(sourceLists: SourceLists, defaultNames: string[]) {
     super(sourceLists, defaultNames);
   }
@@ -285,9 +283,7 @@ export class ExprVec3 extends VecExpr {
 }
 
 export class ExprVec4 extends VecExpr {
-  constructor(sourceLists: SourceLists, defaultNames: string[]) {
-    super(sourceLists, defaultNames);
-  }
+  private vec4 = undefined; // brand for nominal typing
 
   // TODO why can't it infer return type?
   repeat(num: number): EffectLoop {
