@@ -69,8 +69,6 @@ export class WebGLProgramLoop {
         gl.bindTexture(gl.TEXTURE_2D, tex.back);
         [tex.back, tex.front] = [tex.front, tex.back];
         // go back to the default framebuffer object
-        // TODO can we remove this?
-        //gl.bindFramebuffer(gl.FRAMEBUFFER, null);
         // use our last program as the draw program
         gl.drawArrays(gl.TRIANGLES, 0, 6);
       } else {

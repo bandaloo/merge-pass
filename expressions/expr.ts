@@ -12,9 +12,6 @@ import {
 import { UniformLocs, EffectLoop } from "../mergepass";
 import { WebGLProgramElement } from "../webglprogramloop";
 
-// TODO see if we need this later
-//export type FullExpr<T> = Expr<T> | T;
-
 interface UniformTypeMap {
   // TODO give a proper type that only denotes type names
   [name: string]: string;
@@ -246,20 +243,10 @@ export abstract class Expr {
 }
 
 export abstract class VecExpr extends Expr {
+  // TODO do we need branding for nominal typing?
   constructor(sourceLists: SourceLists, defaultNames: string[]) {
     super(sourceLists, defaultNames);
   }
-
-  // not needed anymore
-  /*
-  eparse(bi: BuildInfo): string {
-    let counter = 0;
-    const list = this.components.map((comp) => {
-      return vparse(comp, "uComp" + counter++ + this.id, this, bi);
-    });
-    return `(vec${this.components.length}(${list.join(", ")}))`;
-  }
-  */
 }
 
 export class ExprFloat extends Expr {
@@ -294,7 +281,7 @@ export class ExprVec4 extends VecExpr {
   private vec4 = undefined; // brand for nominal typing
 
   // TODO why can't it infer return type?
-  repeat(num: number): EffectLoop {
+  repeat(num: number) {
     return new EffectLoop([this], { num: num });
   }
 
