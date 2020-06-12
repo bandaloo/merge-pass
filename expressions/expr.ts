@@ -80,6 +80,7 @@ export function vparse(
     buildInfo.uniformTypes[name] = uniformGLSLTypeStr(uniformVal);
     // add the name mapping
     e.defaultNameMap[defaultName] = name;
+    console.log("default name", defaultName);
     return name;
   }
   // not a named value, so it can be inserted into code directly like a macro
@@ -195,7 +196,14 @@ export abstract class Expr {
     }
     const oldVal = this.uniformValChangeMap[name]?.val;
     if (oldVal === undefined) {
-      throw new Error("tried to set uniform " + name + " which doesn't exist");
+      console.log(this.defaultNameMap);
+      throw new Error(
+        "tried to set uniform " +
+          name +
+          " which doesn't exist." +
+          "(maybe you tried to change a value that was set as immutable." +
+          "to make it immutable, wrap it in square brackets)"
+      );
     }
     const oldType = uniformGLSLTypeNum(oldVal);
     const newType = uniformGLSLTypeNum(newVal);

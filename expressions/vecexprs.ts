@@ -14,16 +14,16 @@ function vecSourceList(...components: Float[]): [SourceLists, string[]] {
   return [{ sections: sections, values: components }, defaultNames];
 }
 
-export function vec2(...components: Float[]) {
-  return new ExprVec2(...vecSourceList(...components));
+export function vec2(comp1: Float, comp2: Float) {
+  return new ExprVec2(...vecSourceList(comp1, comp2));
 }
 
-export function vec3(...components: Float[]) {
-  return new ExprVec3(...vecSourceList(...components));
+export function vec3(comp1: Float, comp2: Float, comp3: Float) {
+  return new ExprVec3(...vecSourceList(comp1, comp2, comp3));
 }
 
-export function vec4(...components: Float[]) {
-  return new ExprVec4(...vecSourceList(...components));
+export function vec4(comp1: Float, comp2: Float, comp3: Float, comp4: Float) {
+  return new ExprVec4(...vecSourceList(comp1, comp2, comp3, comp4));
 }
 
 export function getVecSize(vec: Vec): number {

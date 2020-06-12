@@ -1,17 +1,17 @@
-/*
-import { Vec } from "../exprtypes";
 import { tag, VecExpr } from "./expr";
+import { Operator } from "../operator";
 
-export class DotExpr extends VecExpr {
-  left: VecExpr;
-  right: VecExpr;
+export class DotExpr<T extends VecExpr> extends Operator<T> {
+  left: T;
+  right: T;
 
-  constructor(left: VecExpr, right: VecExpr) {
-    super(tag`(${left} * ${right})`, ["uLeft", "uRight"]);
+  constructor(left: T, right: T) {
+    super(left, tag`(${left} * ${right})`, ["uLeft", "uRight"]);
     this.left = left;
     this.right = right;
   }
-
-  // TODO setters
 }
-*/
+
+export function dot<T extends VecExpr>(left: T, right: T) {
+  return new DotExpr(left, right);
+}

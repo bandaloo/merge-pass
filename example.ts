@@ -1,4 +1,5 @@
 import * as MP from "./index";
+import { ScaleExpr } from "./expressions/scaleexpr";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -61,9 +62,9 @@ window.addEventListener("load", () => {
     gl
   );
   */
-  let s;
+  let s: MP.ScaleExpr<MP.ExprVec2>;
   const merger = new MP.Merger(
-    [new MP.BlurExpr((s = MP.scale(2, MP.vec2(1, 0)))).repeat(2)],
+    [new MP.BlurExpr((s = MP.scale([2], MP.vec2(1, 0)))).repeat(2)],
     sourceCanvas,
     gl
   );
@@ -84,6 +85,7 @@ window.addEventListener("load", () => {
     //blur.setUniform("uBlur", [Math.cos(time / 1000) ** 8, 0]);
     //hueAdd.setUniform("uHue", t / 9);
     //powerBlur.setSize(8 * Math.cos(time / 1000) ** 8);
+    s.setScalar(8 * Math.cos(time / 1000) ** 8);
 
     // draw insane stripes
     const i = ~~(t * 9);
