@@ -1,5 +1,5 @@
-import { tag, Vec2, Vec4 } from "../effect";
-import { Expr } from "../effects/expression";
+import { Vec2, Vec4 } from "../exprtypes";
+import { Expr, tag } from "../effects/expression";
 import { glslFuncs } from "../glslfunctions";
 
 export class BlurExpr extends Expr<Vec4> {

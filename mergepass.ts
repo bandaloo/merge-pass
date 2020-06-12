@@ -1,6 +1,6 @@
 import { CodeBuilder } from "./codebuilder";
-import { Vec4, Needs } from "./effect";
-import { Expr } from "./effects/expression";
+import { Vec4 } from "./exprtypes";
+import { Expr, Needs } from "./effects/expression";
 import { WebGLProgramLoop } from "./webglprogramloop";
 
 export interface LoopInfo {

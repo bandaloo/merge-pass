@@ -1,4 +1,4 @@
-import { UniformVal } from "./effect";
+import { UniformVal } from "./exprtypes";
 import { BuildInfo, Expr } from "./effects/expression";
 import { EffectLoop, UniformLocs } from "./mergepass";
 import { WebGLProgramLoop } from "./webglprogramloop";

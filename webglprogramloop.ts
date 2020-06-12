@@ -1,4 +1,4 @@
-import { Vec4 } from "./effect";
+import { Vec4 } from "./exprtypes";
 import { Expr } from "./effects/expression";
 import { LoopInfo, UniformLocs } from "./mergepass";
 

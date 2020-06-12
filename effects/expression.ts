@@ -1,16 +1,13 @@
 import {
   UniformVal,
-  DefaultNameMap,
   NamedUniformVal,
-  // TODO fix this
-  UniformValMap as UniformValChangeMap,
   RawVec,
   RawUniformVal,
   RawFloat,
   RawVec2,
   RawVec3,
   RawVec4,
-} from "../effect";
+} from "../exprtypes";
 import { UniformLocs, EffectLoop } from "../mergepass";
 import { WebGLProgramElement } from "../webglprogramloop";
 
@@ -97,8 +94,17 @@ function toGLSLFloatString(num: number) {
   return str;
 }
 
-// add sceneBuffer
-interface Needs {
+// this should be on expression
+export interface UniformValChangeMap {
+  [name: string]: { val: RawUniformVal; changed: boolean };
+}
+
+// TODO don't really want to expose this
+export interface DefaultNameMap {
+  [name: string]: string;
+}
+
+export interface Needs {
   depthBuffer: boolean;
   neighborSample: boolean;
   centerSample: boolean;
@@ -258,4 +264,11 @@ export function uniformGLSLTypeStr(val: RawUniformVal) {
   if (num === 1) return "float";
   if (num >= 2 && num <= 4) return "vec" + num;
   throw new Error("cannot convert " + val + " to a GLSL type");
+}
+
+export function tag(
+  strings: TemplateStringsArray,
+  ...values: UniformVal[]
+): SourceLists {
+  return { sections: strings.concat([]), values: values };
 }

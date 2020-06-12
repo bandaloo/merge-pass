@@ -1,4 +1,4 @@
-import { Float } from "../effect";
+import { Float } from "../exprtypes";
 import { Expr } from "../effects/expression";
 
 class RGBExpr extends Expr<Float> {

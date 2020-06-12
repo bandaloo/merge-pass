@@ -1,5 +1,4 @@
-import { Merger } from "./mergepass";
-import { BlurExpr } from "./expressions/blurexpr";
+import * as MP from "./index";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -53,8 +52,15 @@ window.addEventListener("load", () => {
   //const powerBlur = new PowerBlur(8);
 
   // TODO throw a better error when the list is empty
-  const blur = new BlurExpr([1, 0]);
-  const merger = new Merger([blur], sourceCanvas, gl);
+  const blur = new MP.BlurExpr([1, 0]);
+  const merger = new MP.Merger(
+    [
+      new MP.BlurExpr([1, 0]).repeat(2),
+      new MP.ScaleExpr(new MP.RandomExpr(), new MP.FragColorExpr()),
+    ],
+    sourceCanvas,
+    gl
+  );
 
   // dwitter sim
   const C = Math.cos;

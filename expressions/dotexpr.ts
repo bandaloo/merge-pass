@@ -1,5 +1,5 @@
-import { tag, Vec } from "../effect";
-import { Expr } from "../effects/expression";
+import { Vec } from "../exprtypes";
+import { Expr, tag } from "../effects/expression";
 
 export class DotExpr<T extends Vec> extends Expr<T> {
   left: T;

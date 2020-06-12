@@ -1,4 +1,4 @@
-import { Float, Vec2, Vec3, Vec4 } from "../effect";
+import { Float, Vec2, Vec3, Vec4 } from "../exprtypes";
 import { Expr } from "../effects/expression";
 
 class VecExpr<Vec> extends Expr<Vec> {

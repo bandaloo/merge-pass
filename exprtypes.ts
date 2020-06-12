@@ -1,4 +1,4 @@
-import { BuildInfo, Expr, uniformGLSLTypeNum } from "./effects/expression";
+import { Expr } from "./effects/expression";
 
 export type RawFloat = number;
 type NamedFloat = [string, number];
@@ -31,33 +31,11 @@ export type DefaultUniformVal =
 export type RawUniformVal = RawFloat | RawVec2 | RawVec3 | RawVec4;
 export type NamedUniformVal = NamedFloat | NamedVec2 | NamedVec3 | NamedVec4;
 
-// isn't this encompassed by `FullExpr<UniformVal>`?
 export type UniformVal =
   | RawUniformVal
   | NamedUniformVal
   | DefaultUniformVal
   | Expr<UniformVal>;
-
-export interface Source {
-  sections: string[];
-  values: UniformVal[];
-}
-
-// this should be on expression
-export interface UniformValMap {
-  [name: string]: { val: RawUniformVal; changed: boolean };
-}
-
-// TODO don't really want to expose this
-export interface DefaultNameMap {
-  [name: string]: string;
-}
-
-export interface Needs {
-  depthBuffer: boolean;
-  neighborSample: boolean;
-  centerSample: boolean;
-}
 
 /*
 export abstract class Effect {
@@ -242,11 +220,3 @@ export function uniformGLSLTypeNum(val: RawUniformVal) {
   return val.length;
 }
 */
-
-// TODO move this
-export function tag(
-  strings: TemplateStringsArray,
-  ...values: UniformVal[]
-): Source {
-  return { sections: strings.concat([]), values: values };
-}

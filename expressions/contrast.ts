@@ -1,5 +1,5 @@
-import { Expr } from "../effects/expression";
-import { tag, Float, Vec4, RawFloat } from "../effect";
+import { Expr, tag } from "../effects/expression";
+import { Float, RawFloat, Vec4 } from "../exprtypes";
 import { FragColorExpr } from "./fragcolorexpr";
 
 export class Contrast extends Expr<Vec4> {

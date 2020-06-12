@@ -1,5 +1,5 @@
-import { Expr } from "../effects/expression";
-import { Vec4, Vec3, tag, RawVec3 } from "../effect";
+import { Expr, tag } from "../effects/expression";
+import { RawVec3, Vec3, Vec4 } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
 import { FragColorExpr } from "./fragcolorexpr";
 
