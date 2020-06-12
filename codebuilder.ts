@@ -1,7 +1,6 @@
-import { UniformVal } from "./exprtypes";
-import { BuildInfo, Expr } from "./effects/expression";
 import { EffectLoop, UniformLocs } from "./mergepass";
 import { WebGLProgramLoop } from "./webglprogramloop";
+import { BuildInfo, Expr, ExprVec4 } from "./expressions/expr";
 
 // the line below, which gets placed as the first line of `main`, enables allows
 // multiple shaders to be chained together, which works for shaders that don't
@@ -26,7 +25,7 @@ export class CodeBuilder {
   private uniformDeclarations: Set<string> = new Set();
   private counter = 0;
   /** flat array of expressions within loop for attaching uniforms */
-  private exprs: Expr<UniformVal>[];
+  private exprs: Expr[];
   private baseLoop: EffectLoop;
   //private uniformLocs: UniformLocs = {};
   //private uniformNames: string[];

@@ -1,7 +1,7 @@
-import { Float, Vec } from "../exprtypes";
-import { Expr, tag } from "../effects/expression";
+import { Vec } from "../exprtypes";
+import { ExprFloat, tag } from "./expr";
 
-export class LenExpr extends Expr<Float> {
+export class LenExpr extends ExprFloat {
   vec: Vec;
 
   constructor(vec: Vec) {

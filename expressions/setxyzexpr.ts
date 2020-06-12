@@ -1,14 +1,11 @@
+// TODO replacing this with scomp gcomp
+/*
 import { Expr, tag } from "../effects/expression";
 import { RawVec3, Vec3, Vec4 } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
 import { FragColorExpr } from "./fragcolorexpr";
 
 export class SetXYZExpr extends Expr<Vec4> {
-  /**
-   * @param components hue, sat and brightness components
-   * @param mask which original color components to zero out and which to keep
-   * (defaults to only zeroing out all of original color)
-   */
   constructor(
     components: Vec3,
     mask: Vec3 = [0, 0, 0],
@@ -29,3 +26,4 @@ export class SetXYZExpr extends Expr<Vec4> {
     this.setUniform("uMask", mask);
   }
 }
+*/

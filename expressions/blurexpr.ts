@@ -1,8 +1,8 @@
-import { Vec2, Vec4 } from "../exprtypes";
-import { Expr, tag } from "../effects/expression";
+import { Vec2 } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
+import { ExprVec4, tag } from "./expr";
 
-export class BlurExpr extends Expr<Vec4> {
+export class BlurExpr extends ExprVec4 {
   constructor(direction: Vec2) {
     super(tag`(gauss5(${direction}))`, ["uDirection"]);
     this.externalFuncs = [glslFuncs.gauss5];

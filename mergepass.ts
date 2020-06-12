@@ -1,7 +1,7 @@
 import { CodeBuilder } from "./codebuilder";
 import { Vec4 } from "./exprtypes";
-import { Expr, Needs } from "./effects/expression";
 import { WebGLProgramLoop } from "./webglprogramloop";
+import { Needs, ExprVec4 } from "./expressions/expr";
 
 export interface LoopInfo {
   num: number;
@@ -87,7 +87,7 @@ export class EffectLoop {
   }
 }
 
-type EffectElement = Expr<Vec4> | EffectLoop;
+type EffectElement = ExprVec4 | EffectLoop;
 
 // TODO we don't really want to export this at the package level
 export interface UniformLocs {
@@ -122,7 +122,7 @@ export class Merger {
   private options: MergerOptions | undefined;
 
   constructor(
-    effects: (Expr<Vec4> | EffectLoop)[],
+    effects: (ExprVec4 | EffectLoop)[],
     source: TexImageSource,
     gl: WebGL2RenderingContext,
     options?: MergerOptions

@@ -1,7 +1,6 @@
-import { Expr, tag } from "../effects/expression";
-import { Vec4 } from "../exprtypes";
+import { tag, ExprVec4 } from "./expr";
 
-export class FragColorExpr extends Expr<Vec4> {
+export class FragColorExpr extends ExprVec4 {
   constructor() {
     super(tag`(gl_FragColor)`, []);
   }

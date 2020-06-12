@@ -1,7 +1,6 @@
-import { Float } from "../exprtypes";
-import { Expr } from "../effects/expression";
+import { ExprFloat } from "./expr";
 
-class RGBExpr extends Expr<Float> {
+class RGBExpr extends ExprFloat {
   constructor(char: string) {
     super({ sections: [`(gl_FragColor.${char})`], values: [] }, []);
   }

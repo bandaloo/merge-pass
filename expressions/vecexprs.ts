@@ -1,44 +1,57 @@
-import { Float, Vec2, Vec3, Vec4 } from "../exprtypes";
-import { Expr } from "../effects/expression";
+import {
+  Float,
+  Vec,
+  NamedUniformVal,
+  NamedVec,
+  RawVec,
+  DefaultVec,
+} from "../exprtypes";
+import { ExprVec2, ExprVec3, ExprVec4, VecExpr, SourceLists } from "./expr";
 
-class VecExpr<Vec> extends Expr<Vec> {
-  components: Float[];
-
-  constructor(...components: Float[]) {
-    // TODO test this
-    const sections = ["(vec" + components.length];
-    for (let i = 0; i < components.length - 1; i++) {
-      sections.push(", ");
-    }
-    const defaultNames = [];
-    for (let i = 0; i < components.length; i++) {
-      defaultNames.push("uComp" + i);
-    }
-    sections.push(")");
-    super({ sections: sections, values: components }, defaultNames);
-    this.components = components;
+function vecSourceList(...components: Float[]): [SourceLists, string[]] {
+  const sections = ["vec" + components.length + "("];
+  for (let i = 0; i < components.length - 1; i++) {
+    sections.push(", ");
   }
-
-  /*
-  eparse(bi: BuildInfo): string {
-    let counter = 0;
-    const list = this.components.map((comp) => {
-      return vparse(comp, "uComp" + counter++ + this.id, this, bi);
-    });
-    return `(vec${this.components.length}(${list.join(", ")}))`;
+  const defaultNames = [];
+  for (let i = 0; i < components.length; i++) {
+    defaultNames.push("uComp" + i);
   }
-  */
+  sections.push(")");
+  return [{ sections: sections, values: components }, defaultNames];
 }
 
-export function vec(...components: Float[]) {
-  switch (components.length) {
-    case 2:
-      return new VecExpr<Vec2>(...components);
-    case 3:
-      return new VecExpr<Vec3>(...components);
-    case 4:
-      return new VecExpr<Vec4>(...components);
-    default:
-      throw new Error("wrong number of components for vec");
+export function vec2(...components: Float[]) {
+  return new ExprVec2(...vecSourceList(...components));
+}
+
+export function vec3(...components: Float[]) {
+  return new ExprVec3(...vecSourceList(...components));
+}
+
+export function vec4(...components: Float[]) {
+  return new ExprVec3(...vecSourceList(...components));
+}
+
+export function getVecSize(vec: Vec): number {
+  // expr
+  if (vec instanceof VecExpr) {
+    return vec.getSize();
   }
+
+  if (typeof vec[0] === "string") {
+    // named
+    const namedVec = vec as NamedVec;
+    return namedVec[1].length;
+  }
+
+  if (typeof vec[0] === "number") {
+    // raw
+    const rawVec = vec as RawVec;
+    return rawVec.length;
+  }
+
+  // default
+  const defaultVec = vec as DefaultVec;
+  return defaultVec[0].length;
 }

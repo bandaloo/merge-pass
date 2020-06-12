@@ -7,6 +7,7 @@ import {
   RawVec2,
   RawVec3,
   RawVec4,
+  Float,
 } from "../exprtypes";
 import { UniformLocs, EffectLoop } from "../mergepass";
 import { WebGLProgramElement } from "../webglprogramloop";
@@ -23,7 +24,7 @@ interface UniformTypeMap {
 export interface BuildInfo {
   uniformTypes: UniformTypeMap;
   externalFuncs: Set<string>;
-  exprs: Expr<UniformVal>[];
+  exprs: Expr[];
   needs: Needs;
 }
 
@@ -37,7 +38,7 @@ export interface BuildInfo {
 export function vparse(
   val: UniformVal,
   defaultName: string,
-  e: Expr<UniformVal>,
+  e: Expr,
   buildInfo: BuildInfo
 ): string {
   // parse the expression if it's an expression
@@ -115,8 +116,7 @@ export interface SourceLists {
   values: UniformVal[];
 }
 
-// TODO get rid of the generic (it isn't used) and make subclasses
-export abstract class Expr<T> {
+export abstract class Expr {
   static count = 0;
   id: string;
   needs: Needs = {
@@ -177,30 +177,15 @@ export abstract class Expr<T> {
     }
   }
 
+  abstract getSize(): number;
+
   /** expression and loops both implement this */
   getNeeds(name: keyof Needs) {
     return this.needs[name];
   }
 
-  // TODO why can't it infer return type?
-  repeat(num: number): EffectLoop {
-    return new EffectLoop([this], { num: num });
-  }
-
   getSampleNum(mult = 1) {
     return this.needs.neighborSample ? mult : 0;
-  }
-
-  genPrograms(
-    gl: WebGL2RenderingContext,
-    vShader: WebGLShader,
-    uniformLocs: UniformLocs
-  ): WebGLProgramElement {
-    return new EffectLoop([this], { num: 1 }).genPrograms(
-      gl,
-      vShader,
-      uniformLocs
-    );
   }
 
   setUniform(name: string, newVal: RawUniformVal) {
@@ -252,6 +237,80 @@ export abstract class Expr<T> {
   }
 }
 
+export abstract class VecExpr extends Expr {
+  constructor(sourceLists: SourceLists, defaultNames: string[]) {
+    super(sourceLists, defaultNames);
+  }
+
+  // not needed anymore
+  /*
+  eparse(bi: BuildInfo): string {
+    let counter = 0;
+    const list = this.components.map((comp) => {
+      return vparse(comp, "uComp" + counter++ + this.id, this, bi);
+    });
+    return `(vec${this.components.length}(${list.join(", ")}))`;
+  }
+  */
+}
+
+export class ExprFloat extends Expr {
+  constructor(sourceLists: SourceLists, defaultNames: string[]) {
+    super(sourceLists, defaultNames);
+  }
+
+  getSize() {
+    return 1;
+  }
+}
+
+export class ExprVec2 extends VecExpr {
+  constructor(sourceLists: SourceLists, defaultNames: string[]) {
+    super(sourceLists, defaultNames);
+  }
+
+  getSize() {
+    return 2;
+  }
+}
+
+export class ExprVec3 extends VecExpr {
+  constructor(sourceLists: SourceLists, defaultNames: string[]) {
+    super(sourceLists, defaultNames);
+  }
+
+  getSize() {
+    return 3;
+  }
+}
+
+export class ExprVec4 extends VecExpr {
+  constructor(sourceLists: SourceLists, defaultNames: string[]) {
+    super(sourceLists, defaultNames);
+  }
+
+  // TODO why can't it infer return type?
+  repeat(num: number): EffectLoop {
+    return new EffectLoop([this], { num: num });
+  }
+
+  genPrograms(
+    gl: WebGL2RenderingContext,
+    vShader: WebGLShader,
+    uniformLocs: UniformLocs
+  ): WebGLProgramElement {
+    return new EffectLoop([this], { num: 1 }).genPrograms(
+      gl,
+      vShader,
+      uniformLocs
+    );
+  }
+
+  getSize() {
+    return 4;
+  }
+}
+
 export function uniformGLSLTypeNum(val: RawUniformVal) {
   if (typeof val === "number") {
     return 1;
@@ -272,3 +331,12 @@ export function tag(
 ): SourceLists {
   return { sections: strings.concat([]), values: values };
 }
+
+/*
+export function tagf(
+  strings: TemplateStringsArray,
+  ...values: Float[]
+): FloatSourceLists {
+  return { sections: strings.concat([]), values: values };
+}
+*/

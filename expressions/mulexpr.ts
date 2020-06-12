@@ -1,7 +1,7 @@
 import { Float } from "../exprtypes";
-import { Expr, tag } from "../effects/expression";
+import { ExprFloat, tag } from "./expr";
 
-export class MulExpr extends Expr<Float> {
+export class MulExpr extends ExprFloat {
   left: Float;
   right: Float;
 
