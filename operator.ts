@@ -1,8 +1,9 @@
 import { Expr, SourceLists } from "./expressions/expr";
-import { getVecSize } from "./expressions/vecexprs";
+import { getUniformSize } from "./expressions/vecexprs";
+import { Float } from "./exprtypes";
 
 // originally: export class Operator<T extends Operator<T> | Expr> extends Expr {
-export class Operator<T extends Expr> extends Expr {
+export class Operator<T extends Expr | Float> extends Expr {
   ret: T;
 
   constructor(ret: T, sourceLists: SourceLists, defaultNames: string[]) {
@@ -11,6 +12,6 @@ export class Operator<T extends Expr> extends Expr {
   }
 
   getSize(): number {
-    return getVecSize(this.ret);
+    return getUniformSize(this.ret);
   }
 }

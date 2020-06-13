@@ -1,4 +1,14 @@
-import { Float, Vec, NamedVec, RawVec, DefaultVec } from "../exprtypes";
+import {
+  Float,
+  Vec,
+  NamedVec,
+  RawVec,
+  DefaultVec,
+  UniformVal,
+  RawUniformVal,
+  NamedUniformVal,
+  DefaultUniformVal,
+} from "../exprtypes";
 import { ExprVec2, ExprVec3, ExprVec4, VecExpr, SourceLists } from "./expr";
 
 function vecSourceList(...components: Float[]): [SourceLists, string[]] {
@@ -26,27 +36,43 @@ export function vec4(comp1: Float, comp2: Float, comp3: Float, comp4: Float) {
   return new ExprVec4(...vecSourceList(comp1, comp2, comp3, comp4));
 }
 
-export function getVecSize(vec: Vec): number {
+export function getUniformSize(val: UniformVal): number {
   // expr
-  if (vec instanceof VecExpr) {
-    return vec.getSize();
+  if (val instanceof VecExpr) {
+    return val.getSize();
   }
 
-  let arr = vec as RawVec | NamedVec | DefaultVec;
+  // raw float
+  if (typeof val === "number") {
+    return 1;
+  }
+
+  // can't be raw float since that is just a number
+  const arr = val as RawVec | NamedUniformVal | DefaultUniformVal;
 
   if (typeof arr[0] === "string") {
     // named
-    const namedVec = arr as NamedVec;
-    return namedVec[1].length;
+    const namedVal = arr as NamedVec;
+    // float
+    if (typeof namedVal === "number") return 1;
+    // vec
+    return namedVal[1].length;
   }
 
   if (typeof arr[0] === "number") {
-    // raw
+    // raw vec
     const rawVec = arr as RawVec;
     return rawVec.length;
   }
 
+  const defaultVal = arr as DefaultUniformVal;
+
   // default
+  if (typeof defaultVal[0] === "number") {
+    // float
+    return 1;
+  }
+  // vec
   const defaultVec = arr as DefaultVec;
   return defaultVec[0].length;
 }

@@ -1,6 +1,6 @@
-import { Float, RawFloat, RawUniformVal } from "../exprtypes";
-import { tag, VecExpr, Expr } from "./expr";
+import { Float, RawFloat, RawVec } from "../exprtypes";
 import { Operator } from "../operator";
+import { tag, VecExpr } from "./expr";
 
 export class ScaleExpr<T extends VecExpr> extends Operator<T> {
   constructor(scalar: Float, vec: T) {
@@ -9,6 +9,10 @@ export class ScaleExpr<T extends VecExpr> extends Operator<T> {
 
   setScalar(scalar: RawFloat) {
     this.setUniform("uScalar" + this.id, scalar);
+  }
+
+  setVector(scalar: RawVec) {
+    this.setUniform("uVec" + this.id, scalar);
   }
 }
 

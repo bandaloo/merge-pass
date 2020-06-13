@@ -52,7 +52,8 @@ export type RawVec = RawVec2 | RawVec3 | RawVec4;
 export type NamedVec = NamedVec2 | NamedVec3 | NamedVec4;
 export type DefaultVec = DefaultVec2 | DefaultVec3 | DefaultVec4;
 
-export type RawUniformVal = RawFloat | RawVec2 | RawVec3 | RawVec4;
-export type NamedUniformVal = NamedFloat | NamedVec2 | NamedVec3 | NamedVec4;
+export type DefaultUniformVal = DefaultFloat | DefaultVec;
+export type RawUniformVal = RawFloat | RawVec;
+export type NamedUniformVal = NamedFloat | NamedVec;
 
 export type UniformVal = Float | Vec;
