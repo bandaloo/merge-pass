@@ -1,5 +1,5 @@
 import * as MP from "./index";
-import { float } from "./index";
+import { pfloat } from "./index";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -79,7 +79,12 @@ window.addEventListener("load", () => {
 
   //const loop = new MP.BlurExpr((s = MP.mul(v2, MP.mut(2)))).repeat(2);
   //const merger = new MP.Merger([loop], sourceCanvas, gl);
-  const merger = new MP.Merger([MP.pblur(8)], sourceCanvas, gl);
+  //const merger = new MP.Merger([MP.blur2d(pfloat())], sourceCanvas, gl);
+
+  const hFloat = MP.float(MP.mut(1, "testname"));
+  const vFloat = MP.float(MP.mut(1));
+
+  const merger = new MP.Merger([MP.blur2d(hFloat, vFloat)], sourceCanvas, gl);
 
   // dwitter sim
   const C = Math.cos;
@@ -99,6 +104,9 @@ window.addEventListener("load", () => {
     //powerBlur.setSize(8 * Math.cos(time / 1000) ** 8);
     //s.setRight(MP.float(8 * Math.cos(time / 1000) ** 8));
     //s.setLeft(MP.pvec2(1, 8 * Math.sin(time / 1000)));
+    //f.setVal(8 * Math.cos(time / 1000) ** 8);
+    hFloat.setVal(2 * Math.cos(time / 1000) ** 8);
+    vFloat.setVal(2 * Math.cos(time / 1000) ** 8);
 
     // draw insane stripes
     const i = ~~(t * 9);

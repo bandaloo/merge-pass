@@ -9,6 +9,7 @@ export * from "./expressions/fragcolorexpr";
 export * from "./expressions/vecexprs";
 export * from "./expressions/multexpr";
 export * from "./expressions/powerblur";
+export * from "./expressions/blur2dloop";
 
 // TODO get rid of these
 export * from "./expressions/expr";

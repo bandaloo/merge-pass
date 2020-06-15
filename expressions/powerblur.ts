@@ -5,7 +5,7 @@ import { mut } from "./expr";
 
 const baseLog = (x: number, y: number) => Math.log(y) / Math.log(x);
 
-export class PowerBlur extends EffectLoop {
+export class PowerBlurLoop extends EffectLoop {
   private size: number;
 
   constructor(size: number) {
@@ -29,6 +29,9 @@ export class PowerBlur extends EffectLoop {
   }
 }
 
+/**
+ * fast approximate blur for large blur radius that might look good in some cases
+ */
 export function pblur(size: number) {
-  return new PowerBlur(size);
+  return new PowerBlurLoop(size);
 }

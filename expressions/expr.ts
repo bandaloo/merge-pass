@@ -80,7 +80,6 @@ export function vparse(
 }
 */
 
-// TODO! move to primitive
 function toGLSLFloatString(num: number) {
   let str = "" + num;
   if (!str.includes(".")) str += ".";
@@ -171,6 +170,7 @@ export abstract class Expr implements Parseable {
   }
 
   setUniform(name: string, newVal: AllVals) {
+    const originalName = name;
     if (typeof newVal === "number") {
       newVal = n2p(newVal);
     }
@@ -183,7 +183,14 @@ export abstract class Expr implements Parseable {
     }
     const oldVal = this.uniformValChangeMap[name]?.val;
     if (oldVal === undefined) {
-      throw new Error("tried to set uniform " + name + " which doesn't exist.");
+      console.log("default name map", this.defaultNameMap);
+      throw new Error(
+        "tried to set uniform " +
+          name +
+          " which doesn't exist." +
+          " original name: " +
+          originalName
+      );
     }
     if (oldVal.typeString() !== newVal.typeString()) {
       throw new Error("tried to set uniform " + name + " to a new type");
@@ -194,6 +201,8 @@ export abstract class Expr implements Parseable {
 
   /** parses this expression into a string, adding info as it recurses */
   parse(buildInfo: BuildInfo): string {
+    console.log("first source code", this.sourceCode);
+    this.sourceCode = "";
     buildInfo.exprs.push(this);
     const updateNeed = (name: keyof Needs) =>
       (buildInfo.needs[name] = buildInfo.needs[name] || this.needs[name]);
@@ -208,21 +217,12 @@ export abstract class Expr implements Parseable {
       this.sourceCode +=
         this.sourceLists.sections[i] +
         this.sourceLists.values[i].parse(buildInfo, this.defaultNames[i], this);
-      /*
-      this.sourceCode +=
-        this.sourceLists.sections[i] +
-        vparse(
-          this.sourceLists.values[i],
-          this.defaultNames[i] + this.id,
-          this,
-          buildInfo
-        );
-      */
     }
     // TODO does sourceCode have to be a member?
     this.sourceCode += this.sourceLists.sections[
       this.sourceLists.sections.length - 1
     ];
+    console.log("source code", this.sourceCode);
     return this.sourceCode;
   }
 }
@@ -241,6 +241,7 @@ export class Mutable<T extends Primitive> implements Applicable {
       throw new Error("tried to put a mutable expression at the top level");
     }
     // accept the default name if given no name
+    console.log("default name: ", defaultName);
     if (this.name === undefined) this.name = defaultName + enc.id;
     // set to true so they are set to their default values on first draw
     buildInfo.uniformTypes[this.name] = this.primitive.typeString();
@@ -250,8 +251,11 @@ export class Mutable<T extends Primitive> implements Applicable {
       changed: true,
     };
     // add the new type to the map
-    enc.defaultNameMap[defaultName] = name;
+    enc.defaultNameMap[defaultName + enc.id] = this.name;
+    // TODO get rid of this
+    console.log("enc dnames", enc.defaultNameMap);
     // insert the uniform name into the source code
+    console.log("this name");
     return this.name;
   }
 
@@ -260,13 +264,13 @@ export class Mutable<T extends Primitive> implements Applicable {
   }
 }
 
-export function mut<T extends Primitive>(val: T): Mutable<T>;
+export function mut<T extends Primitive>(val: T, name?: string): Mutable<T>;
 
-export function mut(val: number): Mutable<PrimitiveFloat>;
+export function mut(val: number, name?: string): Mutable<PrimitiveFloat>;
 
-export function mut<T extends Primitive>(val: T | number) {
+export function mut<T extends Primitive>(val: T | number, name?: string) {
   const primitive = typeof val === "number" ? n2p(val) : val;
-  return new Mutable(primitive);
+  return new Mutable(primitive, name);
 }
 
 /*
@@ -289,14 +293,6 @@ export abstract class Primitive implements Parseable, Applicable {
   parse(buildInfo: BuildInfo, defaultName: string, enc: Expr | undefined) {
     return this.toString();
   }
-
-  /*
-  parse(buildInfo: BuildInfo, enc: Expr) {
-    return `vec${this.value.length}(${this.value
-      .map((n) => toGLSLFloatString(n))
-      .join(", ")})`;
-  }
-  */
 }
 
 export class PrimitiveFloat extends Primitive {
@@ -381,36 +377,36 @@ export abstract class ExprVec extends Expr {
     if (index < 0 || index >= this.values.length) {
       throw new Error("out of bounds of setting component");
     }
-    if (typeof primitive === "number") primitive = n2p(primitive);
-    this.setUniform(this.defaultNames[index], primitive);
+    this.setUniform(this.defaultNames[index], n2p(primitive));
   }
 }
 
 export class ExprFloat extends Expr {
   private float = undefined; // brand for nominal typing
 
-  getSize() {
-    return 1;
-  }
-}
-
-export class ExprVec2 extends ExprVec {
-  private vec2 = undefined; // brand for nominal typing
-
-  getSize() {
-    return 2;
-  }
-}
-
-export class ExprVec3 extends ExprVec {
-  private vec3: void; // brand for nominal typing
-
   constructor(sourceLists: SourceLists, defaultNames: string[]) {
     super(sourceLists, defaultNames);
   }
 
-  getSize() {
-    return 3;
+  setVal(primitive: PrimitiveFloat | number) {
+    this.setUniform("uFloat" + this.id, n2p(primitive));
+  }
+}
+
+export function float(value: Float | number) {
+  if (typeof value === "number") value = n2p(value);
+  return new ExprFloat({ sections: ["", ""], values: [value] }, ["uFloat"]);
+}
+
+export class ExprVec2 extends ExprVec {
+  private vec2 = undefined; // brand for nominal typing
+}
+
+export class ExprVec3 extends ExprVec {
+  private vec3 = undefined; // brand for nominal typing
+
+  constructor(sourceLists: SourceLists, defaultNames: string[]) {
+    super(sourceLists, defaultNames);
   }
 }
 
@@ -432,31 +428,8 @@ export class ExprVec4 extends ExprVec {
       uniformLocs
     );
   }
-
-  getSize() {
-    return 4;
-  }
 }
 
-// TODO! still needed?
-/*
-export function uniformGLSLTypeNum(val: RawUniformVal) {
-  if (typeof val === "number") {
-    return 1;
-  }
-  return val.length;
-}
-*/
-
-// TODO! still needed?
-/*
-export function uniformGLSLTypeStr(val: RawUniformVal) {
-  const num = uniformGLSLTypeNum(val);
-  if (num === 1) return "float";
-  if (num >= 2 && num <= 4) return "vec" + num;
-  throw new Error("cannot convert " + val + " to a GLSL type");
-}
-*/
 export class Operator<T extends AllVals> extends Expr {
   ret: T;
 
@@ -484,10 +457,11 @@ export function n2p(num: number | PrimitiveFloat) {
   return new PrimitiveFloat(num);
 }
 
-export function float(num: number) {
+export function pfloat(num: number) {
   return new PrimitiveFloat(num);
 }
 
+// TODO get rid of this
 /** number or primitive to primitive */
 export function np2p(p: number | Primitive) {
   if (p instanceof Primitive) return p;
@@ -500,12 +474,3 @@ export function tag(
 ): SourceLists {
   return { sections: strings.concat([]), values: values };
 }
-
-/*
-export function tagf(
-  strings: TemplateStringsArray,
-  ...values: Float[]
-): FloatSourceLists {
-  return { sections: strings.concat([]), values: values };
-}
-*/

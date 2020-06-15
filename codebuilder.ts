@@ -127,7 +127,6 @@ export class CodeBuilder {
     gl.useProgram(program);
     console.log(fullCode);
     // find all uniform locations and add them to the dictionary
-    // TODO do we even still need this because of `BuildInfo`?
     for (const expr of this.exprs) {
       for (const name in expr.uniformValChangeMap) {
         const location = gl.getUniformLocation(program, name);
