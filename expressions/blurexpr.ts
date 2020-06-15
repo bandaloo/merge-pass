@@ -6,5 +6,6 @@ export class BlurExpr extends ExprVec4 {
   constructor(direction: Vec2) {
     super(tag`(gauss5(${direction}))`, ["uDirection"]);
     this.externalFuncs = [glslFuncs.gauss5];
+    this.needs.neighborSample = true;
   }
 }

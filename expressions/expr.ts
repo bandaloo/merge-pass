@@ -143,9 +143,6 @@ export abstract class Expr implements Parseable {
       throw new Error("wrong lengths for source and values");
     }
     if (sourceLists.values.length !== defaultNames.length) {
-      console.log(sourceLists.values);
-      console.log(sourceLists.sections);
-      console.log(defaultNames);
       throw new Error(
         "default names list length doesn't match values list length!"
       );
@@ -180,7 +177,6 @@ export abstract class Expr implements Parseable {
     }
     const oldVal = this.uniformValChangeMap[name]?.val;
     if (oldVal === undefined) {
-      console.log(this.defaultNameMap);
       throw new Error("tried to set uniform " + name + " which doesn't exist.");
     }
     if (oldVal.typeString() !== newVal.typeString()) {
@@ -192,7 +188,6 @@ export abstract class Expr implements Parseable {
 
   /** parses this expression into a string, adding info as it recurses */
   parse(buildInfo: BuildInfo): string {
-    console.log("pushing expr to buildinfo!");
     buildInfo.exprs.push(this);
     const updateNeed = (name: keyof Needs) =>
       (buildInfo.needs[name] = buildInfo.needs[name] || this.needs[name]);
@@ -201,7 +196,6 @@ export abstract class Expr implements Parseable {
     updateNeed("neighborSample");
     updateNeed("depthBuffer");
     // add each of the external funcs to the builder
-    console.log(this.externalFuncs);
     this.externalFuncs.forEach((func) => buildInfo.externalFuncs.add(func));
     // put all of the values between all of the source sections
     for (let i = 0; i < this.sourceLists.values.length; i++) {

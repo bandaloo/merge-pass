@@ -73,12 +73,8 @@ window.addEventListener("load", () => {
   let s: MP.ScaleExpr<MP.Vec2>;
   const v = new MP.Mutable(MP.pvec2(1, 0));
   const v2 = MP.mut(MP.pvec2(1, 0));
-
-  const merger = new MP.Merger(
-    [new MP.BlurExpr((s = MP.scale(MP.mutn(2), v2)))],
-    sourceCanvas,
-    gl
-  );
+  const loop = new MP.BlurExpr((s = MP.scale(MP.mutn(2), v2))).repeat(5);
+  const merger = new MP.Merger([loop], sourceCanvas, gl);
 
   // dwitter sim
   const C = Math.cos;
