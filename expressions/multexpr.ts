@@ -2,13 +2,8 @@ import { Vec, AllVals, Vec2, Vec3, Vec4, Float } from "../exprtypes";
 import { Operator as Op, tag } from "./expr";
 
 export class MultExpr<T extends AllVals, U extends AllVals> extends Op<T> {
-  left: T;
-  right: U;
-
   constructor(left: T, right: U) {
     super(left, tag`(${left} * ${right})`, ["uLeft", "uRight"]);
-    this.left = left;
-    this.right = right;
   }
 
   setLeft(left: T) {
@@ -41,6 +36,8 @@ export function mul<T extends Vec>(
   left: T,
   right: Float | number
 ): MultExpr<T, Float>;
+
+// implementation
 
 export function mul<T extends AllVals, U extends AllVals>(left: T, right: U) {
   return new MultExpr(left, right);

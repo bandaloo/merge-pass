@@ -71,14 +71,15 @@ window.addEventListener("load", () => {
   );
   */
 
-  let s: MP.MultExpr<MP.Vec, MP.Float>;
-  const v = new MP.Mutable(MP.pvec2(1, 0));
-  const v2 = MP.mut(MP.pvec2(1, 0));
+  //let s: MP.MultExpr<MP.Vec, MP.Float>;
+  //const v = new MP.Mutable(MP.pvec2(1, 0));
+  //const v2 = MP.mut(MP.pvec2(1, 0));
 
-  const v3 = MP.mul(MP.pvec2(1, 1), MP.pvec2(3, 3));
+  //const v3 = MP.mul(MP.pvec2(1, 1), MP.pvec2(3, 3));
 
-  const loop = new MP.BlurExpr((s = MP.mul(v2, MP.mut(2)))).repeat(2);
-  const merger = new MP.Merger([loop], sourceCanvas, gl);
+  //const loop = new MP.BlurExpr((s = MP.mul(v2, MP.mut(2)))).repeat(2);
+  //const merger = new MP.Merger([loop], sourceCanvas, gl);
+  const merger = new MP.Merger([MP.pblur(8)], sourceCanvas, gl);
 
   // dwitter sim
   const C = Math.cos;
@@ -96,8 +97,8 @@ window.addEventListener("load", () => {
     //blur.setUniform("uBlur", [Math.cos(time / 1000) ** 8, 0]);
     //hueAdd.setUniform("uHue", t / 9);
     //powerBlur.setSize(8 * Math.cos(time / 1000) ** 8);
-    s.setRight(MP.float(8 * Math.cos(time / 1000) ** 8));
-    s.setLeft(MP.pvec2(1, 8 * Math.sin(time / 1000)));
+    //s.setRight(MP.float(8 * Math.cos(time / 1000) ** 8));
+    //s.setLeft(MP.pvec2(1, 8 * Math.sin(time / 1000)));
 
     // draw insane stripes
     const i = ~~(t * 9);

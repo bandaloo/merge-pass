@@ -8,6 +8,7 @@ export * from "./expressions/randomexpr";
 export * from "./expressions/fragcolorexpr";
 export * from "./expressions/vecexprs";
 export * from "./expressions/multexpr";
+export * from "./expressions/powerblur";
 
 // TODO get rid of these
 export * from "./expressions/expr";
