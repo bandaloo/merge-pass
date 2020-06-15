@@ -16,6 +16,6 @@ export class ScaleExpr<T extends Vec> extends Operator<T> {
   }
 }
 
-export function scale<T extends Vec>(scalar: number, vec: T) {
+export function scale<T extends Vec>(scalar: Float, vec: T) {
   return new ScaleExpr(n2e(scalar), vec);
 }

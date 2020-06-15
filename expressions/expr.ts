@@ -227,7 +227,7 @@ export abstract class Expr implements Parseable {
   }
 }
 
-export abstract class Mutable<T extends Primitive> implements Applicable {
+export class Mutable<T extends Primitive> implements Applicable {
   primitive: T;
   name: string | undefined;
 
@@ -237,19 +237,20 @@ export abstract class Mutable<T extends Primitive> implements Applicable {
   }
 
   parse(buildInfo: BuildInfo, defaultName: string, enc: Expr | undefined) {
+    if (enc === undefined) {
+      throw new Error("tried to put a mutable expression at the top level");
+    }
     // accept the default name if given no name
-    if (this.name === undefined) this.name = defaultName;
+    if (this.name === undefined) this.name = defaultName + enc.id;
     // set to true so they are set to their default values on first draw
     buildInfo.uniformTypes[this.name] = this.primitive.typeString();
-    if (enc !== undefined) {
-      // add the name mapping
-      enc.uniformValChangeMap[this.name] = {
-        val: this.primitive,
-        changed: true,
-      };
-      // add the new type to the map
-      enc.defaultNameMap[defaultName] = name;
-    }
+    // add the name mapping
+    enc.uniformValChangeMap[this.name] = {
+      val: this.primitive,
+      changed: true,
+    };
+    // add the new type to the map
+    enc.defaultNameMap[defaultName] = name;
     // insert the uniform name into the source code
     return this.name;
   }
@@ -257,6 +258,14 @@ export abstract class Mutable<T extends Primitive> implements Applicable {
   applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation) {
     this.primitive.applyUniform(gl, loc);
   }
+}
+
+export function mut<T extends Primitive>(primitive: T) {
+  return new Mutable(primitive);
+}
+
+export function mutn(num: number) {
+  return new Mutable(n2p(num));
 }
 
 export abstract class Primitive implements Parseable, Applicable {
@@ -310,7 +319,7 @@ export class PrimitiveFloat extends Primitive {
 export abstract class PrimitiveVec extends Primitive {
   value: number[];
 
-  constructor(comps: number[], name?: string) {
+  constructor(comps: number[]) {
     super();
     this.value = comps;
   }
@@ -326,19 +335,19 @@ export abstract class PrimitiveVec extends Primitive {
   }
 }
 
-export abstract class PrimitiveVec2 extends PrimitiveVec {
+export class PrimitiveVec2 extends PrimitiveVec {
   applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation) {
     gl.uniform2f(loc, this.value[0], this.value[1]);
   }
 }
 
-export abstract class PrimitiveVec3 extends PrimitiveVec {
+export class PrimitiveVec3 extends PrimitiveVec {
   applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation) {
     gl.uniform3f(loc, this.value[0], this.value[1], this.value[2]);
   }
 }
 
-export abstract class PrimitiveVec4 extends PrimitiveVec {
+export class PrimitiveVec4 extends PrimitiveVec {
   applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation) {
     gl.uniform4f(
       loc,
@@ -351,9 +360,22 @@ export abstract class PrimitiveVec4 extends PrimitiveVec {
 }
 
 export abstract class ExprVec extends Expr {
-  // TODO do we need branding for nominal typing?
+  values: Float[];
+  defaultNames: string[];
+
   constructor(sourceLists: SourceLists, defaultNames: string[]) {
     super(sourceLists, defaultNames);
+    const values = sourceLists.values as Float[];
+    this.values = values;
+    this.defaultNames = defaultNames;
+  }
+
+  setComp(index: number, primitive: PrimitiveFloat | number) {
+    if (index < 0 || index >= this.values.length) {
+      throw new Error("out of bounds of setting component");
+    }
+    if (typeof primitive === "number") primitive = n2p(primitive);
+    this.setUniform(this.defaultNames[index], primitive);
   }
 }
 
@@ -437,6 +459,7 @@ export class Operator<T extends AllVals> extends Expr {
   }
 }
 
+/** number to expression float */
 export function n2e(num: number | Float) {
   if (
     num instanceof PrimitiveFloat ||
@@ -448,9 +471,16 @@ export function n2e(num: number | Float) {
   return new PrimitiveFloat(num);
 }
 
+/** number to primitive float */
 export function n2p(num: number | PrimitiveFloat) {
   if (num instanceof PrimitiveFloat) return num;
   return new PrimitiveFloat(num);
+}
+
+/** number or primitive to primitive */
+export function np2p(p: number | Primitive) {
+  if (p instanceof Primitive) return p;
+  return new PrimitiveFloat(p);
 }
 
 export function tag(
