@@ -12,6 +12,7 @@ export * from "./expressions/powerblur";
 export * from "./expressions/blur2dloop";
 export * from "./expressions/lenexpr";
 export * from "./expressions/normfragcoordexpr";
+export * from "./expressions/normcenterfragcoordexpr";
 
 // TODO get rid of these
 export * from "./expressions/expr";

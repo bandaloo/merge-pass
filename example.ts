@@ -1,5 +1,4 @@
 import * as MP from "./index";
-import { pfloat } from "./index";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -87,8 +86,9 @@ window.addEventListener("load", () => {
   const merger = new MP.Merger(
     [
       MP.blur2d(
-        MP.mul(MP.len(MP.nfcoord()), pfloat(1)),
-        MP.mul(MP.len(MP.nfcoord()), pfloat(1))
+        MP.mul(MP.len(MP.ncfcoord()), MP.pfloat(3)),
+        MP.mul(MP.len(MP.ncfcoord()), MP.pfloat(3)),
+        6
       ),
     ],
     sourceCanvas,
