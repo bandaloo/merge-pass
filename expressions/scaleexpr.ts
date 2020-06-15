@@ -1,5 +1,5 @@
 import { Float, Vec } from "../exprtypes";
-import { n2p, PrimitiveVec, tag, n2e, Operator } from "./expr";
+import { n2e, n2p, Operator, tag } from "./expr";
 
 /** scalar multiplication of vector */
 export class ScaleExpr<T extends Vec> extends Operator<T> {
@@ -11,7 +11,7 @@ export class ScaleExpr<T extends Vec> extends Operator<T> {
     this.setUniform("uScalar" + this.id, n2p(scalar));
   }
 
-  setVector(scalar: PrimitiveVec) {
+  setVector(scalar: T) {
     this.setUniform("uVec" + this.id, scalar);
   }
 }

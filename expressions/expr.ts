@@ -170,7 +170,13 @@ export abstract class Expr implements Parseable {
     return this.needs.neighborSample ? mult : 0;
   }
 
-  setUniform(name: string, newVal: Primitive) {
+  setUniform(name: string, newVal: AllVals) {
+    if (typeof newVal === "number") {
+      newVal = n2p(newVal);
+    }
+    if (!(newVal instanceof Primitive)) {
+      throw new Error("cannot set a non-primitive");
+    }
     // if name does not exist, try mapping default name to new name
     if (this.uniformValChangeMap[name]?.val === undefined) {
       name = this.defaultNameMap[name];
@@ -254,13 +260,20 @@ export class Mutable<T extends Primitive> implements Applicable {
   }
 }
 
-export function mut<T extends Primitive>(primitive: T) {
+export function mut<T extends Primitive>(val: T): Mutable<T>;
+
+export function mut(val: number): Mutable<PrimitiveFloat>;
+
+export function mut<T extends Primitive>(val: T | number) {
+  const primitive = typeof val === "number" ? n2p(val) : val;
   return new Mutable(primitive);
 }
 
-export function mutn(num: number) {
+/*
+function mut(num: number) {
   return new Mutable(n2p(num));
 }
+*/
 
 export abstract class Primitive implements Parseable, Applicable {
   abstract toString(): string;
@@ -468,6 +481,10 @@ export function n2e(num: number | Float) {
 /** number to primitive float */
 export function n2p(num: number | PrimitiveFloat) {
   if (num instanceof PrimitiveFloat) return num;
+  return new PrimitiveFloat(num);
+}
+
+export function float(num: number) {
   return new PrimitiveFloat(num);
 }
 
