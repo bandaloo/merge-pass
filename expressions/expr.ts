@@ -1,16 +1,6 @@
-import {
-  UniformVal,
-  NamedUniformVal,
-  RawVec,
-  RawUniformVal,
-  RawFloat,
-  RawVec2,
-  RawVec3,
-  RawVec4,
-  Float,
-} from "../exprtypes";
 import { UniformLocs, EffectLoop } from "../mergepass";
 import { WebGLProgramElement } from "../webglprogramloop";
+import { AllVals, Float } from "../exprtypes";
 
 interface UniformTypeMap {
   // TODO give a proper type that only denotes type names
@@ -32,17 +22,19 @@ export interface BuildInfo {
  * @param e the enclosing expression
  * @param buildInfo the top level effect to add uniforms and functions to
  */
+/*
 export function vparse(
-  val: UniformVal,
-  defaultName: string,
+  val: UniformVal, // becomes this
+  defaultName: string, // becomes member
   e: Expr,
   buildInfo: BuildInfo
 ): string {
   // parse the expression if it's an expression
   console.log("in vparse");
   if (val instanceof Expr) {
-    return val.eparse(buildInfo);
+    return val.parse(buildInfo);
   }
+  // TODO everything beyond this will become the member function
   // transform `DefaultUniformVal` to `NamedUniformVal`
   let defaulted = false;
   if (typeof val !== "number" && val.length === 1) {
@@ -86,7 +78,9 @@ export function vparse(
     .map((n) => toGLSLFloatString(n))
     .join(", ")})`;
 }
+*/
 
+// TODO! move to primitive
 function toGLSLFloatString(num: number) {
   let str = "" + num;
   if (!str.includes(".")) str += ".";
@@ -95,7 +89,7 @@ function toGLSLFloatString(num: number) {
 
 // this should be on expression
 export interface UniformValChangeMap {
-  [name: string]: { val: RawUniformVal; changed: boolean };
+  [name: string]: { val: Primitive; changed: boolean };
 }
 
 // TODO don't really want to expose this
@@ -111,10 +105,22 @@ export interface Needs {
 
 export interface SourceLists {
   sections: string[];
-  values: UniformVal[];
+  values: AllVals[];
 }
 
-export abstract class Expr {
+interface Parseable {
+  parse: (
+    buildInfo: BuildInfo,
+    defaultName: string,
+    enc: Expr | undefined
+  ) => string;
+}
+
+export interface Applicable {
+  applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation): void;
+}
+
+export abstract class Expr implements Parseable {
   static count = 0;
   id: string;
   needs: Needs = {
@@ -151,31 +157,12 @@ export abstract class Expr {
   applyUniforms(gl: WebGL2RenderingContext, uniformLocs: UniformLocs) {
     for (const name in this.uniformValChangeMap) {
       const loc = uniformLocs[name];
-      const val = this.uniformValChangeMap[name].val;
       if (this.uniformValChangeMap[name].changed) {
         this.uniformValChangeMap[name].changed = false;
-        switch (uniformGLSLTypeNum(val)) {
-          case 1:
-            const float = val as RawFloat;
-            gl.uniform1f(loc, float);
-            break;
-          case 2:
-            const vec2 = val as RawVec2;
-            gl.uniform2f(loc, vec2[0], vec2[1]);
-            break;
-          case 3:
-            const vec3 = val as RawVec3;
-            gl.uniform3f(loc, vec3[0], vec3[1], vec3[2]);
-            break;
-          case 4:
-            const vec4 = val as RawVec4;
-            gl.uniform4f(loc, vec4[0], vec4[1], vec4[2], vec4[3]);
-        }
+        this.uniformValChangeMap[name].val.applyUniform(gl, loc);
       }
     }
   }
-
-  abstract getSize(): number;
 
   /** expression and loops both implement this */
   getNeeds(name: keyof Needs) {
@@ -186,7 +173,7 @@ export abstract class Expr {
     return this.needs.neighborSample ? mult : 0;
   }
 
-  setUniform(name: string, newVal: RawUniformVal) {
+  setUniform(name: string, newVal: Primitive) {
     // if name does not exist, try mapping default name to new name
     if (this.uniformValChangeMap[name]?.val === undefined) {
       name = this.defaultNameMap[name];
@@ -194,17 +181,9 @@ export abstract class Expr {
     const oldVal = this.uniformValChangeMap[name]?.val;
     if (oldVal === undefined) {
       console.log(this.defaultNameMap);
-      throw new Error(
-        "tried to set uniform " +
-          name +
-          " which doesn't exist." +
-          "(maybe you tried to change a value that was set as immutable." +
-          "to make it immutable, wrap it in square brackets)"
-      );
+      throw new Error("tried to set uniform " + name + " which doesn't exist.");
     }
-    const oldType = uniformGLSLTypeNum(oldVal);
-    const newType = uniformGLSLTypeNum(newVal);
-    if (oldType !== newType) {
+    if (oldVal.typeString() !== newVal.typeString()) {
       throw new Error("tried to set uniform " + name + " to a new type");
     }
     this.uniformValChangeMap[name].val = newVal;
@@ -212,11 +191,12 @@ export abstract class Expr {
   }
 
   /** parses this expression into a string, adding info as it recurses */
-  eparse(buildInfo: BuildInfo): string {
+  parse(buildInfo: BuildInfo): string {
     console.log("pushing expr to buildinfo!");
     buildInfo.exprs.push(this);
     const updateNeed = (name: keyof Needs) =>
       (buildInfo.needs[name] = buildInfo.needs[name] || this.needs[name]);
+    // no good way to iterate through an interface
     updateNeed("centerSample");
     updateNeed("neighborSample");
     updateNeed("depthBuffer");
@@ -227,12 +207,17 @@ export abstract class Expr {
     for (let i = 0; i < this.sourceLists.values.length; i++) {
       this.sourceCode +=
         this.sourceLists.sections[i] +
+        this.sourceLists.values[i].parse(buildInfo, this.defaultNames[i], this);
+      /*
+      this.sourceCode +=
+        this.sourceLists.sections[i] +
         vparse(
           this.sourceLists.values[i],
           this.defaultNames[i] + this.id,
           this,
           buildInfo
         );
+      */
     }
     // TODO does sourceCode have to be a member?
     this.sourceCode += this.sourceLists.sections[
@@ -242,7 +227,130 @@ export abstract class Expr {
   }
 }
 
-export abstract class VecExpr extends Expr {
+export abstract class Mutable<T extends Primitive> implements Applicable {
+  primitive: T;
+  name: string | undefined;
+
+  constructor(primitive: T, name?: string) {
+    this.primitive = primitive;
+    this.name = name;
+  }
+
+  parse(buildInfo: BuildInfo, defaultName: string, enc: Expr | undefined) {
+    // accept the default name if given no name
+    if (this.name === undefined) this.name = defaultName;
+    // set to true so they are set to their default values on first draw
+    buildInfo.uniformTypes[this.name] = this.primitive.typeString();
+    if (enc !== undefined) {
+      // add the name mapping
+      enc.uniformValChangeMap[this.name] = {
+        val: this.primitive,
+        changed: true,
+      };
+      // add the new type to the map
+      enc.defaultNameMap[defaultName] = name;
+    }
+    // insert the uniform name into the source code
+    return this.name;
+  }
+
+  applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation) {
+    this.primitive.applyUniform(gl, loc);
+  }
+}
+
+export abstract class Primitive implements Parseable, Applicable {
+  abstract toString(): string;
+
+  abstract typeString(): string;
+
+  // TODO move to Mutable
+  abstract applyUniform(
+    gl: WebGL2RenderingContext,
+    loc: WebGLUniformLocation
+  ): void;
+
+  parse(buildInfo: BuildInfo, defaultName: string, enc: Expr | undefined) {
+    return this.toString();
+  }
+
+  /*
+  parse(buildInfo: BuildInfo, enc: Expr) {
+    return `vec${this.value.length}(${this.value
+      .map((n) => toGLSLFloatString(n))
+      .join(", ")})`;
+  }
+  */
+}
+
+export class PrimitiveFloat extends Primitive {
+  value: number;
+
+  constructor(num: number) {
+    // TODO throw error when NaN, Infinity or -Infinity
+    super();
+    this.value = num;
+  }
+
+  toString() {
+    let str = "" + this.value;
+    if (!str.includes(".")) str += ".";
+    return str;
+  }
+
+  typeString() {
+    return "float";
+  }
+
+  applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation) {
+    gl.uniform1f(loc, this.value);
+  }
+}
+
+export abstract class PrimitiveVec extends Primitive {
+  value: number[];
+
+  constructor(comps: number[], name?: string) {
+    super();
+    this.value = comps;
+  }
+
+  typeString() {
+    return "vec" + this.value.length;
+  }
+
+  toString() {
+    return `${this.typeString}(${this.value
+      .map((n) => toGLSLFloatString(n))
+      .join(", ")})`;
+  }
+}
+
+export abstract class PrimitiveVec2 extends PrimitiveVec {
+  applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation) {
+    gl.uniform2f(loc, this.value[0], this.value[1]);
+  }
+}
+
+export abstract class PrimitiveVec3 extends PrimitiveVec {
+  applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation) {
+    gl.uniform3f(loc, this.value[0], this.value[1], this.value[2]);
+  }
+}
+
+export abstract class PrimitiveVec4 extends PrimitiveVec {
+  applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation) {
+    gl.uniform4f(
+      loc,
+      this.value[0],
+      this.value[1],
+      this.value[2],
+      this.value[3]
+    );
+  }
+}
+
+export abstract class ExprVec extends Expr {
   // TODO do we need branding for nominal typing?
   constructor(sourceLists: SourceLists, defaultNames: string[]) {
     super(sourceLists, defaultNames);
@@ -257,7 +365,7 @@ export class ExprFloat extends Expr {
   }
 }
 
-export class ExprVec2 extends VecExpr {
+export class ExprVec2 extends ExprVec {
   private vec2 = undefined; // brand for nominal typing
 
   getSize() {
@@ -265,7 +373,7 @@ export class ExprVec2 extends VecExpr {
   }
 }
 
-export class ExprVec3 extends VecExpr {
+export class ExprVec3 extends ExprVec {
   private vec3: void; // brand for nominal typing
 
   constructor(sourceLists: SourceLists, defaultNames: string[]) {
@@ -277,10 +385,9 @@ export class ExprVec3 extends VecExpr {
   }
 }
 
-export class ExprVec4 extends VecExpr {
+export class ExprVec4 extends ExprVec {
   private vec4 = undefined; // brand for nominal typing
 
-  // TODO why can't it infer return type?
   repeat(num: number) {
     return new EffectLoop([this], { num: num });
   }
@@ -302,23 +409,53 @@ export class ExprVec4 extends VecExpr {
   }
 }
 
+// TODO! still needed?
+/*
 export function uniformGLSLTypeNum(val: RawUniformVal) {
   if (typeof val === "number") {
     return 1;
   }
   return val.length;
 }
+*/
 
+// TODO! still needed?
+/*
 export function uniformGLSLTypeStr(val: RawUniformVal) {
   const num = uniformGLSLTypeNum(val);
   if (num === 1) return "float";
   if (num >= 2 && num <= 4) return "vec" + num;
   throw new Error("cannot convert " + val + " to a GLSL type");
 }
+*/
+export class Operator<T extends AllVals> extends Expr {
+  ret: T;
+
+  constructor(ret: T, sourceLists: SourceLists, defaultNames: string[]) {
+    super(sourceLists, defaultNames);
+    this.ret = ret;
+  }
+}
+
+export function n2e(num: number | Float) {
+  if (
+    num instanceof PrimitiveFloat ||
+    num instanceof ExprFloat ||
+    num instanceof Operator ||
+    num instanceof Mutable
+  )
+    return num;
+  return new PrimitiveFloat(num);
+}
+
+export function n2p(num: number | PrimitiveFloat) {
+  if (num instanceof PrimitiveFloat) return num;
+  return new PrimitiveFloat(num);
+}
 
 export function tag(
   strings: TemplateStringsArray,
-  ...values: UniformVal[]
+  ...values: AllVals[]
 ): SourceLists {
   return { sections: strings.concat([]), values: values };
 }

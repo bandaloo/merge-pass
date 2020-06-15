@@ -1,12 +1,43 @@
 import {
   ExprFloat,
-  ExprVec2,
-  ExprVec3,
-  ExprVec4,
-  VecExpr,
+  ExprVec,
+  Mutable,
+  PrimitiveFloat,
+  PrimitiveVec,
+  PrimitiveVec2,
+  PrimitiveVec3,
+  PrimitiveVec4,
+  Operator,
 } from "./expressions/expr";
-import { Operator } from "./operator";
 
+export type Float =
+  | PrimitiveFloat
+  | ExprFloat
+  | Operator<Float>
+  | Mutable<PrimitiveFloat>;
+export type Vec =
+  | PrimitiveVec
+  | ExprVec
+  | Operator<Vec>
+  | Mutable<PrimitiveVec>;
+export type Vec2 =
+  | PrimitiveVec2
+  | ExprVec
+  | Operator<Vec2>
+  | Mutable<PrimitiveVec2>;
+export type Vec3 =
+  | PrimitiveVec3
+  | ExprVec
+  | Operator<Vec3>
+  | Mutable<PrimitiveVec3>;
+export type Vec4 =
+  | PrimitiveVec4
+  | ExprVec
+  | Operator<Vec4>
+  | Mutable<PrimitiveVec4>;
+export type AllVals = Float | Vec;
+
+/*
 export type RawFloat = number;
 type NamedFloat = [string, number];
 type DefaultFloat = [number];
@@ -57,3 +88,4 @@ export type RawUniformVal = RawFloat | RawVec;
 export type NamedUniformVal = NamedFloat | NamedVec;
 
 export type UniformVal = Float | Vec;
+*/

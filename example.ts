@@ -53,7 +53,7 @@ window.addEventListener("load", () => {
   //const powerBlur = new PowerBlur(8);
 
   // TODO throw a better error when the list is empty
-  const blur = new MP.BlurExpr([1, 0]);
+  //const blur = new MP.BlurExpr([1, 0]);
   const fragColExpr = new MP.FragColorExpr();
   /*
   const merger = new MP.Merger(
@@ -62,9 +62,17 @@ window.addEventListener("load", () => {
     gl
   );
   */
-  let s: MP.ScaleExpr<MP.ExprVec2>;
+  //let s: MP.ScaleExpr<MP.ExprVec2>;
+  /*
   const merger = new MP.Merger(
     [new MP.BlurExpr((s = MP.scale([2], MP.vec2(1, 0)))).repeat(2)],
+    sourceCanvas,
+    gl
+  );
+  */
+
+  const merger = new MP.Merger(
+    [new MP.BlurExpr(MP.scale(2, MP.vec2(1, 0)))],
     sourceCanvas,
     gl
   );
@@ -85,7 +93,7 @@ window.addEventListener("load", () => {
     //blur.setUniform("uBlur", [Math.cos(time / 1000) ** 8, 0]);
     //hueAdd.setUniform("uHue", t / 9);
     //powerBlur.setSize(8 * Math.cos(time / 1000) ** 8);
-    s.setScalar(8 * Math.cos(time / 1000) ** 8);
+    //s.setScalar(8 * Math.cos(time / 1000) ** 8);
 
     // draw insane stripes
     const i = ~~(t * 9);

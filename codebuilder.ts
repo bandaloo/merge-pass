@@ -67,7 +67,7 @@ export class CodeBuilder {
 
     for (const e of effectLoop.effects) {
       if (e instanceof Expr) {
-        e.eparse(buildInfo);
+        e.parse(buildInfo);
         //this.exprs.push(e);
         //const name = `effect${this.counter}()`;
         //const func = e.sourceCode.replace(/main\s*\(\)/, name);

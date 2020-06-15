@@ -1,15 +1,5 @@
-import {
-  Float,
-  Vec,
-  NamedVec,
-  RawVec,
-  DefaultVec,
-  UniformVal,
-  RawUniformVal,
-  NamedUniformVal,
-  DefaultUniformVal,
-} from "../exprtypes";
-import { ExprVec2, ExprVec3, ExprVec4, VecExpr, SourceLists } from "./expr";
+import { Float } from "../exprtypes";
+import { SourceLists, ExprVec2, ExprVec3, ExprVec4, n2e } from "./expr";
 
 function vecSourceList(...components: Float[]): [SourceLists, string[]] {
   const sections = ["vec" + components.length + "("];
@@ -24,21 +14,36 @@ function vecSourceList(...components: Float[]): [SourceLists, string[]] {
   return [{ sections: sections, values: components }, defaultNames];
 }
 
-export function vec2(comp1: Float, comp2: Float) {
-  return new ExprVec2(...vecSourceList(comp1, comp2));
+export function vec2(comp1: Float | number, comp2: Float | number) {
+  return new ExprVec2(...vecSourceList(...[comp1, comp2].map((c) => n2e(c))));
 }
 
-export function vec3(comp1: Float, comp2: Float, comp3: Float) {
-  return new ExprVec3(...vecSourceList(comp1, comp2, comp3));
+export function vec3(
+  comp1: Float | number,
+  comp2: Float | number,
+  comp3: Float | number
+) {
+  return new ExprVec3(
+    ...vecSourceList(...[comp1, comp2, comp3].map((c) => n2e(c)))
+  );
 }
 
-export function vec4(comp1: Float, comp2: Float, comp3: Float, comp4: Float) {
-  return new ExprVec4(...vecSourceList(comp1, comp2, comp3, comp4));
+export function vec4(
+  comp1: Float | number,
+  comp2: Float | number,
+  comp3: Float | number,
+  comp4: Float | number
+) {
+  return new ExprVec4(
+    ...vecSourceList(...[comp1, comp2, comp3, comp4].map((c) => n2e(c)))
+  );
 }
 
+// TODO! this will have to change
+/*
 export function getUniformSize(val: UniformVal): number {
   // expr
-  if (val instanceof VecExpr) {
+  if (val instanceof ExprVec) {
     return val.getSize();
   }
 
@@ -76,3 +81,4 @@ export function getUniformSize(val: UniformVal): number {
   const defaultVec = arr as DefaultVec;
   return defaultVec[0].length;
 }
+*/

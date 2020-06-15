@@ -1,8 +1,9 @@
-import { tag, VecExpr } from "./expr";
+/*
+import { tag, ExprVec } from "./expr";
 import { Operator } from "../operator";
 import { RawVec } from "../exprtypes";
 
-export class DotExpr<T extends VecExpr> extends Operator<T> {
+export class DotExpr<T extends ExprVec> extends Operator<T> {
   left: T;
   right: T;
 
@@ -21,6 +22,7 @@ export class DotExpr<T extends VecExpr> extends Operator<T> {
   }
 }
 
-export function dot<T extends VecExpr>(left: T, right: T) {
+export function dot<T extends ExprVec>(left: T, right: T) {
   return new DotExpr(left, right);
 }
+*/
