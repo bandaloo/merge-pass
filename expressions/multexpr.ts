@@ -17,10 +17,7 @@ export class MultExpr<T extends AllVals, U extends AllVals> extends Op<T> {
 
 // arithmetic
 
-export function mul(
-  left: Float | number,
-  right: Float | number
-): MultExpr<Float, Float>;
+export function mul(left: Float, right: Float): MultExpr<Float, Float>;
 
 // dot
 
@@ -32,10 +29,7 @@ export function mul(left: Vec4, right: Vec4): MultExpr<Vec4, Vec4>;
 
 // scalar with vec
 
-export function mul<T extends Vec>(
-  left: T,
-  right: Float | number
-): MultExpr<T, Float>;
+export function mul<T extends Vec>(left: T, right: Float): MultExpr<T, Float>;
 
 // implementation
 

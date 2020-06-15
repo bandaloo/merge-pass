@@ -81,10 +81,19 @@ window.addEventListener("load", () => {
   //const merger = new MP.Merger([loop], sourceCanvas, gl);
   //const merger = new MP.Merger([MP.blur2d(pfloat())], sourceCanvas, gl);
 
-  const hFloat = MP.float(MP.mut(1, "testname"));
+  const hFloat = MP.float(MP.mut(1));
   const vFloat = MP.float(MP.mut(1));
 
-  const merger = new MP.Merger([MP.blur2d(hFloat, vFloat)], sourceCanvas, gl);
+  const merger = new MP.Merger(
+    [
+      MP.blur2d(
+        MP.mul(MP.len(MP.nfcoord()), pfloat(1)),
+        MP.mul(MP.len(MP.nfcoord()), pfloat(1))
+      ),
+    ],
+    sourceCanvas,
+    gl
+  );
 
   // dwitter sim
   const C = Math.cos;
@@ -105,8 +114,8 @@ window.addEventListener("load", () => {
     //s.setRight(MP.float(8 * Math.cos(time / 1000) ** 8));
     //s.setLeft(MP.pvec2(1, 8 * Math.sin(time / 1000)));
     //f.setVal(8 * Math.cos(time / 1000) ** 8);
-    hFloat.setVal(2 * Math.cos(time / 1000) ** 8);
-    vFloat.setVal(2 * Math.cos(time / 1000) ** 8);
+    //hFloat.setVal(2 * Math.cos(time / 1000) ** 8);
+    //vFloat.setVal(2 * Math.cos(time / 1000) ** 8);
 
     // draw insane stripes
     const i = ~~(t * 9);
