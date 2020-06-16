@@ -142,6 +142,12 @@ export class CodeBuilder {
     // set the uniform resolution (every program has this uniform)
     const uResolution = gl.getUniformLocation(program, "uResolution");
     gl.uniform2f(uResolution, gl.drawingBufferWidth, gl.drawingBufferHeight);
+    if (this.baseLoop.getNeeds("sceneBuffer")) {
+      gl.activeTexture(gl.TEXTURE1);
+      //gl.bindTexture(gl.TEXTURE_2D, sceneTexture);
+      gl.getUniformLocation(program, "uSceneSampler");
+      // put the scene buffer in texture 1 (0 is used for the backbuffer)
+    }
     // get attribute
     const position = gl.getAttribLocation(program, "aPosition");
     // enable the attribute

@@ -157,12 +157,15 @@ export class Merger {
     if (vShader === null) {
       throw new Error("problem creating the vertex shader");
     }
-    //this.vShader = vShader;
+
     this.gl.shaderSource(vShader, V_SOURCE);
     this.gl.compileShader(vShader);
 
     // make textures
-    this.tex = { front: this.makeTexture(), back: this.makeTexture() };
+    this.tex = {
+      front: makeTexture(this.gl, this.options),
+      back: makeTexture(this.gl, this.options),
+    };
 
     // create the framebuffer
     const framebuffer = gl.createFramebuffer();
@@ -197,7 +200,7 @@ export class Merger {
     console.log(this.programLoop);
   }
 
-  private makeTexture() {
+  private makeTexture(gl: WebGL2RenderingContext, options: MergerOptions) {
     const texture = this.gl.createTexture();
     if (texture === null) {
       throw new Error("problem creating texture");
@@ -228,15 +231,15 @@ export class Merger {
     this.gl.texParameteri(
       this.gl.TEXTURE_2D,
       this.gl.TEXTURE_MIN_FILTER,
-      filterMode(this.options?.minFilterMode)
+      filterMode(options?.minFilterMode)
     );
     this.gl.texParameteri(
       this.gl.TEXTURE_2D,
       this.gl.TEXTURE_MAG_FILTER,
-      filterMode(this.options?.maxFilterMode)
+      filterMode(options?.maxFilterMode)
     );
 
-    if (this.options?.edgeMode !== "wrap") {
+    if (options?.edgeMode !== "wrap") {
       const gl = this.gl; // for succinctness
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
       gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
@@ -270,4 +273,58 @@ export class Merger {
       this.programLoop.last
     );
   }
+}
+
+export function makeTexture(
+  gl: WebGL2RenderingContext,
+  options?: MergerOptions
+) {
+  const texture = gl.createTexture();
+  if (texture === null) {
+    throw new Error("problem creating texture");
+  }
+
+  // flip the order of the pixels, or else it displays upside down
+  gl.pixelStorei(gl.UNPACK_FLIP_Y_WEBGL, true);
+
+  // bind the texture after creating it
+  gl.bindTexture(gl.TEXTURE_2D, texture);
+
+  gl.texImage2D(
+    gl.TEXTURE_2D,
+    0,
+    gl.RGBA,
+    gl.drawingBufferWidth,
+    gl.drawingBufferHeight,
+    0,
+    gl.RGBA,
+    gl.UNSIGNED_BYTE,
+    null
+  );
+
+  const filterMode = (f: undefined | FilterMode) =>
+    f === undefined || f === "linear" ? gl.LINEAR : gl.NEAREST;
+
+  // how to map texture element
+  gl.texParameteri(
+    gl.TEXTURE_2D,
+    gl.TEXTURE_MIN_FILTER,
+    filterMode(options?.minFilterMode)
+  );
+  gl.texParameteri(
+    gl.TEXTURE_2D,
+    gl.TEXTURE_MAG_FILTER,
+    filterMode(options?.maxFilterMode)
+  );
+
+  if (options?.edgeMode !== "wrap") {
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+    gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+  }
+
+  return texture;
+}
+
+export function sendTexture(gl: WebGL2RenderingContext, src: TexImageSource) {
+  gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
 }
