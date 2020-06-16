@@ -2,10 +2,9 @@ import { EffectLoop, UniformLocs } from "./mergepass";
 import { WebGLProgramLoop } from "./webglprogramloop";
 import { BuildInfo, Expr, ExprVec4 } from "./expressions/expr";
 
-// the line below, which gets placed as the first line of `main`, enables allows
-// multiple shaders to be chained together, which works for shaders that don't
-// need to use `uSampler` for anything other than the current pixel
 const FRAG_SET = `  gl_FragColor = texture2D(uSampler, gl_FragCoord.xy / uResolution);\n`;
+
+const SCENE_SET = `uniform sampler2D uSceneSampler;`;
 
 export const BOILERPLATE = `#ifdef GL_ES
 precision mediump float;
@@ -16,25 +15,26 @@ uniform mediump float uTime;
 uniform mediump vec2 uResolution;\n`;
 
 export class CodeBuilder {
-  //private funcs: string[] = [];
   private calls: string[] = [];
-  //private externalFuncs: string[] = [];
-  //private uniformDeclarations: string[] = [];
   private externalFuncs: Set<string> = new Set();
   private uniformDeclarations: Set<string> = new Set();
   private counter = 0;
   /** flat array of expressions within loop for attaching uniforms */
   private exprs: Expr[];
   private baseLoop: EffectLoop;
-  //private uniformLocs: UniformLocs = {};
-  //private uniformNames: string[];
+
   constructor(effectLoop: EffectLoop) {
     this.baseLoop = effectLoop;
     const buildInfo: BuildInfo = {
       uniformTypes: {},
       externalFuncs: new Set<string>(),
       exprs: [],
-      needs: { centerSample: false, neighborSample: false, depthBuffer: false },
+      needs: {
+        centerSample: false,
+        neighborSample: false,
+        depthBuffer: false,
+        sceneBuffer: false,
+      },
     };
     console.log(effectLoop);
     this.addEffectLoop(effectLoop, 1, buildInfo);
@@ -102,9 +102,7 @@ export class CodeBuilder {
       "\n" +
       //this.funcs.join("\n") +
       "\nvoid main () {\n" +
-      // TODO replace with needs from buildinfo
-      //(this.baseLoop.getNeeds("centerSample") ? FRAG_SET : "") +
-      FRAG_SET +
+      (this.baseLoop.getNeeds("centerSample") ? FRAG_SET : "") +
       this.calls.join("\n") +
       "\n}";
     gl.shaderSource(fShader, fullCode);

@@ -7,10 +7,12 @@ export interface LoopInfo {
   func?: (arg0: number) => void;
 }
 
-// TODO have this implement an interface that includes `getSampleNum` and `getNeeds`
+export interface EffectLike {
+  getSampleNum(mult: number): number;
+  getNeeds(name: keyof Needs): boolean;
+}
 
-export class EffectLoop {
-  // TODO change name of this
+export class EffectLoop implements EffectLike {
   effects: EffectElement[];
   repeat: LoopInfo;
 
@@ -19,7 +21,6 @@ export class EffectLoop {
     this.repeat = repeat;
   }
 
-  /** returns true if any sub-effects need neighbor sample down the tree */
   getNeeds(name: keyof Needs) {
     const bools: boolean[] = this.effects.map((e) => e.getNeeds(name));
     return bools.reduce((acc: boolean, curr: boolean) => acc || curr);

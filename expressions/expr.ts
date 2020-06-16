@@ -1,4 +1,4 @@
-import { UniformLocs, EffectLoop } from "../mergepass";
+import { UniformLocs, EffectLoop, EffectLike } from "../mergepass";
 import { WebGLProgramElement } from "../webglprogramloop";
 import { AllVals, Float, TypeString } from "../exprtypes";
 
@@ -34,6 +34,7 @@ export interface Needs {
   depthBuffer: boolean;
   neighborSample: boolean;
   centerSample: boolean;
+  sceneBuffer: boolean;
 }
 
 export interface SourceLists {
@@ -49,19 +50,23 @@ interface Parseable {
   ) => string;
 
   typeString(): TypeString;
+
+  added: boolean;
 }
 
 export interface Applicable {
   applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation): void;
 }
 
-export abstract class Expr implements Parseable {
+export abstract class Expr implements Parseable, EffectLike {
   static count = 0;
+  added = false;
   id: string;
   needs: Needs = {
     depthBuffer: false,
     neighborSample: false,
     centerSample: true,
+    sceneBuffer: false,
   };
   defaultNames: string[];
   uniformValChangeMap: UniformValChangeMap = {};
@@ -79,7 +84,7 @@ export abstract class Expr implements Parseable {
     }
     if (sourceLists.values.length !== defaultNames.length) {
       throw new Error(
-        "default names list length doesn't match values list length!"
+        "default names list length doesn't match values list length"
       );
     }
     this.sourceLists = sourceLists;
@@ -96,7 +101,6 @@ export abstract class Expr implements Parseable {
     }
   }
 
-  /** expression and loops both implement this */
   getNeeds(name: keyof Needs) {
     return this.needs[name];
   }
@@ -110,6 +114,7 @@ export abstract class Expr implements Parseable {
     if (typeof newVal === "number") {
       newVal = n2p(newVal);
     }
+    // TODO this is a duplicate check
     if (!(newVal instanceof Primitive)) {
       throw new Error("cannot set a non-primitive");
     }
@@ -137,6 +142,9 @@ export abstract class Expr implements Parseable {
 
   /** parses this expression into a string, adding info as it recurses */
   parse(buildInfo: BuildInfo): string {
+    if (this.added) {
+      throw new Error("expression already added to another part of tree");
+    }
     console.log("first source code", this.sourceCode);
     this.sourceCode = "";
     buildInfo.exprs.push(this);
@@ -146,6 +154,7 @@ export abstract class Expr implements Parseable {
     updateNeed("centerSample");
     updateNeed("neighborSample");
     updateNeed("depthBuffer");
+    updateNeed("sceneBuffer");
     // add each of the external funcs to the builder
     this.externalFuncs.forEach((func) => buildInfo.externalFuncs.add(func));
     // put all of the values between all of the source sections
@@ -159,6 +168,7 @@ export abstract class Expr implements Parseable {
       this.sourceLists.sections.length - 1
     ];
     console.log("source code", this.sourceCode);
+    this.added = true;
     return this.sourceCode;
   }
 
@@ -168,6 +178,7 @@ export abstract class Expr implements Parseable {
 export class Mutable<T extends Primitive> implements Parseable {
   primitive: T;
   name: string | undefined;
+  added = false;
 
   constructor(primitive: T, name?: string) {
     this.primitive = primitive;
@@ -175,6 +186,11 @@ export class Mutable<T extends Primitive> implements Parseable {
   }
 
   parse(buildInfo: BuildInfo, defaultName: string, enc: Expr | undefined) {
+    if (this.added) {
+      throw new Error(
+        "mutable expression already added to another part of tree"
+      );
+    }
     if (enc === undefined) {
       throw new Error("tried to put a mutable expression at the top level");
     }
@@ -190,10 +206,7 @@ export class Mutable<T extends Primitive> implements Parseable {
     };
     // add the new type to the map
     enc.defaultNameMap[defaultName + enc.id] = this.name;
-    // TODO get rid of this
-    console.log("enc dnames", enc.defaultNameMap);
-    // insert the uniform name into the source code
-    console.log("this name");
+    this.added = true;
     return this.name;
   }
 
@@ -215,13 +228,9 @@ export function mut<T extends Primitive>(val: T | number, name?: string) {
   return new Mutable(primitive, name);
 }
 
-/*
-function mut(num: number) {
-  return new Mutable(n2p(num));
-}
-*/
-
 export abstract class Primitive implements Parseable {
+  added = false;
+
   abstract toString(): string;
 
   abstract typeString(): TypeString;
@@ -233,6 +242,13 @@ export abstract class Primitive implements Parseable {
   ): void;
 
   parse(buildInfo: BuildInfo, defaultName: string, enc: Expr | undefined) {
+    // TODO see if this is okay actually
+    if (this.added) {
+      throw new Error(
+        "primitive expression already added to another part of tree"
+      );
+    }
+    this.added = true;
     return this.toString();
   }
 }
