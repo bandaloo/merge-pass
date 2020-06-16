@@ -1,17 +1,24 @@
 import { AllVals, Float, Vec2, Vec3, Vec4 } from "../exprtypes";
-import { Operator as Op, tag } from "./expr";
+import { Operator as Op, tag, checkGeneric, wrapInValue } from "./expr";
 
 export class AddExpr<T extends AllVals, U extends AllVals> extends Op<T> {
+  left: T;
+  right: U;
+
   constructor(left: T, right: U) {
     super(left, tag`(${left} + ${right})`, ["uLeft", "uRight"]);
+    this.left = left;
+    this.right = right;
   }
 
-  setLeft(left: T) {
-    this.setUniform("uLeft" + this.id, left);
+  setLeft(left: T | number) {
+    checkGeneric(this.left, left);
+    this.setUniform("uLeft" + this.id, wrapInValue(left));
   }
 
-  setRight(right: U) {
-    this.setUniform("uRight" + this.id, right);
+  setRight(right: U | number) {
+    checkGeneric(this.right, right);
+    this.setUniform("uRight" + this.id, this.right);
   }
 }
 

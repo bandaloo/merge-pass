@@ -1,10 +1,9 @@
 import { UniformLocs, EffectLoop } from "../mergepass";
 import { WebGLProgramElement } from "../webglprogramloop";
-import { AllVals, Float } from "../exprtypes";
+import { AllVals, Float, TypeString } from "../exprtypes";
 
 interface UniformTypeMap {
-  // TODO give a proper type that only denotes type names
-  [name: string]: string;
+  [name: string]: TypeString;
 }
 
 /** info needed to generate proper declarations */
@@ -14,71 +13,6 @@ export interface BuildInfo {
   exprs: Expr[];
   needs: Needs;
 }
-
-/**
- * turn a value (can be expression or primitive) into a string
- * @param val the value that gets parsed
- * @param defaultName what to name it if it is unnamed uniform
- * @param e the enclosing expression
- * @param buildInfo the top level effect to add uniforms and functions to
- */
-/*
-export function vparse(
-  val: UniformVal, // becomes this
-  defaultName: string, // becomes member
-  e: Expr,
-  buildInfo: BuildInfo
-): string {
-  // parse the expression if it's an expression
-  console.log("in vparse");
-  if (val instanceof Expr) {
-    return val.parse(buildInfo);
-  }
-  // TODO everything beyond this will become the member function
-  // transform `DefaultUniformVal` to `NamedUniformVal`
-  let defaulted = false;
-  if (typeof val !== "number" && val.length === 1) {
-    const namedVal = [defaultName, val[0]] as NamedUniformVal;
-    val = namedVal;
-    defaulted = true;
-  }
-  if (typeof val === "number") {
-    // this is a float
-    return toGLSLFloatString(val);
-  }
-  if (typeof val[0] === "string") {
-    // this is a named value, so it should be inserted as a uniform
-    const namedVal = val as NamedUniformVal;
-    const name = namedVal[0];
-    // TODO what else should it not include?
-    if (!defaulted && name.includes("_id_")) {
-      throw new Error("cannot set a named uniform that has _id_ in it");
-    }
-    if (/^i[0-9]+$/g.test(name)) {
-      throw new Error(
-        "cannot name a uniform that matches regex ^i[0-9]+$" +
-          "since that's reserved for name of index" +
-          "in for loops of generated code"
-      );
-    }
-    // get the `RawUniformVal` from the `NamedUniformVal`
-    const uniformVal = namedVal[1];
-    // set to true so they are set to their default values on first draw
-    e.uniformValChangeMap[name] = { val: uniformVal, changed: true };
-    // add the new type to the map
-    buildInfo.uniformTypes[name] = uniformGLSLTypeStr(uniformVal);
-    // add the name mapping
-    e.defaultNameMap[defaultName] = name;
-    console.log("default name", defaultName);
-    return name;
-  }
-  // not a named value, so it can be inserted into code directly like a macro
-  const uniformVal = val as RawVec;
-  return `vec${uniformVal.length}(${uniformVal
-    .map((n) => toGLSLFloatString(n))
-    .join(", ")})`;
-}
-*/
 
 function toGLSLFloatString(num: number) {
   let str = "" + num;
@@ -113,6 +47,8 @@ interface Parseable {
     defaultName: string,
     enc: Expr | undefined
   ) => string;
+
+  typeString(): TypeString;
 }
 
 export interface Applicable {
@@ -206,7 +142,7 @@ export abstract class Expr implements Parseable {
     buildInfo.exprs.push(this);
     const updateNeed = (name: keyof Needs) =>
       (buildInfo.needs[name] = buildInfo.needs[name] || this.needs[name]);
-    // no good way to iterate through an interface
+    // update me on change to needs: no good way to iterate through an interface
     updateNeed("centerSample");
     updateNeed("neighborSample");
     updateNeed("depthBuffer");
@@ -225,9 +161,11 @@ export abstract class Expr implements Parseable {
     console.log("source code", this.sourceCode);
     return this.sourceCode;
   }
+
+  abstract typeString(): TypeString;
 }
 
-export class Mutable<T extends Primitive> implements Applicable {
+export class Mutable<T extends Primitive> implements Parseable {
   primitive: T;
   name: string | undefined;
 
@@ -262,6 +200,10 @@ export class Mutable<T extends Primitive> implements Applicable {
   applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation) {
     this.primitive.applyUniform(gl, loc);
   }
+
+  typeString() {
+    return this.primitive.typeString();
+  }
 }
 
 export function mut<T extends Primitive>(val: T, name?: string): Mutable<T>;
@@ -279,10 +221,10 @@ function mut(num: number) {
 }
 */
 
-export abstract class Primitive implements Parseable, Applicable {
+export abstract class Primitive implements Parseable {
   abstract toString(): string;
 
-  abstract typeString(): string;
+  abstract typeString(): TypeString;
 
   // TODO move to Mutable
   abstract applyUniform(
@@ -311,7 +253,7 @@ export class PrimitiveFloat extends Primitive {
   }
 
   typeString() {
-    return "float";
+    return "float" as TypeString;
   }
 
   applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation) {
@@ -328,7 +270,7 @@ export abstract class PrimitiveVec extends Primitive {
   }
 
   typeString() {
-    return "vec" + this.value.length;
+    return ("vec" + this.value.length) as TypeString;
   }
 
   toString() {
@@ -391,6 +333,10 @@ export class ExprFloat extends Expr {
   setVal(primitive: PrimitiveFloat | number) {
     this.setUniform("uFloat" + this.id, n2p(primitive));
   }
+
+  typeString() {
+    return "float" as TypeString;
+  }
 }
 
 export function float(value: Float | number) {
@@ -400,13 +346,17 @@ export function float(value: Float | number) {
 
 export class ExprVec2 extends ExprVec {
   private vec2 = undefined; // brand for nominal typing
+
+  typeString() {
+    return "vec2" as TypeString;
+  }
 }
 
 export class ExprVec3 extends ExprVec {
   private vec3 = undefined; // brand for nominal typing
 
-  constructor(sourceLists: SourceLists, defaultNames: string[]) {
-    super(sourceLists, defaultNames);
+  typeString() {
+    return "vec3" as TypeString;
   }
 }
 
@@ -428,6 +378,10 @@ export class ExprVec4 extends ExprVec {
       uniformLocs
     );
   }
+
+  typeString() {
+    return "vec4" as TypeString;
+  }
 }
 
 export class Operator<T extends AllVals> extends Expr {
@@ -436,6 +390,10 @@ export class Operator<T extends AllVals> extends Expr {
   constructor(ret: T, sourceLists: SourceLists, defaultNames: string[]) {
     super(sourceLists, defaultNames);
     this.ret = ret;
+  }
+
+  typeString(): TypeString {
+    return this.ret.typeString() as TypeString;
   }
 }
 
@@ -461,11 +419,18 @@ export function pfloat(num: number) {
   return new PrimitiveFloat(num);
 }
 
-// TODO get rid of this
-/** number or primitive to primitive */
-export function np2p(p: number | Primitive) {
-  if (p instanceof Primitive) return p;
-  return new PrimitiveFloat(p);
+export function wrapInValue(num: number | AllVals) {
+  if (typeof num === "number") return pfloat(num);
+  return num;
+}
+
+export function checkGeneric(gen: AllVals, input: AllVals | number) {
+  if (!(gen instanceof Primitive)) {
+    throw new TypeError("cannot change the value of a non-primitive");
+  }
+  if (typeof input === "number" && !(gen instanceof PrimitiveFloat)) {
+    throw new TypeError("cannot set primitive vec to a number");
+  }
 }
 
 export function tag(

@@ -15,79 +15,13 @@ if (source === null) {
 }
 
 window.addEventListener("load", () => {
-  // TODO check if we need mediump float (it already doesn't work on mobile)
-  //const brightness = new Brightness(["uBrightness", 0.0]);
-  //const hsv = new HSV([0, 0.1, 0], [0, 1, 0]);
-  //const blur = new Blur(["uBlur", [1, 1]]);
-  //const blur2 = new Blur([[0, 0]]);
-  //const blur3 = new Blur(["uBlurSide", [0, 8]]);
-  //const grain = new Grain(0.1);
-  //const hueAdd = new HueAdd(["uHue", 0]);
-  //const saturationAdd = new SaturationAdd(-0.3);
-  //const hue = new Hue(0.7);
-  //const saturation = new Saturation(0.5);
-  //const value = new Value(["uValue", 0.5]);
-
-  //const mul = new MulExpr(0.5, 1);
-  //const len = new LenExpr(["uTest", [0.1, 0.1]]);
-  //const mulBrightness = new Brightness(len);
-
-  //let vecExpr;
-
-  //const redBlur = new Blur(new ScaleExpr(4, vec(new RedExpr(), 0))).repeat(3);
-
-  /*
-  const merger = new Merger(
-    [
-      new EffectLoop([hueAdd, new EffectLoop([grain], { num: 2 })], {
-        num: 1,
-      }),
-    ],
-    sourceCanvas,
-    gl
-  );
-  */
-  //const merger = new Merger([hue, grain], sourceCanvas, gl);
-
-  //const powerBlur = new PowerBlur(8);
-
-  // TODO throw a better error when the list is empty
-  //const blur = new MP.BlurExpr([1, 0]);
-  const fragColExpr = new MP.FragColorExpr();
-  /*
-  const merger = new MP.Merger(
-    [new MP.BlurExpr(MP.scale(3, MP.vec2(1, 0))).repeat(2)],
-    sourceCanvas,
-    gl
-  );
-  */
-  //let s: MP.ScaleExpr<MP.ExprVec2>;
-  /*
-  const merger = new MP.Merger(
-    [new MP.BlurExpr((s = MP.scale([2], MP.vec2(1, 0)))).repeat(2)],
-    sourceCanvas,
-    gl
-  );
-  */
-
-  //let s: MP.MultExpr<MP.Vec, MP.Float>;
-  //const v = new MP.Mutable(MP.pvec2(1, 0));
-  //const v2 = MP.mut(MP.pvec2(1, 0));
-
-  //const v3 = MP.mul(MP.pvec2(1, 1), MP.pvec2(3, 3));
-
-  //const loop = new MP.BlurExpr((s = MP.mul(v2, MP.mut(2)))).repeat(2);
-  //const merger = new MP.Merger([loop], sourceCanvas, gl);
-  //const merger = new MP.Merger([MP.blur2d(pfloat())], sourceCanvas, gl);
-
   const hFloat = MP.float(MP.mut(1));
   const vFloat = MP.float(MP.mut(1));
-
   const merger = new MP.Merger(
     [
       MP.blur2d(
-        MP.mul(MP.len(MP.ncfcoord()), MP.pfloat(3)),
-        MP.mul(MP.len(MP.ncfcoord()), MP.pfloat(3)),
+        MP.mul(MP.len(MP.ncfcoord()), 3),
+        MP.mul(MP.len(MP.ncfcoord()), 3),
         6
       ),
     ],
@@ -107,15 +41,6 @@ window.addEventListener("load", () => {
   const draw = (time: number) => {
     const t = steps / 60;
     steps++;
-    //brightness.setUniform("uBrightness", 0.3 * Math.cos(time / 2000));
-    //blur.setUniform("uBlur", [Math.cos(time / 1000) ** 8, 0]);
-    //hueAdd.setUniform("uHue", t / 9);
-    //powerBlur.setSize(8 * Math.cos(time / 1000) ** 8);
-    //s.setRight(MP.float(8 * Math.cos(time / 1000) ** 8));
-    //s.setLeft(MP.pvec2(1, 8 * Math.sin(time / 1000)));
-    //f.setVal(8 * Math.cos(time / 1000) ** 8);
-    //hFloat.setVal(2 * Math.cos(time / 1000) ** 8);
-    //vFloat.setVal(2 * Math.cos(time / 1000) ** 8);
 
     // draw insane stripes
     const i = ~~(t * 9);

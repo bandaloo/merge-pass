@@ -1,23 +1,33 @@
-import { Vec, AllVals, Vec2, Vec3, Vec4, Float } from "../exprtypes";
-import { Operator as Op, tag } from "./expr";
+import { AllVals, Float, Vec, Vec2, Vec3, Vec4 } from "../exprtypes";
+import { checkGeneric, n2p, Operator as Op, tag, wrapInValue } from "./expr";
 
 export class MultExpr<T extends AllVals, U extends AllVals> extends Op<T> {
+  left: T;
+  right: U;
+
   constructor(left: T, right: U) {
     super(left, tag`(${left} * ${right})`, ["uLeft", "uRight"]);
+    this.left = left;
+    this.right = right;
   }
 
-  setLeft(left: T) {
-    this.setUniform("uLeft" + this.id, left);
+  setLeft(left: T | number) {
+    checkGeneric(this.right, left);
+    this.setUniform("uLeft" + this.id, wrapInValue(left));
   }
 
-  setRight(right: U) {
-    this.setUniform("uRight" + this.id, right);
+  setRight(right: U | number) {
+    checkGeneric(this.right, right);
+    this.setUniform("uRight" + this.id, wrapInValue(right));
   }
 }
 
 // arithmetic
 
-export function mul(left: Float, right: Float): MultExpr<Float, Float>;
+export function mul(
+  left: Float | number,
+  right: Float | number
+): MultExpr<Float, Float>;
 
 // dot
 
@@ -29,10 +39,19 @@ export function mul(left: Vec4, right: Vec4): MultExpr<Vec4, Vec4>;
 
 // scalar with vec
 
-export function mul<T extends Vec>(left: T, right: Float): MultExpr<T, Float>;
+export function mul<T extends Vec>(
+  left: T,
+  right: Float | number
+): MultExpr<T, Float>;
 
 // implementation
 
-export function mul<T extends AllVals, U extends AllVals>(left: T, right: U) {
-  return new MultExpr(left, right);
+export function mul<T extends AllVals, U extends AllVals>(
+  left: T | number,
+  right: U | number
+) {
+  let leftVal = typeof left === "number" ? n2p(left) : left;
+  let rightVal = typeof right === "number" ? n2p(right) : right;
+
+  return new MultExpr(leftVal, rightVal);
 }
