@@ -1,30 +1,27 @@
-import { Expr } from "./expressions/expr";
-import { LoopInfo, UniformLocs } from "./mergepass";
+import { ExprVec4, Expr } from "./expressions/expr";
+import { LoopInfo, TexInfo, UniformLocs, getNeedsOfList } from "./mergepass";
 
 export type WebGLProgramElement = WebGLProgram | WebGLProgramLoop[];
 
 export class WebGLProgramLoop {
-  program: WebGLProgramElement;
+  programElement: WebGLProgramElement;
   repeat: LoopInfo;
   effects: Expr[];
   last = false;
 
   constructor(
-    program: WebGLProgramElement,
+    programElement: WebGLProgramElement,
     repeat: LoopInfo,
     effects: Expr[] = []
   ) {
-    this.program = program;
+    this.programElement = programElement;
     this.repeat = repeat;
     this.effects = effects;
   }
 
   draw(
     gl: WebGL2RenderingContext,
-    tex: {
-      front: WebGLTexture;
-      back: WebGLTexture;
-    },
+    tex: TexInfo,
     framebuffer: WebGLFramebuffer,
     uniformLocs: UniformLocs,
     last: boolean
@@ -32,11 +29,20 @@ export class WebGLProgramLoop {
     let used = false;
     for (let i = 0; i < this.repeat.num; i++) {
       const newLast = i === this.repeat.num - 1;
-      if (this.program instanceof WebGLProgram) {
-        // TODO figure out way to move this from loop
+      if (this.programElement instanceof WebGLProgram) {
         if (!used) {
-          gl.useProgram(this.program);
+          gl.useProgram(this.programElement);
           used = true;
+          // bind the texture if we need the scene buffer
+          if (getNeedsOfList("sceneBuffer", this.effects)) {
+            if (tex.scene === undefined) {
+              throw new Error(
+                "needs scene buffer, but scene texture is somehow undefined"
+              );
+            }
+            gl.activeTexture(gl.TEXTURE1);
+            gl.bindTexture(gl.TEXTURE_2D, tex.scene);
+          }
         }
         // effects list is populated
         if (i === 0) {
@@ -75,7 +81,7 @@ export class WebGLProgramLoop {
         if (this.repeat.func !== undefined) {
           this.repeat.func(i);
         }
-        for (const p of this.program) {
+        for (const p of this.programElement) {
           p.draw(gl, tex, framebuffer, uniformLocs, newLast);
         }
       }

@@ -1,6 +1,6 @@
 import { CodeBuilder } from "./codebuilder";
 import { WebGLProgramLoop } from "./webglprogramloop";
-import { Needs, ExprVec4 } from "./expressions/expr";
+import { Needs, ExprVec4, Expr } from "./expressions/expr";
 
 export interface LoopInfo {
   num: number;
@@ -12,7 +12,24 @@ export interface EffectLike {
   getNeeds(name: keyof Needs): boolean;
 }
 
-export class EffectLoop implements EffectLike {
+export interface Generable {
+  genPrograms(
+    gl: WebGL2RenderingContext,
+    vShader: WebGLShader,
+    uniformLocs: UniformLocs,
+    sceneSource: TexImageSource
+  ): WebGLProgramLoop;
+}
+
+export function getNeedsOfList(name: keyof Needs, list: (EffectLoop | Expr)[]) {
+  if (list.length === 0) {
+    throw new Error("list was empty, so no needs could be found");
+  }
+  const bools: boolean[] = list.map((e) => e.getNeeds(name)) as boolean[];
+  return bools.reduce((acc: boolean, curr: boolean) => acc || curr);
+}
+
+export class EffectLoop implements EffectLike, Generable {
   effects: EffectElement[];
   repeat: LoopInfo;
 
@@ -22,8 +39,9 @@ export class EffectLoop implements EffectLike {
   }
 
   getNeeds(name: keyof Needs) {
-    const bools: boolean[] = this.effects.map((e) => e.getNeeds(name));
-    return bools.reduce((acc: boolean, curr: boolean) => acc || curr);
+    return getNeedsOfList(name, this.effects);
+    //const bools: boolean[] = this.effects.map((e) => e.getNeeds(name));
+    //return bools.reduce((acc: boolean, curr: boolean) => acc || curr);
   }
 
   getSampleNum(mult = 1) {
@@ -71,17 +89,22 @@ export class EffectLoop implements EffectLike {
   genPrograms(
     gl: WebGL2RenderingContext,
     vShader: WebGLShader,
-    uniformLocs: UniformLocs
+    uniformLocs: UniformLocs,
+    sceneSource: TexImageSource
   ): WebGLProgramLoop {
+    // TODO we probably don't need scenesource anymore
     if (this.getSampleNum() / this.repeat.num <= 1) {
       // if this group only samples neighbors at most once, create program
       const codeBuilder = new CodeBuilder(this);
-      return codeBuilder.compileProgram(gl, vShader, uniformLocs);
+      const program = codeBuilder.compileProgram(gl, vShader, uniformLocs);
+      return program;
     }
     // otherwise, regroup and try again on regrouped loops
     this.effects = this.regroup();
     return new WebGLProgramLoop(
-      this.effects.map((e) => e.genPrograms(gl, vShader, uniformLocs)),
+      this.effects.map((e) =>
+        e.genPrograms(gl, vShader, uniformLocs, sceneSource)
+      ),
       this.repeat
     );
   }
@@ -108,12 +131,18 @@ interface MergerOptions {
   edgeMode?: ClampMode;
 }
 
+export interface TexInfo {
+  front: WebGLTexture;
+  back: WebGLTexture;
+  scene: WebGLTexture | undefined;
+}
+
 export class Merger {
   /** the context to render to */
   gl: WebGL2RenderingContext;
   /** the context to apply post-processing to */
   private source: TexImageSource;
-  private tex: { front: WebGLTexture; back: WebGLTexture };
+  private tex: TexInfo;
   private framebuffer: WebGLFramebuffer;
   private uniformLocs: UniformLocs = {};
   private effectLoop: EffectLoop;
@@ -165,7 +194,10 @@ export class Merger {
     this.tex = {
       front: makeTexture(this.gl, this.options),
       back: makeTexture(this.gl, this.options),
+      scene: undefined,
     };
+
+    console.log("tex", this.tex);
 
     // create the framebuffer
     const framebuffer = gl.createFramebuffer();
@@ -178,7 +210,8 @@ export class Merger {
     this.programLoop = this.effectLoop.genPrograms(
       this.gl,
       vShader,
-      this.uniformLocs
+      this.uniformLocs,
+      this.source
     );
 
     // find the final program
@@ -186,84 +219,34 @@ export class Merger {
 
     let currProgramLoop = this.programLoop;
     while (!atBottom) {
-      if (currProgramLoop.program instanceof WebGLProgram) {
+      if (currProgramLoop.programElement instanceof WebGLProgram) {
         // we traveled right and hit a program, so it must be the last
         currProgramLoop.last = true;
         atBottom = true;
       } else {
         // set the current program loop to the last in the list
         currProgramLoop =
-          currProgramLoop.program[currProgramLoop.program.length - 1];
+          currProgramLoop.programElement[
+            currProgramLoop.programElement.length - 1
+          ];
       }
     }
     // TODO get rid of this (or make it only log when verbose)
     console.log(this.programLoop);
   }
 
-  private makeTexture(gl: WebGL2RenderingContext, options: MergerOptions) {
-    const texture = this.gl.createTexture();
-    if (texture === null) {
-      throw new Error("problem creating texture");
-    }
-
-    // flip the order of the pixels, or else it displays upside down
-    this.gl.pixelStorei(this.gl.UNPACK_FLIP_Y_WEBGL, true);
-
-    // bind the texture after creating it
-    this.gl.bindTexture(this.gl.TEXTURE_2D, texture);
-
-    this.gl.texImage2D(
-      this.gl.TEXTURE_2D,
-      0,
-      this.gl.RGBA,
-      this.gl.drawingBufferWidth,
-      this.gl.drawingBufferHeight,
-      0,
-      this.gl.RGBA,
-      this.gl.UNSIGNED_BYTE,
-      null
-    );
-
-    const filterMode = (f: undefined | FilterMode) =>
-      f === undefined || f === "linear" ? this.gl.LINEAR : this.gl.NEAREST;
-
-    // how to map texture element
-    this.gl.texParameteri(
-      this.gl.TEXTURE_2D,
-      this.gl.TEXTURE_MIN_FILTER,
-      filterMode(options?.minFilterMode)
-    );
-    this.gl.texParameteri(
-      this.gl.TEXTURE_2D,
-      this.gl.TEXTURE_MAG_FILTER,
-      filterMode(options?.maxFilterMode)
-    );
-
-    if (options?.edgeMode !== "wrap") {
-      const gl = this.gl; // for succinctness
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-    }
-
-    return texture;
-  }
-
-  private sendTexture(src: TexImageSource) {
-    this.gl.texImage2D(
-      this.gl.TEXTURE_2D,
-      0,
-      this.gl.RGBA,
-      this.gl.RGBA,
-      this.gl.UNSIGNED_BYTE,
-      src
-    );
-  }
-
   draw() {
     //this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer);
     this.gl.activeTexture(this.gl.TEXTURE0);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.back);
-    this.sendTexture(this.source);
+    sendTexture(this.gl, this.source);
+
+    if (this.effectLoop.getNeeds("sceneBuffer")) {
+      this.tex.scene = makeTexture(this.gl, this.options);
+      this.gl.activeTexture(this.gl.TEXTURE1);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.scene);
+      sendTexture(this.gl, this.source);
+    }
     // swap textures before beginning draw
     this.programLoop.draw(
       this.gl,

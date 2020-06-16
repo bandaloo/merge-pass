@@ -19,6 +19,7 @@ window.addEventListener("load", () => {
   const vFloat = MP.float(MP.mut(1));
   const merger = new MP.Merger(
     [
+      MP.ssample(),
       MP.blur2d(
         MP.mul(MP.len(MP.ncfcoord()), 3),
         MP.mul(MP.len(MP.ncfcoord()), 3),
@@ -28,6 +29,7 @@ window.addEventListener("load", () => {
     sourceCanvas,
     gl
   );
+  //const merger = new MP.Merger([MP.ssample()], sourceCanvas, gl);
 
   // dwitter sim
   const C = Math.cos;

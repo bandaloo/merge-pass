@@ -1,6 +1,6 @@
-import { EffectLoop, UniformLocs } from "./mergepass";
+import { EffectLoop, UniformLocs, makeTexture, sendTexture } from "./mergepass";
 import { WebGLProgramLoop } from "./webglprogramloop";
-import { BuildInfo, Expr, ExprVec4 } from "./expressions/expr";
+import { BuildInfo, Expr, ExprVec4, Needs } from "./expressions/expr";
 
 const FRAG_SET = `  gl_FragColor = texture2D(uSampler, gl_FragCoord.xy / uResolution);\n`;
 
@@ -19,9 +19,11 @@ export class CodeBuilder {
   private externalFuncs: Set<string> = new Set();
   private uniformDeclarations: Set<string> = new Set();
   private counter = 0;
+  // TODO make this vec 4 expressions
   /** flat array of expressions within loop for attaching uniforms */
   private exprs: Expr[];
   private baseLoop: EffectLoop;
+  private totalNeeds: Needs;
 
   constructor(effectLoop: EffectLoop) {
     this.baseLoop = effectLoop;
@@ -46,6 +48,7 @@ export class CodeBuilder {
     //this.uniformNames = Object.keys(buildInfo.uniformTypes);
     // add all external functions from the `BuildInfo` instance
     buildInfo.externalFuncs.forEach((func) => this.externalFuncs.add(func));
+    this.totalNeeds = buildInfo.needs;
     this.exprs = buildInfo.exprs;
   }
 
@@ -95,14 +98,16 @@ export class CodeBuilder {
     if (fShader === null) {
       throw new Error("problem creating fragment shader");
     }
+    console.log("needs", this.totalNeeds);
     const fullCode =
       BOILERPLATE +
+      (this.totalNeeds.sceneBuffer ? SCENE_SET : "") +
       [...this.uniformDeclarations].join("\n") +
       [...this.externalFuncs].join("") +
       "\n" +
       //this.funcs.join("\n") +
       "\nvoid main () {\n" +
-      (this.baseLoop.getNeeds("centerSample") ? FRAG_SET : "") +
+      (this.totalNeeds.centerSample ? FRAG_SET : "") +
       this.calls.join("\n") +
       "\n}";
     gl.shaderSource(fShader, fullCode);
@@ -143,10 +148,13 @@ export class CodeBuilder {
     const uResolution = gl.getUniformLocation(program, "uResolution");
     gl.uniform2f(uResolution, gl.drawingBufferWidth, gl.drawingBufferHeight);
     if (this.baseLoop.getNeeds("sceneBuffer")) {
-      gl.activeTexture(gl.TEXTURE1);
-      //gl.bindTexture(gl.TEXTURE_2D, sceneTexture);
-      gl.getUniformLocation(program, "uSceneSampler");
+      // TODO allow for texture options for scene texture
+      const sceneSamplerLocation = gl.getUniformLocation(
+        program,
+        "uSceneSampler"
+      );
       // put the scene buffer in texture 1 (0 is used for the backbuffer)
+      gl.uniform1i(sceneSamplerLocation, 1);
     }
     // get attribute
     const position = gl.getAttribLocation(program, "aPosition");

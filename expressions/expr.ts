@@ -1,5 +1,4 @@
-import { UniformLocs, EffectLoop, EffectLike } from "../mergepass";
-import { WebGLProgramElement } from "../webglprogramloop";
+import { UniformLocs, EffectLoop, EffectLike, Generable } from "../mergepass";
 import { AllVals, Float, TypeString } from "../exprtypes";
 
 interface UniformTypeMap {
@@ -376,7 +375,7 @@ export class ExprVec3 extends ExprVec {
   }
 }
 
-export class ExprVec4 extends ExprVec {
+export class ExprVec4 extends ExprVec implements Generable {
   private vec4 = undefined; // brand for nominal typing
 
   repeat(num: number) {
@@ -386,12 +385,14 @@ export class ExprVec4 extends ExprVec {
   genPrograms(
     gl: WebGL2RenderingContext,
     vShader: WebGLShader,
-    uniformLocs: UniformLocs
-  ): WebGLProgramElement {
+    uniformLocs: UniformLocs,
+    sceneSource: TexImageSource
+  ) {
     return new EffectLoop([this], { num: 1 }).genPrograms(
       gl,
       vShader,
-      uniformLocs
+      uniformLocs,
+      sceneSource
     );
   }
 
