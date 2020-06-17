@@ -1,5 +1,4 @@
 import * as MP from "./index";
-import { Merger } from "./mergepass";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -29,9 +28,12 @@ function getVariable(variable: string) {
 // dwitter sim
 const C = Math.cos;
 const S = Math.sin;
+const T = Math.tan;
 
 const x = source;
 const c = sourceCanvas;
+let R = (r?: any, g?: any, b?: any, a: any = 1) =>
+  `rgba(${r | 0},${g | 0},${b | 0},${a})`;
 
 interface Demos {
   [name: string]: () => {
@@ -41,10 +43,9 @@ interface Demos {
 }
 
 const demos: Demos = {
-  blur: () => {
+  edgeblur: () => {
     const merger = new MP.Merger(
       [
-        MP.ssample(),
         MP.blur2d(
           MP.mul(MP.len(MP.ncfcoord()), 3),
           MP.mul(MP.len(MP.ncfcoord()), 3),
@@ -66,26 +67,37 @@ interface Draws {
   [name: string]: (time: number, frames: number) => void;
 }
 
+const stripes = (t: number, frames: number) => {
+  if (frames === 0) {
+    x.fillStyle = "black";
+    x.fillRect(0, 0, 960, 540);
+    x.font = "99px monospace";
+    x.fillStyle = "white";
+    x.textAlign = "center";
+    x.textBaseline = "middle";
+    x.fillText("hello world", 960 / 2, 540 / 4);
+  }
+  const i = ~~(frames / 9);
+  const j = ~~(i / 44);
+  const k = i % 44;
+  x.fillStyle = `hsl(${(k & j) * i},40%,${50 + C(i) * 10}%`;
+  x.fillRect(k * 24, 0, 24, k + 2);
+  x.drawImage(c, 0, k + 2);
+};
+
+const spiral = (t: number, frames: number) => {
+  let d;
+  c.width |= 0;
+  for (let i = 50; (i -= 0.5); )
+    x.beginPath(),
+      (d = 2 * C((2 + S(t / 99)) * 2 * i)),
+      x.arc(480 + d * 10 * C(i) * i, 270 + d * 9 * S(i) * i, i, 0, 44 / 7),
+      (x.fillStyle = R(i * 5)),
+      x.fill();
+};
+
 const draws: Draws = {
-  blur: (t: number, frames: number) => {
-    if (frames === 0) {
-      x.fillStyle = "black";
-      x.fillRect(0, 0, 960, 540);
-      x.font = "99px monospace";
-      x.fillStyle = "white";
-      x.textAlign = "center";
-      x.textBaseline = "middle";
-      x.fillText("hello world", 960 / 2, 540 / 4);
-    }
-    // draw insane stripes
-    const i = ~~(frames / 9);
-    const j = ~~(i / 44);
-    const k = i % 44;
-    x.fillStyle = `hsl(${(k & j) * i},40%,${50 + C(i) * 10}%`;
-    x.fillRect(k * 24, 0, 24, k + 2);
-    x.drawImage(c, 0, k + 2);
-    //merger.draw();
-  },
+  edgeblur: spiral,
 };
 
 window.addEventListener("load", () => {
@@ -93,7 +105,7 @@ window.addEventListener("load", () => {
   let dstr = getVariable("d");
 
   console.log(mstr, dstr);
-  if (mstr === undefined || demos[mstr] === undefined) mstr = "blur"; // default demo
+  if (mstr === undefined || demos[mstr] === undefined) mstr = "edgeblur"; // default demo
   if (dstr === undefined || draws[dstr] === undefined) dstr = mstr; // pair with merger
   console.log(mstr, dstr);
   const demo = demos[mstr]();
@@ -101,8 +113,13 @@ window.addEventListener("load", () => {
   const draw = draws[dstr];
   if (draw === undefined) throw new Error("draw not found");
 
+  (document.getElementById("title") as HTMLElement).innerText = "demo: " + mstr;
+  (document.getElementById("mergercode") as HTMLElement).innerText =
+    "" + demos[mstr];
+
   let frame = 0;
 
+  x.save();
   const step = (t = 0) => {
     draw(t / 1000, frame);
     demo.change(demo.merger, t, frame);
@@ -110,60 +127,9 @@ window.addEventListener("load", () => {
     requestAnimationFrame(step);
     frame++;
   };
+  x.restore();
 
   step(0);
-
-  /*
-  const hFloat = MP.float(MP.mut(1));
-  const vFloat = MP.float(MP.mut(1));
-  const merger = new MP.Merger(
-    [
-      MP.ssample(),
-      MP.blur2d(
-        MP.mul(MP.len(MP.ncfcoord()), 3),
-        MP.mul(MP.len(MP.ncfcoord()), 3),
-        6
-      ),
-    ],
-    sourceCanvas,
-    gl
-  );
-  //const merger = new MP.Merger([MP.ssample()], sourceCanvas, gl);
-
-  // dwitter sim
-  const C = Math.cos;
-  const S = Math.sin;
-
-  const x = source;
-  const c = sourceCanvas;
-
-  let steps = 0;
-
-  const draw = (time: number) => {
-    const t = steps / 60;
-    steps++;
-
-    // draw insane stripes
-    const i = ~~(t * 9);
-    const j = ~~(i / 44);
-    const k = i % 44;
-    x.fillStyle = `hsl(${(k & j) * i},40%,${50 + C(t) * 10}%`;
-    x.fillRect(k * 24, 0, 24, k + 2);
-    x.drawImage(c, 0, k + 2);
-    merger.draw();
-    requestAnimationFrame(draw);
-  };
-
-  x.fillStyle = "black";
-  x.fillRect(0, 0, 960, 540);
-  x.font = "99px monospace";
-  x.fillStyle = "white";
-  x.textAlign = "center";
-  x.textBaseline = "middle";
-  x.fillText("hello world", 960 / 2, 540 / 4);
-
-  draw(0);
-  */
 });
 
 glCanvas.addEventListener("click", () => glCanvas.requestFullscreen());

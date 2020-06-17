@@ -1,12 +1,42 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <style></style>
+    <style>
+      .content {
+        max-width: 960px;
+        margin: auto;
+      }
+      h1,
+      h2,
+      h3,
+      p {
+        font-family: Helvetica, sans-serif;
+      }
+
+      p {
+        font-weight: bold;
+      }
+
+      code {
+        font-weight: bolder;
+      }
+    </style>
     <meta charset="UTF-8" />
   </head>
   <body>
-    <canvas id="gl" width="960" height="540"></canvas>
-    <canvas id="source" width="960" height="540"></canvas>
-    <script src="dist/bundle.js"></script>
+    <div class="content">
+      <h1 id="title"></h1>
+      <h2>processed output</h2>
+      <canvas id="gl" width="960" height="540"></canvas>
+      <h2>unprocessed input</h2>
+      <canvas id="source" width="960" height="540"></canvas>
+      <h2>code</h2>
+      <p>
+        this function returns an object containing the merger and a function
+        that changes uniforms on every step
+      </p>
+      <code id="mergercode"></code>
+    </div>
   </body>
+  <script src="dist/bundle.js"></script>
 </html>

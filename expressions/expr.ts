@@ -144,7 +144,6 @@ export abstract class Expr implements Parseable, EffectLike {
     if (this.added) {
       throw new Error("expression already added to another part of tree");
     }
-    console.log("first source code", this.sourceCode);
     this.sourceCode = "";
     buildInfo.exprs.push(this);
     const updateNeed = (name: keyof Needs) =>

@@ -19,7 +19,6 @@ export class CodeBuilder {
   private externalFuncs: Set<string> = new Set();
   private uniformDeclarations: Set<string> = new Set();
   private counter = 0;
-  // TODO make this vec 4 expressions
   /** flat array of expressions within loop for attaching uniforms */
   private exprs: Expr[];
   private baseLoop: EffectLoop;
