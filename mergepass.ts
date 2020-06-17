@@ -73,12 +73,13 @@ export class EffectLoop implements EffectLike, Generable {
         sampleCount -= prevSampleCount;
         prevEffects = [];
       }
+      //firstBreak = false;
     };
     for (const e of this.effects) {
       const sampleNum = e.getSampleNum();
       prevSampleCount = sampleCount;
       sampleCount += sampleNum;
-      if (sampleCount > 1) breakOff();
+      if (sampleCount > 0) breakOff();
       prevEffects.push(e);
     }
     // push on all the straggling effects after the grouping is done
@@ -110,6 +111,10 @@ export class EffectLoop implements EffectLike, Generable {
       this.repeat
     );
   }
+}
+
+export function loop(effects: EffectElement[], rep: number) {
+  return new EffectLoop(effects, { num: rep });
 }
 
 type EffectElement = ExprVec4 | EffectLoop;
@@ -199,8 +204,6 @@ export class Merger {
       scene: undefined,
     };
 
-    console.log("tex", this.tex);
-
     // create the framebuffer
     const framebuffer = gl.createFramebuffer();
     if (framebuffer === null) {
@@ -233,6 +236,9 @@ export class Merger {
           ];
       }
     }
+    if (this.programLoop.getTotalNeeds().sceneBuffer) {
+      this.tex.scene = makeTexture(this.gl, this.options);
+    }
     // TODO get rid of this (or make it only log when verbose)
     console.log(this.programLoop);
   }
@@ -243,8 +249,10 @@ export class Merger {
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.back);
     sendTexture(this.gl, this.source);
 
-    if (this.programLoop.getTotalNeeds().sceneBuffer) {
-      this.tex.scene = makeTexture(this.gl, this.options);
+    if (
+      this.programLoop.getTotalNeeds().sceneBuffer &&
+      this.tex.scene !== undefined
+    ) {
       this.gl.activeTexture(this.gl.TEXTURE1);
       this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.scene);
       sendTexture(this.gl, this.source);

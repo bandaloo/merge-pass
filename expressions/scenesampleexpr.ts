@@ -10,6 +10,6 @@ export class SceneSampleExpr extends ExprVec4 {
   }
 }
 
-export function ssample(vec?: Vec2) {
+export function input(vec?: Vec2) {
   return new SceneSampleExpr(vec);
 }

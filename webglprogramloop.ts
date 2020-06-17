@@ -91,9 +91,6 @@ export class WebGLProgramLoop {
             tex.front,
             0
           );
-          // swap the textures
-          //console.log("swapping textures");
-          //gl.drawArrays(gl.TRIANGLES, 0, 6);
         }
         // allows us to read from `texBack`
         // default sampler is 0, so `uSampler` uniform will always sample from texture 0

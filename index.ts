@@ -18,5 +18,6 @@ export * from "./expressions/scenesampleexpr";
 export * from "./expressions/brightnessexpr";
 export * from "./expressions/addexpr";
 export * from "./expressions/setcolorexpr";
+export * from "./expressions/contrast";
 
 export * from "./expressions/expr";

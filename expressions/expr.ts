@@ -123,7 +123,6 @@ export abstract class Expr implements Parseable, EffectLike {
     }
     const oldVal = this.uniformValChangeMap[name]?.val;
     if (oldVal === undefined) {
-      console.log("default name map", this.defaultNameMap);
       throw new Error(
         "tried to set uniform " +
           name +
@@ -165,7 +164,6 @@ export abstract class Expr implements Parseable, EffectLike {
     this.sourceCode += this.sourceLists.sections[
       this.sourceLists.sections.length - 1
     ];
-    console.log("source code", this.sourceCode);
     this.added = true;
     return this.sourceCode;
   }
@@ -193,7 +191,6 @@ export class Mutable<T extends Primitive> implements Parseable {
       throw new Error("tried to put a mutable expression at the top level");
     }
     // accept the default name if given no name
-    console.log("default name: ", defaultName);
     if (this.name === undefined) this.name = defaultName + enc.id;
     // set to true so they are set to their default values on first draw
     buildInfo.uniformTypes[this.name] = this.primitive.typeString();

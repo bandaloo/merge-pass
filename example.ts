@@ -1,5 +1,4 @@
 import * as MP from "./index";
-import { ssample } from "./expressions/scenesampleexpr";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -65,9 +64,17 @@ const demos: Demos = {
   vectordisplay: () => {
     const merger = new MP.Merger(
       [
-        MP.blur2d(1, 1, 2),
-        MP.brightness(-0.3),
-        //MP.setcolor(MP.add(MP.fcolor(), ssample())),
+        MP.loop(
+          [
+            MP.gauss5(MP.vec2(1, 0)),
+            MP.gauss5(MP.vec2(0, 1)),
+            MP.brightness(0.15), // move this second to last
+            MP.contrast(1.2),
+          ],
+          5
+        ),
+        MP.brightness(-0.5),
+        MP.setcolor(MP.add(MP.fcolor(), MP.input())),
       ],
       sourceCanvas,
       gl
@@ -120,10 +127,10 @@ const vectorSpiral = (t: number, frames: number) => {
   x.fillStyle = "black";
   x.fillRect(0, 0, 960, 540);
   let d;
-  x.lineWidth = 5;
-  x.strokeStyle = "white";
+  x.lineWidth = 2;
   for (let i = 50; (i -= 0.5); )
     x.beginPath(),
+      (x.strokeStyle = `hsl(${i * 9},50%,50%)`),
       (d = 2 * C((2 + S(t / 99)) * 2 * i)),
       x.arc(480 + d * 10 * C(i) * i, 270 + d * 9 * S(i) * i, i, 0, 44 / 7),
       x.stroke();
@@ -138,10 +145,8 @@ window.addEventListener("load", () => {
   let mstr = getVariable("m");
   let dstr = getVariable("d");
 
-  console.log(mstr, dstr);
   if (mstr === undefined || demos[mstr] === undefined) mstr = "edgeblur"; // default demo
   if (dstr === undefined || draws[dstr] === undefined) dstr = mstr; // pair with merger
-  console.log(mstr, dstr);
   const demo = demos[mstr]();
   if (demo === undefined) throw new Error("merger not found");
   const draw = draws[dstr];

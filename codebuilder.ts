@@ -37,7 +37,6 @@ export class CodeBuilder {
         sceneBuffer: false,
       },
     };
-    console.log(effectLoop);
     this.addEffectLoop(effectLoop, 1, buildInfo);
     // add all the types to uniform declarations from the `BuildInfo` instance
     for (const name in buildInfo.uniformTypes) {
@@ -70,14 +69,10 @@ export class CodeBuilder {
     for (const e of effectLoop.effects) {
       if (e instanceof Expr) {
         e.parse(buildInfo);
-        //this.exprs.push(e);
-        //const name = `effect${this.counter}()`;
-        //const func = e.sourceCode.replace(/main\s*\(\)/, name);
         this.calls.push(
           "  ".repeat(indentLevel) + "gl_FragColor = " + e.sourceCode + ";"
         );
         this.counter++;
-        //this.funcs.push(func);
       } else {
         this.addEffectLoop(e, indentLevel, buildInfo, false);
       }
@@ -97,7 +92,6 @@ export class CodeBuilder {
     if (fShader === null) {
       throw new Error("problem creating fragment shader");
     }
-    console.log("needs", this.totalNeeds);
     const fullCode =
       BOILERPLATE +
       (this.totalNeeds.sceneBuffer ? SCENE_SET : "") +
