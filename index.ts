@@ -15,5 +15,8 @@ export * from "./expressions/lenexpr";
 export * from "./expressions/normfragcoordexpr";
 export * from "./expressions/normcenterfragcoordexpr";
 export * from "./expressions/scenesampleexpr";
+export * from "./expressions/brightnessexpr";
+export * from "./expressions/addexpr";
+export * from "./expressions/setcolorexpr";
 
 export * from "./expressions/expr";

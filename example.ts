@@ -1,4 +1,5 @@
 import * as MP from "./index";
+import { ssample } from "./expressions/scenesampleexpr";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -61,6 +62,21 @@ const demos: Demos = {
       change: (merger: MP.Merger, time: number, frame: number) => {},
     };
   },
+  vectordisplay: () => {
+    const merger = new MP.Merger(
+      [
+        MP.blur2d(1, 1, 2),
+        MP.brightness(-0.3),
+        //MP.setcolor(MP.add(MP.fcolor(), ssample())),
+      ],
+      sourceCanvas,
+      gl
+    );
+    return {
+      merger: merger,
+      change: (merger: MP.Merger, time: number, frame: number) => {},
+    };
+  },
 };
 
 interface Draws {
@@ -85,6 +101,10 @@ const stripes = (t: number, frames: number) => {
   x.drawImage(c, 0, k + 2);
 };
 
+// canvas drawing loops
+
+// TODO deobfuscate these more
+
 const spiral = (t: number, frames: number) => {
   let d;
   c.width |= 0;
@@ -96,8 +116,22 @@ const spiral = (t: number, frames: number) => {
       x.fill();
 };
 
+const vectorSpiral = (t: number, frames: number) => {
+  x.fillStyle = "black";
+  x.fillRect(0, 0, 960, 540);
+  let d;
+  x.lineWidth = 5;
+  x.strokeStyle = "white";
+  for (let i = 50; (i -= 0.5); )
+    x.beginPath(),
+      (d = 2 * C((2 + S(t / 99)) * 2 * i)),
+      x.arc(480 + d * 10 * C(i) * i, 270 + d * 9 * S(i) * i, i, 0, 44 / 7),
+      x.stroke();
+};
+
 const draws: Draws = {
   edgeblur: spiral,
+  vectordisplay: vectorSpiral,
 };
 
 window.addEventListener("load", () => {

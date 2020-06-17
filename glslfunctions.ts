@@ -45,11 +45,18 @@ export const glslFuncs = {
   col += texture2D(uSampler, uv - (off1 / uResolution)) * 0.35294117647058826;
   return col;
 }`,
-  contrast: `vec4 contrast(float val, vec4 col)
+  contrast: `vec4 contrast(float val, vec4 col) {
   col.rgb /= col.a;
   col.rgb = ((col.rgb - 0.5) * val) + 0.5;
   col.rgb *= col.a;
-  return col;`,
+  return col;
+}`,
+  brightness: `vec4 brightness(float val, vec4 col) {
+  col.rgb /= col.a;
+  col.rgb += val;
+  col.rgb *= col.a;
+  return col;
+}`,
   hsvmask: `void main(vec4 mask, vec4 components, vec4 col) {
   vec3 hsv = rgb2hsv(col.rgb);
   vec3 m = mask;

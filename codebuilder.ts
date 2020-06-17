@@ -146,7 +146,18 @@ export class CodeBuilder {
     // set the uniform resolution (every program has this uniform)
     const uResolution = gl.getUniformLocation(program, "uResolution");
     gl.uniform2f(uResolution, gl.drawingBufferWidth, gl.drawingBufferHeight);
+    /*
     if (this.baseLoop.getNeeds("sceneBuffer")) {
+      // TODO allow for texture options for scene texture
+      const sceneSamplerLocation = gl.getUniformLocation(
+        program,
+        "uSceneSampler"
+      );
+      // put the scene buffer in texture 1 (0 is used for the backbuffer)
+      gl.uniform1i(sceneSamplerLocation, 1);
+    }
+    */
+    if (this.totalNeeds.sceneBuffer) {
       // TODO allow for texture options for scene texture
       const sceneSamplerLocation = gl.getUniformLocation(
         program,
@@ -163,6 +174,11 @@ export class CodeBuilder {
     // In this example, we only use one array buffer, where we're storing
     // our vertices
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
-    return new WebGLProgramLoop(program, this.baseLoop.repeat, this.exprs);
+    return new WebGLProgramLoop(
+      program,
+      this.baseLoop.repeat,
+      this.totalNeeds,
+      this.exprs
+    );
   }
 }

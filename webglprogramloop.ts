@@ -1,4 +1,4 @@
-import { ExprVec4, Expr } from "./expressions/expr";
+import { ExprVec4, Expr, Needs } from "./expressions/expr";
 import { LoopInfo, TexInfo, UniformLocs, getNeedsOfList } from "./mergepass";
 
 export type WebGLProgramElement = WebGLProgram | WebGLProgramLoop[];
@@ -8,15 +8,41 @@ export class WebGLProgramLoop {
   repeat: LoopInfo;
   effects: Expr[];
   last = false;
+  totalNeeds: Needs | undefined;
 
   constructor(
     programElement: WebGLProgramElement,
     repeat: LoopInfo,
-    effects: Expr[] = []
+    totalNeeds?: Needs,
+    effects: Expr[] = [] // only populated when leaf
   ) {
     this.programElement = programElement;
     this.repeat = repeat;
+    this.totalNeeds = totalNeeds;
     this.effects = effects;
+  }
+
+  getTotalNeeds(): Needs {
+    // go through needs of program loop
+    if (!(this.programElement instanceof WebGLProgram)) {
+      const allNeeds: Needs[] = [];
+      for (const p of this.programElement) {
+        allNeeds.push(p.getTotalNeeds());
+      }
+      // update me on change to needs
+      return allNeeds.reduce((acc, curr) => {
+        return {
+          neighborSample: acc.neighborSample || curr.neighborSample,
+          centerSample: acc.centerSample || curr.centerSample,
+          sceneBuffer: acc.sceneBuffer || curr.sceneBuffer,
+          depthBuffer: acc.depthBuffer || curr.depthBuffer,
+        };
+      });
+    }
+    if (this.totalNeeds === undefined) {
+      throw new Error("total needs of webgl program was somehow undefined");
+    }
+    return this.totalNeeds;
   }
 
   draw(

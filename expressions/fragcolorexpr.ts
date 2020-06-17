@@ -5,3 +5,7 @@ export class FragColorExpr extends ExprVec4 {
     super(tag`(gl_FragColor)`, []);
   }
 }
+
+export function fcolor() {
+  return new FragColorExpr();
+}

@@ -21,6 +21,7 @@ export interface Generable {
   ): WebGLProgramLoop;
 }
 
+// TODO get rid of this
 export function getNeedsOfList(name: keyof Needs, list: (EffectLoop | Expr)[]) {
   if (list.length === 0) {
     throw new Error("list was empty, so no needs could be found");
@@ -101,6 +102,7 @@ export class EffectLoop implements EffectLike, Generable {
     }
     // otherwise, regroup and try again on regrouped loops
     this.effects = this.regroup();
+    // okay to have undefined needs here
     return new WebGLProgramLoop(
       this.effects.map((e) =>
         e.genPrograms(gl, vShader, uniformLocs, sceneSource)
@@ -241,7 +243,7 @@ export class Merger {
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.back);
     sendTexture(this.gl, this.source);
 
-    if (this.effectLoop.getNeeds("sceneBuffer")) {
+    if (this.programLoop.getTotalNeeds().sceneBuffer) {
       this.tex.scene = makeTexture(this.gl, this.options);
       this.gl.activeTexture(this.gl.TEXTURE1);
       this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.scene);
