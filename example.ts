@@ -78,10 +78,10 @@ const draws: Draws = {
       x.fillText("hello world", 960 / 2, 540 / 4);
     }
     // draw insane stripes
-    const i = frames;
+    const i = ~~(frames / 9);
     const j = ~~(i / 44);
     const k = i % 44;
-    x.fillStyle = `hsl(${(k & j) * i},40%,${50 + C(frames) * 10}%`;
+    x.fillStyle = `hsl(${(k & j) * i},40%,${50 + C(i) * 10}%`;
     x.fillRect(k * 24, 0, 24, k + 2);
     x.drawImage(c, 0, k + 2);
     //merger.draw();
@@ -108,6 +108,7 @@ window.addEventListener("load", () => {
     demo.change(demo.merger, t, frame);
     demo.merger.draw();
     requestAnimationFrame(step);
+    frame++;
   };
 
   step(0);
