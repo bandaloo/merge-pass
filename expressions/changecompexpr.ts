@@ -1,8 +1,9 @@
-import { AllVals, Vec, Float } from "../exprtypes";
-import { Operator as Op, wrapInValue, PrimitiveFloat } from "./expr";
-import { typeStringToLength, checkLegalComponents } from "./getcompexpr";
+import { AllVals, Vec } from "../exprtypes";
+import { Operator as Op, PrimitiveFloat, wrapInValue } from "./expr";
+import { checkLegalComponents, typeStringToLength } from "./getcompexpr";
 
-type ArithOp = "" | "/" | "*" | "+" | "-";
+// TODO this should probably be elsewhere
+export type ArithOp = "/" | "*" | "+" | "-";
 
 // test with just setting
 function getChangeFunc(
@@ -10,7 +11,7 @@ function getChangeFunc(
   id: string,
   setter: AllVals,
   comps: string,
-  op: ArithOp = ""
+  op: ArithOp | "" = ""
 ) {
   return `${typ} changecomp_${id}(${typ} col, ${setter.typeString()} setter) {
   col.${comps} ${op}= setter;

@@ -1,6 +1,8 @@
 import { AllVals, Float, Vec2, Vec3, Vec4 } from "../exprtypes";
 import { Operator as Op, tag, wrapInValue } from "./expr";
 
+/*
+
 export class AddExpr<T extends AllVals, U extends AllVals> extends Op<T> {
   left: T;
   right: U;
@@ -24,10 +26,10 @@ export class AddExpr<T extends AllVals, U extends AllVals> extends Op<T> {
 
 // arithmetic
 
-export function add(
-  left: Float | number,
-  right: Float | number
-): AddExpr<Float, Float>;
+export function add<T extends Float>(
+  left: T,
+  right: number
+): AddExpr<T, PrimitiveFloat>;
 
 // vector addition
 
@@ -42,3 +44,5 @@ export function add(left: Vec4, right: Vec4): AddExpr<Vec4, Vec4>;
 export function add(left: any, right: any) {
   return new AddExpr(wrapInValue(left), wrapInValue(right));
 }
+
+*/

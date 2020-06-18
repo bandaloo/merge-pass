@@ -50,8 +50,8 @@ const demos: Demos = {
     const merger = new MP.Merger(
       [
         MP.blur2d(
-          MP.mul(MP.len(MP.add(MP.ncfcoord(), MP.vec2(0, 0))), 3),
-          MP.mul(MP.len(MP.ncfcoord()), 3),
+          MP.op(MP.len(MP.op(MP.ncfcoord(), "+", MP.vec2(0, 0))), "*", 3),
+          MP.op(MP.len(MP.ncfcoord()), "*", 3),
           6
         ),
       ],
@@ -77,7 +77,7 @@ const demos: Demos = {
           5
         ),
         MP.brightness(-0.5),
-        MP.setcolor(MP.add(MP.fcolor(), MP.input())),
+        MP.setcolor(MP.op(MP.fcolor(), "*", MP.input())),
       ],
       sourceCanvas,
       gl
@@ -90,14 +90,17 @@ const demos: Demos = {
   },
   singlepassgrain: () => {
     let vec: MP.BasicVec2;
-    let m: MP.MultExpr<MP.Float, MP.Float>;
+    let m: MP.OpExpr<MP.Float, MP.Float>;
 
+    //const test = MP.op(MP.ncfcoord(), "*", MP.vec2(1, 2))
+    //const test2 = MP.op(MP.fcolor(), "*", MP.input());
     const merger = new MP.Merger(
       [
         MP.gauss5(MP.vec2(0, 1)),
         MP.grain(
-          (m = MP.mul(
-            MP.len(MP.add(MP.ncfcoord(), (vec = MP.vec2(MP.mut(0), 0)))),
+          (m = MP.op(
+            MP.len(MP.op(MP.ncfcoord(), "*", (vec = MP.vec2(MP.mut(0), 0)))),
+            "*",
             MP.mut(0.3)
           ))
         ),
