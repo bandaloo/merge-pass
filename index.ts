@@ -19,5 +19,6 @@ export * from "./expressions/brightnessexpr";
 export * from "./expressions/addexpr";
 export * from "./expressions/setcolorexpr";
 export * from "./expressions/contrast";
+export * from "./expressions/grain";
 
 export * from "./expressions/expr";

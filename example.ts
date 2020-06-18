@@ -84,11 +84,25 @@ const demos: Demos = {
       change: (merger: MP.Merger, time: number, frame: number) => {},
     };
   },
+  singlepassgrain: () => {
+    const merger = new MP.Merger(
+      [MP.gauss5(MP.vec2(0, 1)), MP.grain(MP.mul(MP.len(MP.ncfcoord()), 0.3))],
+      sourceCanvas,
+      gl
+    );
+
+    return {
+      merger: merger,
+      change: (merger: MP.Merger, time: number, frame: number) => {},
+    };
+  },
 };
 
 interface Draws {
   [name: string]: (time: number, frames: number) => void;
 }
+
+// canvas drawing loops
 
 const stripes = (t: number, frames: number) => {
   if (frames === 0) {
@@ -108,19 +122,17 @@ const stripes = (t: number, frames: number) => {
   x.drawImage(c, 0, k + 2);
 };
 
-// canvas drawing loops
-
-// TODO deobfuscate these more
-
-const spiral = (t: number, frames: number) => {
+const redSpiral = (t: number, frames: number) => {
+  x.fillStyle = "white";
+  x.fillRect(0, 0, 960, 540);
   let d;
-  c.width |= 0;
-  for (let i = 50; (i -= 0.5); )
-    x.beginPath(),
-      (d = 2 * C((2 + S(t / 99)) * 2 * i)),
-      x.arc(480 + d * 10 * C(i) * i, 270 + d * 9 * S(i) * i, i, 0, 44 / 7),
-      (x.fillStyle = R(i * 5)),
-      x.fill();
+  for (let i = 50; (i -= 0.5); ) {
+    x.beginPath();
+    d = 2 * C((2 + S(t / 99)) * 2 * i);
+    x.arc(480 + d * 10 * C(i) * i, 270 + d * 9 * S(i) * i, i, 0, 44 / 7);
+    x.fillStyle = R(i * 5);
+    x.fill();
+  }
 };
 
 const vectorSpiral = (t: number, frames: number) => {
@@ -128,17 +140,31 @@ const vectorSpiral = (t: number, frames: number) => {
   x.fillRect(0, 0, 960, 540);
   let d;
   x.lineWidth = 2;
-  for (let i = 50; (i -= 0.5); )
-    x.beginPath(),
-      (x.strokeStyle = `hsl(${i * 9},50%,50%)`),
-      (d = 2 * C((2 + S(t / 99)) * 2 * i)),
-      x.arc(480 + d * 10 * C(i) * i, 270 + d * 9 * S(i) * i, i, 0, 44 / 7),
-      x.stroke();
+  for (let i = 50; (i -= 0.5); ) {
+    x.beginPath();
+    x.strokeStyle = `hsl(${i * 9},50%,50%)`;
+    d = 2 * C((2 + S(t / 99)) * 2 * i);
+    x.arc(480 + d * 10 * C(i) * i, 270 + d * 9 * S(i) * i, i, 0, 44 / 7);
+    x.stroke();
+  }
+};
+
+const pinkishHelix = (t: number, frames: number) => {
+  x.fillStyle = "white";
+  x.fillRect(0, 0, 960, 540);
+  let i;
+  let j;
+  //c.width |= 0;
+  for (i = 0; i < 960; i += 32) {
+    x.fillStyle = R(((1 + C(i)) / 2) * 255, 0, 155);
+    for (j = 0; j < 3; j++) x.fillRect(i + j, 266 + C(i + j + t) * 50, 32, 8);
+  }
 };
 
 const draws: Draws = {
-  edgeblur: spiral,
+  edgeblur: redSpiral,
   vectordisplay: vectorSpiral,
+  singlepassgrain: pinkishHelix,
 };
 
 window.addEventListener("load", () => {
@@ -172,3 +198,4 @@ window.addEventListener("load", () => {
 });
 
 glCanvas.addEventListener("click", () => glCanvas.requestFullscreen());
+sourceCanvas.addEventListener("click", () => sourceCanvas.requestFullscreen());
