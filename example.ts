@@ -1,6 +1,6 @@
 import * as MP from "./index";
 import * as dat from "dat.gui";
-import { ExprVec2 } from "./expressions/expr";
+import { ExprVec2, ExprVec4 } from "./expressions/expr";
 import { GrainExpr } from "./expressions/grain";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
@@ -110,6 +110,7 @@ const demos: Demos = {
       location: number;
       strength: number;
 
+      // TODO get rid of constructor
       constructor() {
         this.location = 0;
         this.strength = 0.3;
@@ -164,6 +165,33 @@ const demos: Demos = {
     return {
       merger: merger,
       change: () => {},
+    };
+  },
+  huerotate: () => {
+    let c: MP.ChangeCompExpr<MP.RGBToHSVExpr, MP.Mutable<MP.PrimitiveFloat>>;
+    const merger = new MP.Merger(
+      [
+        MP.hsv2rgb(
+          (c = MP.changecomp(MP.rgb2hsv(MP.fcolor()), MP.mut(0.5), "r", "+"))
+        ),
+      ],
+      sourceCanvas,
+      gl
+    );
+
+    class HueControls {
+      hueRotation: number = 0.3;
+    }
+
+    const controls = new HueControls();
+    const gui = new dat.GUI();
+    gui.add(controls, "hueRotation", 0, 1.0, 0.01);
+
+    return {
+      merger: merger,
+      change: () => {
+        c.setNew(controls.hueRotation);
+      },
     };
   },
 };
@@ -238,6 +266,7 @@ const draws: Draws = {
   redonly: stripes,
   redzero: stripes,
   redgreenswap: stripes,
+  huerotate: stripes,
 };
 
 window.addEventListener("load", () => {

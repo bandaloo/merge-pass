@@ -22,6 +22,7 @@ export class MultExpr<T extends AllVals, U extends AllVals> extends Op<T> {
 
 // arithmetic
 
+// TODO the types of this aren't entirely right; could have more constraints
 export function mul(
   left: Float | number,
   right: Float | number

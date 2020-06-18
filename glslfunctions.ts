@@ -13,14 +13,17 @@ export const glslFuncs = {
   return mat2(scale.x, 0.0, 0.0, scale.y);
 }`,
 
-  hsv2rgb: `vec3 hsv2rgb(vec3 c){
+  hsv2rgb: `vec4 hsv2rgb(vec4 co){
+  vec3 c = co.xyz;
   vec3 rgb = clamp(abs(mod(
     c.x * 6.0 + vec3(0.0, 4.0, 2.0), 6.0) - 3.0) - 1.0, 0.0, 1.0);
   rgb = rgb * rgb * (3.0 - 2.0 * rgb);
-  return c.z * mix(vec3(1.0), rgb, c.y);
+  vec3 hsv = c.z * mix(vec3(1.0), rgb, c.y);
+  return vec4(hsv.x, hsv.y, hsv.z, co.a);
 }`,
 
-  rgb2hsv: `vec3 rgb2hsv(vec3 c){
+  rgb2hsv: `vec4 rgb2hsv(vec4 co){
+  vec3 c = co.rgb;
   vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
   vec4 p = mix(vec4(c.bg, K.wz),
                vec4(c.gb, K.xy),
@@ -30,9 +33,9 @@ export const glslFuncs = {
                step(p.x, c.r));
   float d = q.x - min(q.w, q.y);
   float e = 1.0e-10;
-  return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)),
+  return vec4(abs(q.z + (q.w - q.y) / (6.0 * d + e)),
               d / (q.x + e),
-              q.x);
+              q.x, co.a);
 }`,
   // adapted from https://github.com/Jam3/glsl-fast-gaussian-blur/blob/master/5.glsl
   gauss5: `vec4 gauss5(vec2 dir) {
