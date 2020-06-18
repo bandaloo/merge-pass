@@ -1,4 +1,7 @@
 import * as MP from "./index";
+import * as dat from "dat.gui";
+import { ExprVec2 } from "./expressions/expr";
+import { GrainExpr } from "./expressions/grain";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -47,7 +50,7 @@ const demos: Demos = {
     const merger = new MP.Merger(
       [
         MP.blur2d(
-          MP.mul(MP.len(MP.ncfcoord()), 3),
+          MP.mul(MP.len(MP.add(MP.ncfcoord(), MP.vec2(0, 0))), 3),
           MP.mul(MP.len(MP.ncfcoord()), 3),
           6
         ),
@@ -79,21 +82,51 @@ const demos: Demos = {
       sourceCanvas,
       gl
     );
+
     return {
       merger: merger,
       change: (merger: MP.Merger, time: number, frame: number) => {},
     };
   },
   singlepassgrain: () => {
+    let vec: MP.ExprVec2;
+    let m: MP.MultExpr<MP.Float, MP.Float>;
+
     const merger = new MP.Merger(
-      [MP.gauss5(MP.vec2(0, 1)), MP.grain(MP.mul(MP.len(MP.ncfcoord()), 0.3))],
+      [
+        MP.gauss5(MP.vec2(0, 1)),
+        MP.grain(
+          (m = MP.mul(
+            MP.len(MP.add(MP.ncfcoord(), (vec = MP.vec2(MP.mut(0), 0)))),
+            MP.mut(0.3)
+          ))
+        ),
+      ],
       sourceCanvas,
       gl
     );
 
+    class GrainControls {
+      location: number;
+      strength: number;
+
+      constructor() {
+        this.location = 0;
+        this.strength = 0.3;
+      }
+    }
+
+    const controls = new GrainControls();
+    const gui = new dat.GUI();
+    gui.add(controls, "location", -0.5, 0.5, 0.01);
+    gui.add(controls, "strength", 0, 0.5, 0.01);
+
     return {
       merger: merger,
-      change: (merger: MP.Merger, time: number, frame: number) => {},
+      change: (merger: MP.Merger, time: number, frame: number) => {
+        vec.setComp(0, controls.location);
+        m.setRight(controls.strength);
+      },
     };
   },
 };

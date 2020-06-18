@@ -330,7 +330,7 @@ export abstract class ExprVec extends Expr {
     if (index < 0 || index >= this.values.length) {
       throw new Error("out of bounds of setting component");
     }
-    this.setUniform(this.defaultNames[index], n2p(primitive));
+    this.setUniform(this.defaultNames[index] + this.id, n2p(primitive));
   }
 }
 
@@ -435,15 +435,6 @@ export function pfloat(num: number) {
 export function wrapInValue(num: number | AllVals) {
   if (typeof num === "number") return pfloat(num);
   return num;
-}
-
-export function checkGeneric(gen: AllVals, input: AllVals | number) {
-  if (!(gen instanceof Primitive)) {
-    throw new TypeError("cannot change the value of a non-primitive");
-  }
-  if (typeof input === "number" && !(gen instanceof PrimitiveFloat)) {
-    throw new TypeError("cannot set primitive vec to a number");
-  }
 }
 
 export function tag(

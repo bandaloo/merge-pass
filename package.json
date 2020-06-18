@@ -18,7 +18,9 @@
   "author": "Cole Granof",
   "license": "MIT",
   "devDependencies": {
+    "@types/dat.gui": "^0.7.5",
     "browserify": "^16.5.1",
+    "dat.gui": "^0.7.7",
     "typescript": "^3.9.5",
     "watchify": "^3.11.1"
   },

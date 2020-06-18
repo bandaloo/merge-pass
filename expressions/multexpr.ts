@@ -1,5 +1,5 @@
 import { AllVals, Float, Vec, Vec2, Vec3, Vec4 } from "../exprtypes";
-import { checkGeneric, n2p, Operator as Op, tag, wrapInValue } from "./expr";
+import { n2p, Operator as Op, tag, wrapInValue } from "./expr";
 
 export class MultExpr<T extends AllVals, U extends AllVals> extends Op<T> {
   left: T;
@@ -12,12 +12,10 @@ export class MultExpr<T extends AllVals, U extends AllVals> extends Op<T> {
   }
 
   setLeft(left: T | number) {
-    checkGeneric(this.right, left);
     this.setUniform("uLeft" + this.id, wrapInValue(left));
   }
 
   setRight(right: U | number) {
-    checkGeneric(this.right, right);
     this.setUniform("uRight" + this.id, wrapInValue(right));
   }
 }
