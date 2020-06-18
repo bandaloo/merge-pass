@@ -20,6 +20,8 @@ export class AddExpr<T extends AllVals, U extends AllVals> extends Op<T> {
   }
 }
 
+// TODO apparently you can do vec.xyz + 1
+
 // arithmetic
 
 export function add(left: Float, right: Float): AddExpr<Float, Float>;

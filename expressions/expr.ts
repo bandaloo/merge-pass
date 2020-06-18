@@ -230,7 +230,6 @@ export abstract class Primitive implements Parseable {
 
   abstract typeString(): TypeString;
 
-  // TODO move to Mutable
   abstract applyUniform(
     gl: WebGL2RenderingContext,
     loc: WebGLUniformLocation
@@ -273,19 +272,19 @@ export class PrimitiveFloat extends Primitive {
 }
 
 export abstract class PrimitiveVec extends Primitive {
-  value: number[];
+  values: number[];
 
   constructor(comps: number[]) {
     super();
-    this.value = comps;
+    this.values = comps;
   }
 
   typeString() {
-    return ("vec" + this.value.length) as TypeString;
+    return ("vec" + this.values.length) as TypeString;
   }
 
   toString() {
-    return `${this.typeString}(${this.value
+    return `${this.typeString}(${this.values
       .map((n) => toGLSLFloatString(n))
       .join(", ")})`;
   }
@@ -293,13 +292,13 @@ export abstract class PrimitiveVec extends Primitive {
 
 export class PrimitiveVec2 extends PrimitiveVec {
   applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation) {
-    gl.uniform2f(loc, this.value[0], this.value[1]);
+    gl.uniform2f(loc, this.values[0], this.values[1]);
   }
 }
 
 export class PrimitiveVec3 extends PrimitiveVec {
   applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation) {
-    gl.uniform3f(loc, this.value[0], this.value[1], this.value[2]);
+    gl.uniform3f(loc, this.values[0], this.values[1], this.values[2]);
   }
 }
 
@@ -307,12 +306,49 @@ export class PrimitiveVec4 extends PrimitiveVec {
   applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation) {
     gl.uniform4f(
       loc,
-      this.value[0],
-      this.value[1],
-      this.value[2],
-      this.value[3]
+      this.values[0],
+      this.values[1],
+      this.values[2],
+      this.values[3]
     );
   }
+}
+
+export abstract class BasicVec extends Expr {
+  values: Float[];
+  defaultNames: string[];
+
+  constructor(sourceLists: SourceLists, defaultNames: string[]) {
+    super(sourceLists, defaultNames);
+    // this cast is fine as long as you only instantiate these with the
+    // shorthand version
+    const values = sourceLists.values as Float[];
+    this.values = values;
+    this.defaultNames = defaultNames;
+  }
+
+  typeString() {
+    return ("vec" + this.values.length) as TypeString;
+  }
+
+  setComp(index: number, primitive: PrimitiveFloat | number) {
+    if (index < 0 || index >= this.values.length) {
+      throw new Error("out of bounds of setting component");
+    }
+    this.setUniform(this.defaultNames[index] + this.id, n2p(primitive));
+  }
+}
+
+export class BasicVec2 extends BasicVec {
+  private bvec2 = undefined; // brand for nominal typing
+}
+
+export class BasicVec3 extends BasicVec {
+  private bvec3 = undefined; // brand for nominal typing
+}
+
+export class BasicVec4 extends BasicVec {
+  private bvec4 = undefined; // brand for nominal typing
 }
 
 export abstract class ExprVec extends Expr {
@@ -325,16 +361,25 @@ export abstract class ExprVec extends Expr {
     this.values = values;
     this.defaultNames = defaultNames;
   }
+}
 
-  setComp(index: number, primitive: PrimitiveFloat | number) {
-    if (index < 0 || index >= this.values.length) {
-      throw new Error("out of bounds of setting component");
-    }
-    this.setUniform(this.defaultNames[index] + this.id, n2p(primitive));
+export class BasicFloat extends Expr {
+  private float = undefined; // brand for nominal typing
+
+  constructor(sourceLists: SourceLists, defaultNames: string[]) {
+    super(sourceLists, defaultNames);
+  }
+
+  setVal(primitive: PrimitiveFloat | number) {
+    this.setUniform("uFloat" + this.id, n2p(primitive));
+  }
+
+  typeString() {
+    return "float" as TypeString;
   }
 }
 
-export class ExprFloat extends Expr {
+export abstract class ExprFloat extends Expr {
   private float = undefined; // brand for nominal typing
 
   constructor(sourceLists: SourceLists, defaultNames: string[]) {
@@ -352,10 +397,10 @@ export class ExprFloat extends Expr {
 
 export function float(value: Float | number) {
   if (typeof value === "number") value = n2p(value);
-  return new ExprFloat({ sections: ["", ""], values: [value] }, ["uFloat"]);
+  return new BasicFloat({ sections: ["", ""], values: [value] }, ["uFloat"]);
 }
 
-export class ExprVec2 extends ExprVec {
+export abstract class ExprVec2 extends ExprVec {
   private vec2 = undefined; // brand for nominal typing
 
   typeString() {
@@ -363,7 +408,7 @@ export class ExprVec2 extends ExprVec {
   }
 }
 
-export class ExprVec3 extends ExprVec {
+export abstract class ExprVec3 extends ExprVec {
   private vec3 = undefined; // brand for nominal typing
 
   typeString() {
@@ -371,7 +416,7 @@ export class ExprVec3 extends ExprVec {
   }
 }
 
-export class ExprVec4 extends ExprVec implements Generable {
+export abstract class ExprVec4 extends ExprVec implements Generable {
   private vec4 = undefined; // brand for nominal typing
 
   repeat(num: number) {
@@ -416,7 +461,8 @@ export function n2e(num: number | Float) {
     num instanceof PrimitiveFloat ||
     num instanceof ExprFloat ||
     num instanceof Operator ||
-    num instanceof Mutable
+    num instanceof Mutable ||
+    num instanceof BasicFloat
   )
     return num;
   return new PrimitiveFloat(num);

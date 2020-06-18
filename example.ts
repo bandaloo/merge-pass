@@ -89,7 +89,7 @@ const demos: Demos = {
     };
   },
   singlepassgrain: () => {
-    let vec: MP.ExprVec2;
+    let vec: MP.BasicVec2;
     let m: MP.MultExpr<MP.Float, MP.Float>;
 
     const merger = new MP.Merger(
@@ -212,8 +212,16 @@ window.addEventListener("load", () => {
   if (draw === undefined) throw new Error("draw not found");
 
   (document.getElementById("title") as HTMLElement).innerText = "demo: " + mstr;
-  (document.getElementById("mergercode") as HTMLElement).innerText =
-    "" + demos[mstr];
+  let codeStr = ("" + demos[mstr]).replace(/ /g, "&nbsp;");
+
+  const codeElem = document.getElementById("mergercode") as HTMLElement;
+  //codeElem.innerHTML = codeStr;
+
+  const reg = /Merger\(\[[\s\S]+\]/g;
+  const matches = codeStr.match(reg);
+
+  if (matches === null) throw new Error("matches was null");
+  codeElem.innerHTML = codeStr.replace(reg, "<em>" + matches[0] + "</em>");
 
   let frame = 0;
 

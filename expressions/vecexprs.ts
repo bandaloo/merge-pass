@@ -1,11 +1,11 @@
 import { Float } from "../exprtypes";
 import {
-  SourceLists,
-  ExprVec2,
-  ExprVec3,
-  ExprVec4,
+  BasicVec2,
+  BasicVec3,
+  BasicVec4,
   n2e,
   PrimitiveVec2,
+  SourceLists,
 } from "./expr";
 
 function vecSourceList(...components: Float[]): [SourceLists, string[]] {
@@ -24,7 +24,7 @@ function vecSourceList(...components: Float[]): [SourceLists, string[]] {
 // expression vector shorthands
 
 export function vec2(comp1: Float | number, comp2: Float | number) {
-  return new ExprVec2(...vecSourceList(...[comp1, comp2].map((c) => n2e(c))));
+  return new BasicVec2(...vecSourceList(...[comp1, comp2].map((c) => n2e(c))));
 }
 
 export function vec3(
@@ -32,7 +32,7 @@ export function vec3(
   comp2: Float | number,
   comp3: Float | number
 ) {
-  return new ExprVec3(
+  return new BasicVec3(
     ...vecSourceList(...[comp1, comp2, comp3].map((c) => n2e(c)))
   );
 }
@@ -43,7 +43,7 @@ export function vec4(
   comp3: Float | number,
   comp4: Float | number
 ) {
-  return new ExprVec4(
+  return new BasicVec4(
     ...vecSourceList(...[comp1, comp2, comp3, comp4].map((c) => n2e(c)))
   );
 }
