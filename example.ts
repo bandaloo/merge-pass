@@ -275,7 +275,6 @@ const draws: Draws = {
 window.addEventListener("load", () => {
   let mstr = getVariable("m");
   let dstr = getVariable("d");
-  console.log(dstr);
 
   if (mstr === undefined || demos[mstr] === undefined) mstr = "edgeblur"; // default demo
   if (dstr === undefined || draws[dstr] === undefined) dstr = mstr; // pair with merger
@@ -303,18 +302,29 @@ window.addEventListener("load", () => {
   if (matches === null) throw new Error("matches was null");
   codeElem.innerHTML = codeStr.replace(reg, "<em>" + matches[0] + "</em>");
 
-  // add link
+  // add links
   const demoNames = Object.keys(demos);
-  const url =
-    window.location.href.split("?")[0] +
-    "?m=" +
-    demoNames[~~(Math.random() * demoNames.length)];
 
-  (document.getElementById("link") as HTMLAnchorElement).href = url;
+  const urls = demoNames.map(
+    (d) => window.location.href.split("?")[0] + "?m=" + d
+  );
 
+  (document.getElementById("link") as HTMLAnchorElement).href =
+    urls[Math.floor(Math.random() * urls.length)];
+
+  const p = document.getElementById("demos") as HTMLParagraphElement;
+
+  let counter = 0;
+  for (const u of urls) {
+    const demoLink = document.createElement("a");
+    demoLink.href = u;
+    demoLink.innerText = demoNames[counter];
+    p.appendChild(demoLink);
+    p.innerHTML += " ";
+    counter++;
+  }
   let frame = 0;
 
-  x.save();
   const step = (t = 0) => {
     draw(t / 1000, frame);
     demo.change(demo.merger, t, frame);
@@ -322,7 +332,6 @@ window.addEventListener("load", () => {
     requestAnimationFrame(step);
     frame++;
   };
-  x.restore();
 
   step(0);
 });
