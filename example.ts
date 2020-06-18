@@ -77,7 +77,7 @@ const demos: Demos = {
           5
         ),
         MP.brightness(-0.5),
-        MP.setcolor(MP.op(MP.fcolor(), "*", MP.input())),
+        MP.setcolor(MP.op(MP.fcolor(), "+", MP.input())),
       ],
       sourceCanvas,
       gl
@@ -99,7 +99,7 @@ const demos: Demos = {
         MP.gauss5(MP.vec2(0, 1)),
         MP.grain(
           (m = MP.op(
-            MP.len(MP.op(MP.ncfcoord(), "*", (vec = MP.vec2(MP.mut(0), 0)))),
+            MP.len(MP.op(MP.ncfcoord(), "+", (vec = MP.vec2(MP.mut(0), 0)))),
             "*",
             MP.mut(0.3)
           ))
