@@ -285,7 +285,14 @@ window.addEventListener("load", () => {
   if (draw === undefined) throw new Error("draw not found");
 
   (document.getElementById("title") as HTMLElement).innerText = "demo: " + mstr;
-  let codeStr = ("" + demos[mstr]).replace(/ /g, "&nbsp;");
+  // unindent code string
+  let codeStr = (" ".repeat(4) + demos[mstr])
+    .split("\n")
+    .map((l) => l.substr(4))
+    .join("\n")
+    .replace(/ /g, "&nbsp;");
+
+  //let codeStr = ("" + demos[mstr]).replace(/ /g, "&nbsp;");
 
   const codeElem = document.getElementById("mergercode") as HTMLElement;
   //codeElem.innerHTML = codeStr;
