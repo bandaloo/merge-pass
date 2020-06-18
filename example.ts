@@ -275,6 +275,7 @@ const draws: Draws = {
 window.addEventListener("load", () => {
   let mstr = getVariable("m");
   let dstr = getVariable("d");
+  console.log(dstr);
 
   if (mstr === undefined || demos[mstr] === undefined) mstr = "edgeblur"; // default demo
   if (dstr === undefined || draws[dstr] === undefined) dstr = mstr; // pair with merger
@@ -294,6 +295,15 @@ window.addEventListener("load", () => {
 
   if (matches === null) throw new Error("matches was null");
   codeElem.innerHTML = codeStr.replace(reg, "<em>" + matches[0] + "</em>");
+
+  // add link
+  const demoNames = Object.keys(demos);
+  const url =
+    window.location.href.split("?")[0] +
+    "?m=" +
+    demoNames[~~(Math.random() * demoNames.length)];
+
+  (document.getElementById("link") as HTMLAnchorElement).href = url;
 
   let frame = 0;
 
