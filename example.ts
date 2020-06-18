@@ -92,8 +92,6 @@ const demos: Demos = {
     let vec: MP.BasicVec2;
     let m: MP.OpExpr<MP.Float, MP.Float>;
 
-    //const test = MP.op(MP.ncfcoord(), "*", MP.vec2(1, 2))
-    //const test2 = MP.op(MP.fcolor(), "*", MP.input());
     const merger = new MP.Merger(
       [
         MP.gauss5(MP.vec2(0, 1)),
@@ -110,14 +108,8 @@ const demos: Demos = {
     );
 
     class GrainControls {
-      location: number;
-      strength: number;
-
-      // TODO get rid of constructor
-      constructor() {
-        this.location = 0;
-        this.strength = 0.3;
-      }
+      location: number = 0;
+      strength: number = 0.3;
     }
 
     const controls = new GrainControls();
