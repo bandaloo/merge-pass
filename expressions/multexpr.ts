@@ -44,12 +44,6 @@ export function mul<T extends Vec>(
 
 // implementation
 
-export function mul<T extends AllVals, U extends AllVals>(
-  left: T | number,
-  right: U | number
-) {
-  let leftVal = typeof left === "number" ? n2p(left) : left;
-  let rightVal = typeof right === "number" ? n2p(right) : right;
-
-  return new MultExpr(leftVal, rightVal);
+export function mul(left: any, right: any) {
+  return new MultExpr(wrapInValue(left), wrapInValue(right));
 }

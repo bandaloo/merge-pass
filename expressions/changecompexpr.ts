@@ -1,5 +1,5 @@
-import { Operator } from "./expr";
-import { Vec, AllVals } from "../exprtypes";
+import { AllVals, Vec } from "../exprtypes";
+import { Operator, wrapInValue } from "./expr";
 
 // test with just setting
 function getChangeFunc(
@@ -30,8 +30,8 @@ export class ChangeCompExpr<T extends Vec> extends Operator<T> {
 
 export function changecomp<T extends Vec>(
   vec: T,
-  setter: AllVals,
+  setter: AllVals | number,
   comps: string
 ) {
-  return new ChangeCompExpr(vec, setter, comps);
+  return new ChangeCompExpr(vec, wrapInValue(setter), comps);
 }

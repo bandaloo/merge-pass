@@ -24,7 +24,10 @@ export class AddExpr<T extends AllVals, U extends AllVals> extends Op<T> {
 
 // arithmetic
 
-export function add(left: Float, right: Float): AddExpr<Float, Float>;
+export function add(
+  left: Float | number,
+  right: Float | number
+): AddExpr<Float, Float>;
 
 // vector addition
 
@@ -36,6 +39,6 @@ export function add(left: Vec4, right: Vec4): AddExpr<Vec4, Vec4>;
 
 // implementation
 
-export function add<T extends AllVals, U extends AllVals>(left: T, right: U) {
-  return new AddExpr(left, right);
+export function add(left: any, right: any) {
+  return new AddExpr(wrapInValue(left), wrapInValue(right));
 }

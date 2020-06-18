@@ -455,6 +455,7 @@ export class Operator<T extends AllVals> extends Expr {
   }
 }
 
+// TODO is this necessary? can we just use wrapInValue?
 /** number to expression float */
 export function n2e(num: number | Float) {
   if (
