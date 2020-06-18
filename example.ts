@@ -129,6 +129,17 @@ const demos: Demos = {
       },
     };
   },
+  redonly: () => {
+    const merger = new MP.Merger(
+      [MP.setcolor(MP.changecomp(MP.fcolor(), MP.vec2(0, 0), "gb"))],
+      sourceCanvas,
+      gl
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
 };
 
 interface Draws {
@@ -198,6 +209,7 @@ const draws: Draws = {
   edgeblur: redSpiral,
   vectordisplay: vectorSpiral,
   singlepassgrain: pinkishHelix,
+  redonly: stripes,
 };
 
 window.addEventListener("load", () => {

@@ -20,5 +20,7 @@ export * from "./expressions/addexpr";
 export * from "./expressions/setcolorexpr";
 export * from "./expressions/contrast";
 export * from "./expressions/grain";
+export * from "./expressions/getcompexpr";
+export * from "./expressions/changecompexpr";
 
 export * from "./expressions/expr";
