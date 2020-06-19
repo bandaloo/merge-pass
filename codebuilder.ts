@@ -6,12 +6,13 @@ const FRAG_SET = `  gl_FragColor = texture2D(uSampler, gl_FragCoord.xy / uResolu
 
 const SCENE_SET = `uniform sampler2D uSceneSampler;\n`;
 
-export const BOILERPLATE = `#ifdef GL_ES
+const TIME_SET = "uniform mediump float uTime;\n";
+
+const BOILERPLATE = `#ifdef GL_ES
 precision mediump float;
 #endif
 
 uniform sampler2D uSampler;
-uniform mediump float uTime;
 uniform mediump vec2 uResolution;\n`;
 
 export class CodeBuilder {
@@ -35,6 +36,7 @@ export class CodeBuilder {
         neighborSample: false,
         depthBuffer: false,
         sceneBuffer: false,
+        timeUniform: false,
       },
     };
     this.addEffectLoop(effectLoop, 1, buildInfo);
@@ -95,6 +97,7 @@ export class CodeBuilder {
     const fullCode =
       BOILERPLATE +
       (this.totalNeeds.sceneBuffer ? SCENE_SET : "") +
+      (this.totalNeeds.timeUniform ? TIME_SET : "") +
       [...this.uniformDeclarations].join("\n") +
       [...this.externalFuncs].join("\n") +
       "\n" +
@@ -171,6 +174,7 @@ export class CodeBuilder {
     return new WebGLProgramLoop(
       program,
       this.baseLoop.repeat,
+      gl,
       this.totalNeeds,
       this.exprs
     );

@@ -34,6 +34,7 @@ export interface Needs {
   neighborSample: boolean;
   centerSample: boolean;
   sceneBuffer: boolean;
+  timeUniform: boolean;
 }
 
 export interface SourceLists {
@@ -66,6 +67,7 @@ export abstract class Expr implements Parseable, EffectLike {
     neighborSample: false,
     centerSample: true,
     sceneBuffer: false,
+    timeUniform: false,
   };
   defaultNames: string[];
   uniformValChangeMap: UniformValChangeMap = {};
@@ -151,6 +153,7 @@ export abstract class Expr implements Parseable, EffectLike {
     updateNeed("neighborSample");
     updateNeed("depthBuffer");
     updateNeed("sceneBuffer");
+    updateNeed("timeUniform");
     // add each of the external funcs to the builder
     this.externalFuncs.forEach((func) => buildInfo.externalFuncs.add(func));
     // put all of the values between all of the source sections

@@ -9,17 +9,34 @@ export class WebGLProgramLoop {
   effects: Expr[];
   last = false;
   totalNeeds: Needs | undefined;
+  timeLoc?: WebGLUniformLocation;
 
   constructor(
     programElement: WebGLProgramElement,
     repeat: LoopInfo,
-    totalNeeds?: Needs,
+    gl: WebGL2RenderingContext,
+    totalNeeds?: Needs, // only defined when leaf
     effects: Expr[] = [] // only populated when leaf
   ) {
     this.programElement = programElement;
     this.repeat = repeat;
     this.totalNeeds = totalNeeds;
     this.effects = effects;
+    if (programElement instanceof WebGLProgram) {
+      if (gl === undefined) {
+        throw new Error(
+          "program element is a program but context is undefined"
+        );
+      }
+      if (this.totalNeeds?.timeUniform) {
+        gl.useProgram(programElement);
+        const timeLoc = gl.getUniformLocation(programElement, "uTime");
+        if (timeLoc === null) {
+          throw new Error("could not get the time uniform location");
+        }
+        this.timeLoc = timeLoc;
+      }
+    }
   }
 
   getTotalNeeds(): Needs {
@@ -36,6 +53,7 @@ export class WebGLProgramLoop {
           centerSample: acc.centerSample || curr.centerSample,
           sceneBuffer: acc.sceneBuffer || curr.sceneBuffer,
           depthBuffer: acc.depthBuffer || curr.depthBuffer,
+          timeUniform: acc.timeUniform || curr.timeUniform,
         };
       });
     }
@@ -50,7 +68,8 @@ export class WebGLProgramLoop {
     tex: TexInfo,
     framebuffer: WebGLFramebuffer,
     uniformLocs: UniformLocs,
-    last: boolean
+    last: boolean,
+    time: number
   ) {
     let used = false;
     for (let i = 0; i < this.repeat.num; i++) {
@@ -60,6 +79,7 @@ export class WebGLProgramLoop {
           gl.useProgram(this.programElement);
           used = true;
           // bind the texture if we need the scene buffer
+          // TODO! replace with totalNeeds
           if (getNeedsOfList("sceneBuffer", this.effects)) {
             if (tex.scene === undefined) {
               throw new Error(
@@ -71,9 +91,16 @@ export class WebGLProgramLoop {
           }
         }
         // effects list is populated
+        // TODO could this go in the previous if?
         if (i === 0) {
           for (const effect of this.effects) {
             effect.applyUniforms(gl, uniformLocs);
+          }
+          if (this.totalNeeds?.timeUniform) {
+            if (this.timeLoc === undefined || time === undefined) {
+              throw new Error("time or location is undefined");
+            }
+            gl.uniform1f(this.timeLoc, time);
           }
         }
         if (newLast && last && this.last) {
@@ -105,7 +132,7 @@ export class WebGLProgramLoop {
           this.repeat.func(i);
         }
         for (const p of this.programElement) {
-          p.draw(gl, tex, framebuffer, uniformLocs, newLast);
+          p.draw(gl, tex, framebuffer, uniformLocs, newLast, time);
         }
       }
     }

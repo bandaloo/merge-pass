@@ -73,7 +73,6 @@ export class EffectLoop implements EffectLike, Generable {
         sampleCount -= prevSampleCount;
         prevEffects = [];
       }
-      //firstBreak = false;
     };
     for (const e of this.effects) {
       const sampleNum = e.getSampleNum();
@@ -105,7 +104,8 @@ export class EffectLoop implements EffectLike, Generable {
     // okay to have undefined needs here
     return new WebGLProgramLoop(
       this.effects.map((e) => e.genPrograms(gl, vShader, uniformLocs)),
-      this.repeat
+      this.repeat,
+      gl
     );
   }
 }
@@ -212,7 +212,7 @@ export class Merger {
     this.programLoop = this.effectLoop.genPrograms(
       this.gl,
       vShader,
-      this.uniformLocs,
+      this.uniformLocs
     );
 
     // find the final program
@@ -239,7 +239,7 @@ export class Merger {
     console.log(this.programLoop);
   }
 
-  draw() {
+  draw(time: number = 0) {
     //this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer);
     this.gl.activeTexture(this.gl.TEXTURE0);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.back);
@@ -259,7 +259,8 @@ export class Merger {
       this.tex,
       this.framebuffer,
       this.uniformLocs,
-      this.programLoop.last
+      this.programLoop.last,
+      time
     );
   }
 }

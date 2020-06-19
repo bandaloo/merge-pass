@@ -189,6 +189,17 @@ const demos: Demos = {
       },
     };
   },
+  timehuerotate: () => {
+    const merger = new MP.Merger(
+      [MP.hsv2rgb(MP.changecomp(MP.rgb2hsv(MP.fcolor()), MP.time(), "r", "+"))],
+      sourceCanvas,
+      gl
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
 };
 
 interface Draws {
@@ -287,6 +298,7 @@ const draws: Draws = {
   redzero: stripes,
   redgreenswap: movingGrid,
   huerotate: fabric,
+  timehuerotate: fabric,
 };
 
 window.addEventListener("load", () => {
@@ -346,7 +358,7 @@ window.addEventListener("load", () => {
   const step = (t = 0) => {
     draw(t / 1000, frame);
     demo.change(demo.merger, t, frame);
-    demo.merger.draw();
+    demo.merger.draw(t / 1000);
     requestAnimationFrame(step);
     frame++;
   };
