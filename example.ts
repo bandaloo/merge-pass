@@ -285,7 +285,8 @@ window.addEventListener("load", () => {
   const draw = draws[dstr];
   if (draw === undefined) throw new Error("draw not found");
 
-  (document.getElementById("title") as HTMLElement).innerText = "demo: " + mstr;
+  (document.getElementById("title") as HTMLElement).innerText =
+    "merge-pass demo: " + mstr;
   // unindent code string
   let codeStr = (" ".repeat(4) + demos[mstr])
     .split("\n")

@@ -1,6 +1,6 @@
-import { EffectLoop, UniformLocs, makeTexture, sendTexture } from "./mergepass";
+import { BuildInfo, Expr, Needs } from "./expressions/expr";
+import { EffectLoop, UniformLocs } from "./mergepass";
 import { WebGLProgramLoop } from "./webglprogramloop";
-import { BuildInfo, Expr, ExprVec4, Needs } from "./expressions/expr";
 
 const FRAG_SET = `  gl_FragColor = texture2D(uSampler, gl_FragCoord.xy / uResolution);\n`;
 
