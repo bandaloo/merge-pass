@@ -71,16 +71,13 @@ export class WebGLProgramLoop {
     last: boolean,
     time: number
   ) {
-    let used = false;
     for (let i = 0; i < this.repeat.num; i++) {
       const newLast = i === this.repeat.num - 1;
       if (this.programElement instanceof WebGLProgram) {
-        if (!used) {
+        // effects list is populated
+        if (i === 0) {
           gl.useProgram(this.programElement);
-          used = true;
-          // bind the texture if we need the scene buffer
-          // TODO! replace with totalNeeds
-          if (getNeedsOfList("sceneBuffer", this.effects)) {
+          if (this.totalNeeds?.sceneBuffer) {
             if (tex.scene === undefined) {
               throw new Error(
                 "needs scene buffer, but scene texture is somehow undefined"
@@ -89,10 +86,6 @@ export class WebGLProgramLoop {
             gl.activeTexture(gl.TEXTURE1);
             gl.bindTexture(gl.TEXTURE_2D, tex.scene);
           }
-        }
-        // effects list is populated
-        // TODO could this go in the previous if?
-        if (i === 0) {
           for (const effect of this.effects) {
             effect.applyUniforms(gl, uniformLocs);
           }
