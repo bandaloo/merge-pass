@@ -1,7 +1,5 @@
 import * as MP from "./index";
 import * as dat from "dat.gui";
-import { ExprVec2, ExprVec4 } from "./expressions/expr";
-import { GrainExpr } from "./expressions/grain";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -61,7 +59,7 @@ const demos: Demos = {
 
     return {
       merger: merger,
-      change: (merger: MP.Merger, time: number, frame: number) => {},
+      change: () => {},
     };
   },
   vectordisplay: () => {
@@ -85,7 +83,7 @@ const demos: Demos = {
 
     return {
       merger: merger,
-      change: (merger: MP.Merger, time: number, frame: number) => {},
+      change: () => {},
     };
   },
   singlepassgrain: () => {
@@ -321,10 +319,7 @@ window.addEventListener("load", () => {
     .join("\n")
     .replace(/ /g, "&nbsp;");
 
-  //let codeStr = ("" + demos[mstr]).replace(/ /g, "&nbsp;");
-
   const codeElem = document.getElementById("mergercode") as HTMLElement;
-  //codeElem.innerHTML = codeStr;
 
   const reg = /Merger\(\[[\s\S]+\]/g;
   const matches = codeStr.match(reg);

@@ -1,15 +1,17 @@
 import { Vec } from "../exprtypes";
 import { ExprFloat, tag } from "./expr";
 
-export class LenExpr extends ExprFloat {
-  vec: Vec;
+export class LenExpr<T extends Vec> extends ExprFloat {
+  vec: T;
 
-  constructor(vec: Vec) {
+  constructor(vec: T) {
     super(tag`(length(${vec}))`, ["uVec"]);
     this.vec = vec;
   }
 
-  // TODO setter for the vec here
+  setVec(vec: T) {
+    this.setUniform("uVec" + this.id, vec);
+  }
 }
 
 export function len(vec: Vec) {
