@@ -228,6 +228,16 @@ const redSpiral = (t: number, frames: number) => {
   }
 };
 
+const fabric = (t: number, frames: number) => {
+  let h = 20 + C(frames / 30) * 9;
+  let b = ~~(h / 8);
+  for (let i = 240; i--; ) {
+    x.fillStyle = `hsl(${(i ^ ~~(t * 60)) % 99},90%,${h}%)`;
+    x.fillRect(4 * i, 0, 4, b);
+  }
+  x.drawImage(c, 1, b);
+};
+
 const vectorSpiral = (t: number, frames: number) => {
   x.fillStyle = "black";
   x.fillRect(0, 0, 960, 540);
@@ -261,7 +271,7 @@ const draws: Draws = {
   redonly: stripes,
   redzero: stripes,
   redgreenswap: stripes,
-  huerotate: stripes,
+  huerotate: fabric,
 };
 
 window.addEventListener("load", () => {

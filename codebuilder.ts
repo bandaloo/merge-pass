@@ -4,7 +4,7 @@ import { BuildInfo, Expr, ExprVec4, Needs } from "./expressions/expr";
 
 const FRAG_SET = `  gl_FragColor = texture2D(uSampler, gl_FragCoord.xy / uResolution);\n`;
 
-const SCENE_SET = `uniform sampler2D uSceneSampler;`;
+const SCENE_SET = `uniform sampler2D uSceneSampler;\n`;
 
 export const BOILERPLATE = `#ifdef GL_ES
 precision mediump float;
@@ -96,10 +96,10 @@ export class CodeBuilder {
       BOILERPLATE +
       (this.totalNeeds.sceneBuffer ? SCENE_SET : "") +
       [...this.uniformDeclarations].join("\n") +
-      [...this.externalFuncs].join("") +
+      [...this.externalFuncs].join("\n") +
       "\n" +
       //this.funcs.join("\n") +
-      "\nvoid main () {\n" +
+      "void main() {\n" +
       (this.totalNeeds.centerSample ? FRAG_SET : "") +
       this.calls.join("\n") +
       "\n}";
