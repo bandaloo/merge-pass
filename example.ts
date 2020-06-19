@@ -257,11 +257,26 @@ const pinkishHelix = (t: number, frames: number) => {
   x.fillRect(0, 0, 960, 540);
   let i;
   let j;
-  //c.width |= 0;
   for (i = 0; i < 960; i += 32) {
     x.fillStyle = R(((1 + C(i)) / 2) * 255, 0, 155);
     for (j = 0; j < 3; j++) x.fillRect(i + j, 266 + C(i + j + t) * 50, 32, 8);
   }
+};
+
+const movingGrid = (t: number, frames: number) => {
+  let i, j, s;
+  c.width |= 0;
+  for (i = 940; (i -= 20); )
+    for (j = 520; (j -= 20); )
+      (x.fillStyle = R(
+        6 *
+          (s =
+            6 *
+            (4 + C(t * 6) + C((C(t) * i) / 99 + t) + S((S(t) * j) / 99 + t))),
+        0,
+        s + i / 9
+      )),
+        x.fillRect(i, j, s, s);
 };
 
 const draws: Draws = {
@@ -270,7 +285,7 @@ const draws: Draws = {
   singlepassgrain: pinkishHelix,
   redonly: stripes,
   redzero: stripes,
-  redgreenswap: stripes,
+  redgreenswap: movingGrid,
   huerotate: fabric,
 };
 

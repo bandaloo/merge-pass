@@ -113,7 +113,6 @@ export abstract class Expr implements Parseable, EffectLike {
     if (typeof newVal === "number") {
       newVal = n2p(newVal);
     }
-    // TODO this is a duplicate check
     if (!(newVal instanceof Primitive)) {
       throw new Error("cannot set a non-primitive");
     }
@@ -426,14 +425,12 @@ export abstract class ExprVec4 extends ExprVec implements Generable {
   genPrograms(
     gl: WebGL2RenderingContext,
     vShader: WebGLShader,
-    uniformLocs: UniformLocs,
-    sceneSource: TexImageSource
+    uniformLocs: UniformLocs
   ) {
     return new EffectLoop([this], { num: 1 }).genPrograms(
       gl,
       vShader,
-      uniformLocs,
-      sceneSource
+      uniformLocs
     );
   }
 

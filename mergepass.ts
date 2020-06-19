@@ -91,8 +91,7 @@ export class EffectLoop implements EffectLike, Generable {
   genPrograms(
     gl: WebGL2RenderingContext,
     vShader: WebGLShader,
-    uniformLocs: UniformLocs,
-    sceneSource: TexImageSource
+    uniformLocs: UniformLocs
   ): WebGLProgramLoop {
     // TODO we probably don't need scenesource anymore
     if (this.getSampleNum() / this.repeat.num <= 1) {
@@ -105,9 +104,7 @@ export class EffectLoop implements EffectLike, Generable {
     this.effects = this.regroup();
     // okay to have undefined needs here
     return new WebGLProgramLoop(
-      this.effects.map((e) =>
-        e.genPrograms(gl, vShader, uniformLocs, sceneSource)
-      ),
+      this.effects.map((e) => e.genPrograms(gl, vShader, uniformLocs)),
       this.repeat
     );
   }
@@ -216,7 +213,6 @@ export class Merger {
       this.gl,
       vShader,
       this.uniformLocs,
-      this.source
     );
 
     // find the final program

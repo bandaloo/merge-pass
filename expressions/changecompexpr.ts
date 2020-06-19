@@ -19,14 +19,6 @@ function getChangeFunc(
 }`;
 }
 
-// illegal when:
-
-// duplicate components
-
-// setter has different length than components
-
-// components are illegal
-
 function checkGetComponents(comps: string, setter: AllVals, vec: Vec) {
   // setter has different length than components
   if (comps.length !== typeStringToLength(setter.typeString())) {
