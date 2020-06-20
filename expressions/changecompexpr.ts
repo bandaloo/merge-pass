@@ -39,6 +39,7 @@ function duplicateComponents(comps: string) {
 export class ChangeCompExpr<T extends Vec, U extends AllVals> extends Op<T> {
   constructor(vec: T, setter: U, comps: string, op?: ArithOp) {
     checkGetComponents(comps, setter, vec);
+    // TODO replace this random hash with string composed of operation properties
     /** random hash to name a custom function */
     const hash = Math.random().toString(36).substring(5);
     console.log(hash);

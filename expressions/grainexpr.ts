@@ -10,6 +10,8 @@ export class GrainExpr extends ExprVec4 {
       ["uGrain"]
     );
     this.externalFuncs = [glslFuncs.random];
+    // TODO get rid of this if we choose to use fcolor instead later
+    this.needs.centerSample = true;
   }
 
   setGrain(grain: Float | number) {

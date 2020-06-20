@@ -4,15 +4,12 @@ export const glslFuncs = {
   random: `float random(vec2 st) {
   return fract(sin(dot(st.xy / 99., vec2(12.9898, 78.233))) * 43758.5453123);
 }`,
-
-  rotate2d: `mat2 rotate2d(float angle) {
-  return mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
-}`,
-
-  scale: `mat2 scale(vec2 scale) {
-  return mat2(scale.x, 0.0, 0.0, scale.y);
-}`,
-
+  //  rotate2d: `mat2 rotate2d(float angle) {
+  //  return mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
+  //}`,
+  //  scale: `mat2 scale(vec2 scale) {
+  //  return mat2(scale.x, 0.0, 0.0, scale.y);
+  //}`,
   hsv2rgb: `vec4 hsv2rgb(vec4 co){
   vec3 c = co.xyz;
   vec3 rgb = clamp(abs(mod(
@@ -21,7 +18,6 @@ export const glslFuncs = {
   vec3 hsv = c.z * mix(vec3(1.0), rgb, c.y);
   return vec4(hsv.x, hsv.y, hsv.z, co.a);
 }`,
-
   rgb2hsv: `vec4 rgb2hsv(vec4 co){
   vec3 c = co.rgb;
   vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);

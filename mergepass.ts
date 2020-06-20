@@ -155,7 +155,7 @@ export class Merger {
   private options: MergerOptions | undefined;
 
   constructor(
-    effects: (ExprVec4 | EffectLoop)[],
+    effects: (ExprVec4 | EffectLoop)[] | EffectLoop,
     source: TexImageSource,
     gl: WebGL2RenderingContext,
     options?: MergerOptions
@@ -165,6 +165,9 @@ export class Merger {
       this.effectLoop = new EffectLoop(effects, { num: 1 });
     } else {
       this.effectLoop = effects;
+    }
+    if (this.effectLoop.effects.length === 0) {
+      throw new Error("list of effects was empty");
     }
     this.source = source;
     this.gl = gl;

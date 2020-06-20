@@ -65,7 +65,7 @@ export abstract class Expr implements Parseable, EffectLike {
   needs: Needs = {
     depthBuffer: false,
     neighborSample: false,
-    centerSample: true,
+    centerSample: false,
     sceneBuffer: false,
     timeUniform: false,
   };

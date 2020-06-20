@@ -1,10 +1,10 @@
 import { Float, Vec4 } from "../exprtypes";
-import { FragColorExpr } from "./fragcolorexpr";
-import { ExprVec4, tag, n2p, PrimitiveFloat, n2e } from "./expr";
 import { glslFuncs } from "../glslfunctions";
+import { ExprVec4, n2e, n2p, PrimitiveFloat, tag } from "./expr";
+import { fcolor } from "./fragcolorexpr";
 
 export class Contrast extends ExprVec4 {
-  constructor(val: Float, col: Vec4 = new FragColorExpr()) {
+  constructor(val: Float, col: Vec4 = fcolor()) {
     super(tag`contrast(${val}, ${col})`, ["uVal", "uCol"]);
     this.externalFuncs = [glslFuncs.contrast];
   }

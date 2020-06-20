@@ -6,7 +6,6 @@ export class SceneSampleExpr extends ExprVec4 {
   constructor(coord: Vec2 = nfcoord()) {
     super(tag`(texture2D(uSceneSampler, ${coord}))`, ["uVec"]);
     this.needs.sceneBuffer = true;
-    this.needs.centerSample = false;
   }
 }
 
