@@ -1,6 +1,4 @@
-node_modules
-**/*.ts
-dist/bundle.js
-dist/example.d.ts
-dist/example.js
+dist/example.*
 example.html
+bundle.js
+src
