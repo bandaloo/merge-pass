@@ -24,5 +24,6 @@ export * from "./expressions/rgbtohsvexpr";
 export * from "./expressions/hsvtorgbexpr";
 export * from "./expressions/timeexpr";
 export * from "./expressions/trigexpr";
+export * from "./expressions/powexpr";
 
 export * from "./expressions/expr";

@@ -1,6 +1,7 @@
 import { AllVals } from "../exprtypes";
-import { Operator, SourceLists } from "./expr";
+import { Operator, SourceLists, wrapInValue } from "./expr";
 
+// TODO would it be okay to just include asin, acos, atan...
 type Trig = "sin" | "cos" | "tan";
 
 function genTrigSourceList(operation: Trig, val: AllVals): SourceLists {
@@ -16,6 +17,10 @@ export class TrigExpr<T extends AllVals> extends Operator<T> {
   constructor(val: T, operation: Trig) {
     super(val, genTrigSourceList(operation, val), ["uVal"]);
     this.val = val;
+  }
+
+  setExponent(right: T | number) {
+    this.setUniform("uVal" + this.id, wrapInValue(right));
   }
 }
 

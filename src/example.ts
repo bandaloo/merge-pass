@@ -69,7 +69,7 @@ const demos: Demos = {
           [
             MP.gauss5(MP.vec2(1, 0)),
             MP.gauss5(MP.vec2(0, 1)),
-            MP.brightness(0.15), // move this second to last
+            MP.brightness(0.15),
             MP.contrast(1.2),
           ],
           5
@@ -200,7 +200,32 @@ const demos: Demos = {
   },
   scanlines: () => {
     const merger = new MP.Merger(
-      [MP.brightness(MP.sin(MP.op(MP.getcomp(MP.nfcoord(), "y"), "*", 1000)))],
+      [
+        MP.brightness(
+          MP.op(
+            MP.op(
+              -1,
+              "*",
+              MP.pow(
+                MP.cos(
+                  MP.op(MP.getcomp(MP.nfcoord(), "y"), "*", (260 / 2) * Math.PI)
+                ),
+                6
+              )
+            ),
+            "-",
+            MP.op(
+              1,
+              "*",
+              MP.op(
+                MP.pow(MP.getcomp(MP.op(MP.ncfcoord(), "*", 2), "x"), 4),
+                "+",
+                MP.pow(MP.getcomp(MP.op(MP.ncfcoord(), "*", 2), "y"), 4)
+              )
+            )
+          )
+        ),
+      ],
       sourceCanvas,
       gl
     );
@@ -308,7 +333,7 @@ const draws: Draws = {
   redgreenswap: movingGrid,
   huerotate: fabric,
   timehuerotate: fabric,
-  scanlines: stripes,
+  scanlines: pinkishHelix,
 };
 
 window.addEventListener("load", () => {
