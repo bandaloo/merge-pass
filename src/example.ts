@@ -234,6 +234,13 @@ const demos: Demos = {
       change: () => {},
     };
   },
+  fxaa: () => {
+    const merger = new MP.Merger([MP.fxaa()], sourceCanvas, gl);
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
 };
 
 interface Draws {
@@ -281,6 +288,16 @@ const fabric = (t: number, frames: number) => {
     x.fillRect(4 * i, 0, 4, b);
   }
   x.drawImage(c, 1, b);
+};
+
+const waves = (t: number, frames: number) => {
+  for (let i = 960; i--; ) {
+    x.fillStyle = `hsl(${i + 500 * C(frames / (20 + S(i / 10)))},90%,${
+      (40 * Math.round(2 + S(i / 20) + C(frames / 30))) / 4
+    }%)`;
+    x.fillRect(i, 0, 1, 1);
+  }
+  x.drawImage(c, 0, 1);
 };
 
 const vectorSpiral = (t: number, frames: number) => {
@@ -334,6 +351,7 @@ const draws: Draws = {
   huerotate: fabric,
   timehuerotate: fabric,
   scanlines: pinkishHelix,
+  fxaa: waves,
 };
 
 window.addEventListener("load", () => {

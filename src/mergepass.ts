@@ -76,7 +76,6 @@ export class EffectLoop implements EffectLike, Generable {
     vShader: WebGLShader,
     uniformLocs: UniformLocs
   ): WebGLProgramLoop {
-    // TODO we probably don't need scenesource anymore
     if (this.getSampleNum() / this.repeat.num <= 1) {
       // if this group only samples neighbors at most once, create program
       const codeBuilder = new CodeBuilder(this);
@@ -100,7 +99,6 @@ export function loop(effects: EffectElement[], rep: number) {
 
 type EffectElement = ExprVec4 | EffectLoop;
 
-// TODO we don't really want to export this at the package level
 export interface UniformLocs {
   [name: string]: WebGLUniformLocation;
 }
@@ -222,7 +220,6 @@ export class Merger {
     if (this.programLoop.getTotalNeeds().sceneBuffer) {
       this.tex.scene = makeTexture(this.gl, this.options);
     }
-    // TODO get rid of this (or make it only log when verbose)
     console.log(this.programLoop);
   }
 

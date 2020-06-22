@@ -19,12 +19,10 @@ function toGLSLFloatString(num: number) {
   return str;
 }
 
-// this should be on expression
 export interface UniformValChangeMap {
   [name: string]: { val: Primitive; changed: boolean };
 }
 
-// TODO don't really want to expose this
 export interface DefaultNameMap {
   [name: string]: string;
 }
@@ -246,7 +244,7 @@ export class PrimitiveFloat extends Primitive {
   value: number;
 
   constructor(num: number) {
-    // TODO throw error when NaN, Infinity or -Infinity
+    if (!isFinite(num)) throw new Error("number not finite");
     super();
     this.value = num;
   }

@@ -1,8 +1,21 @@
 import { AllVals } from "../exprtypes";
 import { Operator, SourceLists, wrapInValue } from "./expr";
 
-// TODO would it be okay to just include asin, acos, atan...
-type Trig = "sin" | "cos" | "tan";
+// these all work on (from khronos documentation) genType x so it should be okay
+// to sub in any of these strings
+type Trig =
+  | "sin"
+  | "cos"
+  | "tan"
+  | "sinh"
+  | "cosh"
+  | "tanh"
+  | "asin"
+  | "acos"
+  | "atan"
+  | "asinh"
+  | "acosh"
+  | "atanh";
 
 function genTrigSourceList(operation: Trig, val: AllVals): SourceLists {
   return {

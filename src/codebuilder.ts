@@ -142,17 +142,7 @@ export class CodeBuilder {
     // set the uniform resolution (every program has this uniform)
     const uResolution = gl.getUniformLocation(program, "uResolution");
     gl.uniform2f(uResolution, gl.drawingBufferWidth, gl.drawingBufferHeight);
-    /*
-    if (this.baseLoop.getNeeds("sceneBuffer")) {
-      // TODO allow for texture options for scene texture
-      const sceneSamplerLocation = gl.getUniformLocation(
-        program,
-        "uSceneSampler"
-      );
-      // put the scene buffer in texture 1 (0 is used for the backbuffer)
-      gl.uniform1i(sceneSamplerLocation, 1);
-    }
-    */
+
     if (this.totalNeeds.sceneBuffer) {
       // TODO allow for texture options for scene texture
       const sceneSamplerLocation = gl.getUniformLocation(
