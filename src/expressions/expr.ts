@@ -30,7 +30,6 @@ export interface DefaultNameMap {
 }
 
 export interface Needs {
-  depthBuffer: boolean;
   neighborSample: boolean;
   centerSample: boolean;
   sceneBuffer: boolean;
@@ -63,7 +62,6 @@ export abstract class Expr implements Parseable, EffectLike {
   added = false;
   id: string;
   needs: Needs = {
-    depthBuffer: false,
     neighborSample: false,
     centerSample: false,
     sceneBuffer: false,
@@ -151,7 +149,6 @@ export abstract class Expr implements Parseable, EffectLike {
     // update me on change to needs: no good way to iterate through an interface
     updateNeed("centerSample");
     updateNeed("neighborSample");
-    updateNeed("depthBuffer");
     updateNeed("sceneBuffer");
     updateNeed("timeUniform");
     // add each of the external funcs to the builder

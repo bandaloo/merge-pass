@@ -52,7 +52,6 @@ export class WebGLProgramLoop {
           neighborSample: acc.neighborSample || curr.neighborSample,
           centerSample: acc.centerSample || curr.centerSample,
           sceneBuffer: acc.sceneBuffer || curr.sceneBuffer,
-          depthBuffer: acc.depthBuffer || curr.depthBuffer,
           timeUniform: acc.timeUniform || curr.timeUniform,
         };
       });

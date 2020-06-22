@@ -34,7 +34,6 @@ export class CodeBuilder {
       needs: {
         centerSample: false,
         neighborSample: false,
-        depthBuffer: false,
         sceneBuffer: false,
         timeUniform: false,
       },
