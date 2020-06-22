@@ -198,6 +198,17 @@ const demos: Demos = {
       change: () => {},
     };
   },
+  scanlines: () => {
+    const merger = new MP.Merger(
+      [MP.brightness(MP.sin(MP.op(MP.getcomp(MP.nfcoord(), "y"), "*", 1000)))],
+      sourceCanvas,
+      gl
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
 };
 
 interface Draws {
@@ -297,6 +308,7 @@ const draws: Draws = {
   redgreenswap: movingGrid,
   huerotate: fabric,
   timehuerotate: fabric,
+  scanlines: stripes,
 };
 
 window.addEventListener("load", () => {
