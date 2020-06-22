@@ -9,7 +9,6 @@ export interface LoopInfo {
 
 export interface EffectLike {
   getSampleNum(mult: number): number;
-  getNeeds(name: keyof Needs): boolean;
 }
 
 export interface Generable {
@@ -21,15 +20,6 @@ export interface Generable {
   ): WebGLProgramLoop;
 }
 
-// TODO get rid of this
-export function getNeedsOfList(name: keyof Needs, list: (EffectLoop | Expr)[]) {
-  if (list.length === 0) {
-    throw new Error("list was empty, so no needs could be found");
-  }
-  const bools: boolean[] = list.map((e) => e.getNeeds(name)) as boolean[];
-  return bools.reduce((acc: boolean, curr: boolean) => acc || curr);
-}
-
 export class EffectLoop implements EffectLike, Generable {
   effects: EffectElement[];
   repeat: LoopInfo;
@@ -37,12 +27,6 @@ export class EffectLoop implements EffectLike, Generable {
   constructor(effects: EffectElement[], repeat: LoopInfo) {
     this.effects = effects;
     this.repeat = repeat;
-  }
-
-  getNeeds(name: keyof Needs) {
-    return getNeedsOfList(name, this.effects);
-    //const bools: boolean[] = this.effects.map((e) => e.getNeeds(name));
-    //return bools.reduce((acc: boolean, curr: boolean) => acc || curr);
   }
 
   getSampleNum(mult = 1) {

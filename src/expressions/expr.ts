@@ -100,10 +100,6 @@ export abstract class Expr implements Parseable, EffectLike {
     }
   }
 
-  getNeeds(name: keyof Needs) {
-    return this.needs[name];
-  }
-
   getSampleNum(mult = 1) {
     return this.needs.neighborSample ? mult : 0;
   }

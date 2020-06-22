@@ -1,5 +1,5 @@
-import { ExprVec4, Expr, Needs } from "./expressions/expr";
-import { LoopInfo, TexInfo, UniformLocs, getNeedsOfList } from "./mergepass";
+import { Expr, Needs } from "./expressions/expr";
+import { LoopInfo, TexInfo, UniformLocs } from "./mergepass";
 
 export type WebGLProgramElement = WebGLProgram | WebGLProgramLoop[];
 
