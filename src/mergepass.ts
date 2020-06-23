@@ -122,6 +122,7 @@ export interface TexInfo {
   front: WebGLTexture;
   back: WebGLTexture;
   scene: WebGLTexture | undefined;
+  bufTextures: WebGLTexture[];
 }
 
 export class Merger {
@@ -189,6 +190,7 @@ export class Merger {
       front: makeTexture(this.gl, this.options),
       back: makeTexture(this.gl, this.options),
       scene: undefined,
+      bufTextures: [],
     };
 
     // create the framebuffer
@@ -226,6 +228,12 @@ export class Merger {
       this.tex.scene = makeTexture(this.gl, this.options);
     }
     console.log(this.programLoop);
+
+    // create x amount of empty textures based on buffers needed
+    for (let i = 0; i < this.buffers.length; i++) {
+      const texture = makeTexture(this.gl, this.options);
+      this.tex.bufTextures.push(texture);
+    }
   }
 
   draw(time: number = 0) {
@@ -245,10 +253,13 @@ export class Merger {
 
     // bind the additional buffers
     let counter = 0;
+    console.log("about to bind textures");
     for (const b of this.buffers) {
       // TODO what's the limit on amount of textures?
+      console.log("binding textures");
       this.gl.activeTexture(this.gl.TEXTURE2 + counter);
-      this.gl.bindTexture(this.gl.TEXTURE_2D, b);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.bufTextures[counter]);
+      sendTexture(this.gl, b);
       counter++;
     }
 

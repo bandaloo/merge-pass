@@ -1,5 +1,6 @@
 import * as MP from "./index";
 import * as dat from "dat.gui";
+import { Merger } from "./mergepass";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -37,7 +38,9 @@ let R = (r?: any, g?: any, b?: any, a: any = 1) =>
   `rgba(${r | 0},${g | 0},${b | 0},${a})`;
 
 interface Demos {
-  [name: string]: () => {
+  [name: string]: (
+    buffers?: TexImageSource[]
+  ) => {
     merger: MP.Merger;
     change: (merger: MP.Merger, time: number, frame: number) => void;
   };
@@ -241,6 +244,15 @@ const demos: Demos = {
       change: () => {},
     };
   },
+  buffersample: (buffers: TexImageSource[] = []) => {
+    const merger = new MP.Merger([MP.buffer(0)], sourceCanvas, gl, {
+      buffers: buffers,
+    });
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
 };
 
 interface Draws {
@@ -331,8 +343,7 @@ const vectorSpiral = (t: number, frames: number) => {
 const pinkishHelix = (t: number, frames: number) => {
   x.fillStyle = "white";
   x.fillRect(0, 0, 960, 540);
-  let i;
-  let j;
+  let i, j;
   for (i = 0; i < 960; i += 32) {
     x.fillStyle = R(((1 + C(i)) / 2) * 255, 0, 155);
     for (j = 0; j < 3; j++) x.fillRect(i + j, 266 + C(i + j + t) * 50, 32, 8);
@@ -365,7 +376,8 @@ const draws: Draws = {
   huerotate: [fabric],
   timehuerotate: [fabric],
   scanlines: [pinkishHelix],
-  fxaa: [higherOrderGoo(true), higherOrderGoo(false)],
+  fxaa: [higherOrderGoo(true)],
+  buffersample: [higherOrderGoo(true), higherOrderGoo(false)],
 };
 
 const canvases = [sourceCanvas];
@@ -377,14 +389,14 @@ window.addEventListener("load", () => {
 
   if (mstr === undefined || demos[mstr] === undefined) mstr = "edgeblur"; // default demo
   if (dstr === undefined || draws[dstr] === undefined) dstr = mstr; // pair with merger
-  const demo = demos[mstr]();
-  if (demo === undefined) throw new Error("merger not found");
   const draw = draws[dstr];
   if (draw === undefined) throw new Error("draw not found");
 
   // minus 1 because we already included the source canvas and context
   for (let i = 0; i < draw.length - 1; i++) {
     const canvas = document.createElement("canvas");
+    canvas.width = 960;
+    canvas.height = 540;
     const context = canvas.getContext("2d");
     if (context === null) {
       throw new Error("couldn't get the context of the canvas");
@@ -392,6 +404,10 @@ window.addEventListener("load", () => {
     canvases.push(canvas);
     contexts.push(context);
   }
+
+  const demo = demos[mstr](canvases.slice(1));
+  console.log(canvases.slice(1));
+  if (demo === undefined) throw new Error("merger not found");
 
   (document.getElementById("title") as HTMLElement).innerText =
     "merge-pass demo: " + mstr;
@@ -446,7 +462,6 @@ window.addEventListener("load", () => {
     demo.merger.draw(t / 1000);
     requestAnimationFrame(step);
     frame++;
-    console.log(frame);
   };
 
   step(0);

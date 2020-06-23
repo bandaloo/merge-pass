@@ -21,7 +21,7 @@ export function bufferSamplerName(buf: number) {
 }
 
 function bufferSamplerDeclaration(buf: number) {
-  return `uniform sampler2D uBufferSampler${bufferSamplerName(buf)};`;
+  return `uniform sampler2D ${bufferSamplerName(buf)};`;
 }
 
 export class CodeBuilder {
