@@ -82,9 +82,9 @@ export const glslFuncs = {
   vec4 uv = vec4(t_uv, t_uv - (rcpFrame * (0.5 + FXAA_SUBPIX_SHIFT)));
 
   vec3 rgbNW = texture2D(uSampler, uv.zw).xyz;
-  vec3 rgbNE = texture2D(uSampler, uv.zw + vec2(1,0)*rcpFrame.xy).xyz;
-  vec3 rgbSW = texture2D(uSampler, uv.zw + vec2(0,1)*rcpFrame.xy).xyz;
-  vec3 rgbSE = texture2D(uSampler, uv.zw + vec2(1,1)*rcpFrame.xy).xyz;
+  vec3 rgbNE = texture2D(uSampler, uv.zw + vec2(1,0) * rcpFrame.xy).xyz;
+  vec3 rgbSW = texture2D(uSampler, uv.zw + vec2(0,1) * rcpFrame.xy).xyz;
+  vec3 rgbSE = texture2D(uSampler, uv.zw + vec2(1,1) * rcpFrame.xy).xyz;
   vec4 rgbMfull = texture2D(uSampler, uv.xy);
   vec3 rgbM = rgbMfull.xyz;
   float alpha = rgbMfull.a;
@@ -94,35 +94,34 @@ export const glslFuncs = {
   float lumaNE = dot(rgbNE, luma);
   float lumaSW = dot(rgbSW, luma);
   float lumaSE = dot(rgbSE, luma);
-  float lumaM  = dot(rgbM,  luma);
+  float lumaM = dot(rgbM,  luma);
 
   float lumaMin = min(lumaM, min(min(lumaNW, lumaNE), min(lumaSW, lumaSE)));
   float lumaMax = max(lumaM, max(max(lumaNW, lumaNE), max(lumaSW, lumaSE)));
 
   vec2 dir;
   dir.x = -((lumaNW + lumaNE) - (lumaSW + lumaSE));
-  dir.y =  ((lumaNW + lumaSW) - (lumaNE + lumaSE));
+  dir.y = ((lumaNW + lumaSW) - (lumaNE + lumaSE));
 
   float dirReduce = max(
-    (lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * FXAA_REDUCE_MUL),
-    FXAA_REDUCE_MIN);
+    (lumaNW + lumaNE + lumaSW + lumaSE) * (0.25 * FXAA_REDUCE_MUL), FXAA_REDUCE_MIN);
   float rcpDirMin = 1.0/(min(abs(dir.x), abs(dir.y)) + dirReduce);
 
-  dir = min(vec2( FXAA_SPAN_MAX,  FXAA_SPAN_MAX),
+  dir = min(vec2(FXAA_SPAN_MAX,  FXAA_SPAN_MAX),
     max(vec2(-FXAA_SPAN_MAX, -FXAA_SPAN_MAX),
     dir * rcpDirMin)) * rcpFrame.xy;
 
-  vec3 rgbA = (1.0/2.0) * (
-    texture2D(uSampler, uv.xy + dir * (1.0/3.0 - 0.5)).xyz +
-    texture2D(uSampler, uv.xy + dir * (2.0/3.0 - 0.5)).xyz);
-  vec3 rgbB = rgbA * (1.0/2.0) + (1.0/4.0) * (
-    texture2D(uSampler, uv.xy + dir * (0.0/3.0 - 0.5)).xyz +
-    texture2D(uSampler, uv.xy + dir * (3.0/3.0 - 0.5)).xyz);
+  vec3 rgbA = (1.0 / 2.0) * (
+    texture2D(uSampler, uv.xy + dir * (1.0 / 3.0 - 0.5)).xyz +
+    texture2D(uSampler, uv.xy + dir * (2.0 / 3.0 - 0.5)).xyz);
+  vec3 rgbB = rgbA * (1.0 / 2.0) + (1.0 / 4.0) * (
+    texture2D(uSampler, uv.xy + dir * (0.0 / 3.0 - 0.5)).xyz +
+    texture2D(uSampler, uv.xy + dir * (3.0 / 3.0 - 0.5)).xyz);
 
   float lumaB = dot(rgbB, luma);
 
-  if((lumaB < lumaMin) || (lumaB > lumaMax)) {
-    return vec4(rgbA.r, rgbA.g, rgbA.b, 1.0);
+  if(lumaB < lumaMin || lumaB > lumaMax) {
+    return vec4(rgbA.r, rgbA.g, rgbA.b, alpha);
   }
 
   return vec4(rgbB.r, rgbB.g, rgbB.b, alpha);

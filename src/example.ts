@@ -292,9 +292,19 @@ const fabric = (t: number, frames: number) => {
 
 const waves = (t: number, frames: number) => {
   for (let i = 960; i--; ) {
-    x.fillStyle = `hsl(${i + 500 * C(frames / (20 + S(i / 10)))},90%,${
+    x.fillStyle = `hsl(${i + 99 * C(frames / 30)},90%,${
       (40 * Math.round(2 + S(i / 20) + C(frames / 30))) / 4
     }%)`;
+    x.fillRect(i, 0, 1, 1);
+  }
+  x.drawImage(c, 0, 1);
+};
+
+const goo = (t: number, frames: number) => {
+  for (let i = 960; i--; ) {
+    x.fillStyle = `hsl(${i / 9 + 99 * C(frames / 60)},90%,${
+      20 * ~~(1 + S(i / 20) + T(t + S(frames / 60 + i / 99)))
+    }%`;
     x.fillRect(i, 0, 1, 1);
   }
   x.drawImage(c, 0, 1);
@@ -351,7 +361,7 @@ const draws: Draws = {
   huerotate: fabric,
   timehuerotate: fabric,
   scanlines: pinkishHelix,
-  fxaa: waves,
+  fxaa: goo,
 };
 
 window.addEventListener("load", () => {
