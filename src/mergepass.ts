@@ -59,10 +59,8 @@ export class EffectLoop implements EffectLike, Generable {
         prevEffects = [];
       }
     };
-    console.log("regrouping");
     for (const e of this.effects) {
       const sampleNum = e.getSampleNum();
-      console.log(sampleNum);
       prevSampleCount = sampleCount;
       sampleCount += sampleNum;
       if (sampleCount > 0) breakOff();

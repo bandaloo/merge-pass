@@ -141,18 +141,6 @@ export abstract class Expr implements Parseable, EffectLike {
     }
     this.sourceCode = "";
     buildInfo.exprs.push(this);
-    /*
-    const updateNeed = (name: keyof Needs) => {
-      if (typeof buildInfo.needs[name] === "boolean" && typeof buildInfo.needs[name]) {
-      return (buildInfo.needs[name] = buildInfo.needs[name] || this.needs[name]);
-      }
-    }
-    // update me on change to needs: no good way to iterate through an interface
-    updateNeed("centerSample");
-    updateNeed("neighborSample");
-    updateNeed("sceneBuffer");
-    updateNeed("timeUniform");
-    */
     buildInfo.needs = updateNeeds(buildInfo.needs, this.needs);
     // add each of the external funcs to the builder
     this.externalFuncs.forEach((func) => buildInfo.externalFuncs.add(func));

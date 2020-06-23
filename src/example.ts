@@ -267,14 +267,17 @@ const demos: Demos = {
     };
   },
 
-  buffertint: (buffers: TexImageSource[] = []) => {
+  buffereyesore: (buffers: TexImageSource[] = []) => {
     const merger = new MP.Merger(
       [
         MP.hsv2rgb(
           MP.changecomp(
             MP.rgb2hsv(MP.fcolor()),
-            MP.getcomp(MP.buffer(0), "x"),
-            "x",
+            MP.vec2(
+              MP.getcomp(MP.buffer(0), "x"),
+              MP.getcomp(MP.buffer(1), "x")
+            ),
+            "xy",
             "+"
           )
         ),
@@ -340,21 +343,25 @@ const fabric = (t: number, frames: number) => {
   x.drawImage(c, 1, b);
 };
 
-const higherOrderWaves = (color: boolean) => {
-  const fillFunc = color
-    ? (i: number, frames: number) =>
-        `hsl(${~~((i + frames) / 20) * 100},90%,50%)`
-    : (i: number, frames: number) =>
-        R((256 / 4) * Math.round(2 + S(i / 20) + C(frames / 30)));
-  const waves = (t: number, frames: number) => {
+const shaderLike = (fillFunc: (x: number, y: number) => string) => {
+  return (t: number, frames: number) => {
     for (let i = 960; i--; ) {
       x.fillStyle = fillFunc(i, frames);
       x.fillRect(i, 0, 1, 1);
     }
     x.drawImage(c, 0, 1);
   };
-  return waves;
 };
+
+const higherOrderWaves = (color: boolean) =>
+  shaderLike(
+    color
+      ? (x: number, y: number) => `hsl(${~~((x + y) / 20) * 100},20%,50%)`
+      : (x: number, y: number) =>
+          R((256 / 4) * Math.round(2 + S(x / 20) + C(y / 30)))
+  );
+
+const bitwiseGrid = () => shaderLike((x: number, y: number) => R((x & y) * 20));
 
 const higherOrderGoo = (color: boolean) => {
   const colFunc = (i: number, ti: number) =>
@@ -426,7 +433,11 @@ const draws: Draws = {
   scanlines: [pinkishHelix],
   fxaa: [higherOrderGoo(true)],
   bufferblur: [higherOrderGoo(true), higherOrderGoo(false)],
-  buffertint: [higherOrderWaves(true), higherOrderWaves(false)],
+  buffereyesore: [
+    higherOrderWaves(true),
+    higherOrderWaves(false),
+    bitwiseGrid(),
+  ],
 };
 
 const canvases = [sourceCanvas];
@@ -459,7 +470,6 @@ window.addEventListener("load", () => {
   }
 
   const demo = demos[mstr](canvases.slice(1));
-  console.log(canvases.slice(1));
   if (demo === undefined) throw new Error("merger not found");
 
   (document.getElementById("title") as HTMLElement).innerText =

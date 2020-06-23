@@ -13,7 +13,7 @@ function genBufferSamplerSource(buf: number, coord: Vec2): SourceLists {
 export class BufferSampleExpr extends ExprVec4 {
   constructor(buf: number, coord: Vec2 = nfcoord()) {
     super(genBufferSamplerSource(buf, coord), ["uVec"]);
-    this.needs.extraBuffers = new Set([0]);
+    this.needs.extraBuffers = new Set([buf]);
   }
 }
 

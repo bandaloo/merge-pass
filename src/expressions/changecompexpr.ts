@@ -40,15 +40,14 @@ export class ChangeCompExpr<T extends Vec, U extends AllVals> extends Op<T> {
   constructor(vec: T, setter: U, comps: string, op?: ArithOp) {
     checkGetComponents(comps, setter, vec);
     // part of name of custom function
-    const hash = `${vec.typeString()}_${setter.typeString()}_${comps}`;
-    console.log(hash);
+    const suffix = `${vec.typeString()}_${setter.typeString()}_${comps}`;
     super(
       vec,
-      { sections: [`changecomp_${hash}(`, ", ", ")"], values: [vec, setter] },
+      { sections: [`changecomp_${suffix}(`, ", ", ")"], values: [vec, setter] },
       ["uOriginal", "uNew"]
     );
     this.externalFuncs = [
-      getChangeFunc(vec.typeString(), hash, setter, comps, op),
+      getChangeFunc(vec.typeString(), suffix, setter, comps, op),
     ];
   }
 
