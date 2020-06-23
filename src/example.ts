@@ -1,6 +1,7 @@
 import * as MP from "./index";
 import * as dat from "dat.gui";
 import { Merger } from "./mergepass";
+import { fxaa } from "./expressions/fxaaexpr";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -244,10 +245,47 @@ const demos: Demos = {
       change: () => {},
     };
   },
-  buffersample: (buffers: TexImageSource[] = []) => {
-    const merger = new MP.Merger([MP.buffer(0)], sourceCanvas, gl, {
-      buffers: buffers,
-    });
+
+  bufferblur: (buffers: TexImageSource[] = []) => {
+    const merger = new MP.Merger(
+      [
+        MP.blur2d(
+          MP.getcomp(MP.buffer(0), "r"),
+          MP.getcomp(MP.buffer(0), "r"),
+          5
+        ),
+      ],
+      sourceCanvas,
+      gl,
+      {
+        buffers: buffers,
+      }
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
+
+  buffertint: (buffers: TexImageSource[] = []) => {
+    const merger = new MP.Merger(
+      [
+        MP.hsv2rgb(
+          MP.changecomp(
+            MP.rgb2hsv(MP.fcolor()),
+            MP.getcomp(MP.buffer(0), "x"),
+            "x",
+            "+"
+          )
+        ),
+        MP.fxaa(),
+      ],
+      sourceCanvas,
+      gl,
+      {
+        buffers: buffers,
+      }
+    );
     return {
       merger: merger,
       change: () => {},
@@ -302,23 +340,33 @@ const fabric = (t: number, frames: number) => {
   x.drawImage(c, 1, b);
 };
 
-const waves = (t: number, frames: number) => {
-  for (let i = 960; i--; ) {
-    x.fillStyle = `hsl(${i + 99 * C(frames / 30)},90%,${
-      (40 * Math.round(2 + S(i / 20) + C(frames / 30))) / 4
-    }%)`;
-    x.fillRect(i, 0, 1, 1);
-  }
-  x.drawImage(c, 0, 1);
+const higherOrderWaves = (color: boolean) => {
+  const fillFunc = color
+    ? (i: number, frames: number) =>
+        `hsl(${~~((i + frames) / 20) * 100},90%,50%)`
+    : (i: number, frames: number) =>
+        R((256 / 4) * Math.round(2 + S(i / 20) + C(frames / 30)));
+  const waves = (t: number, frames: number) => {
+    for (let i = 960; i--; ) {
+      x.fillStyle = fillFunc(i, frames);
+      x.fillRect(i, 0, 1, 1);
+    }
+    x.drawImage(c, 0, 1);
+  };
+  return waves;
 };
 
 const higherOrderGoo = (color: boolean) => {
+  const colFunc = (i: number, ti: number) =>
+    20 * ~~(1 + S(i / 20) + T(ti + S(ti + i / 99)));
+  const fillFunc = color
+    ? (i: number, ti: number) =>
+        `hsl(${i / 9 + 99 * C(ti)},90%,${colFunc(i, ti)}%`
+    : (i: number, ti: number) => R(colFunc(i, ti));
   const goo = (t: number, frames: number) => {
     let ti = frames / 60;
     for (let i = 960; i--; ) {
-      x.fillStyle = `hsl(${(i / 9 + 99 * C(ti)) * ~~color},90%,${
-        20 * ~~(1 + S(i / 20) + T(ti + S(ti + i / 99)))
-      }%`;
+      x.fillStyle = fillFunc(i, ti);
       x.fillRect(i, 0, 1, 1);
     }
     x.drawImage(c, 0, 1);
@@ -377,7 +425,8 @@ const draws: Draws = {
   timehuerotate: [fabric],
   scanlines: [pinkishHelix],
   fxaa: [higherOrderGoo(true)],
-  buffersample: [higherOrderGoo(true), higherOrderGoo(false)],
+  bufferblur: [higherOrderGoo(true), higherOrderGoo(false)],
+  buffertint: [higherOrderWaves(true), higherOrderWaves(false)],
 };
 
 const canvases = [sourceCanvas];
@@ -403,6 +452,10 @@ window.addEventListener("load", () => {
     }
     canvases.push(canvas);
     contexts.push(context);
+    const header = document.createElement("h3");
+    header.innerText = "buffer " + i;
+    document.getElementById("buffers")?.appendChild(header);
+    document.getElementById("buffers")?.appendChild(canvas);
   }
 
   const demo = demos[mstr](canvases.slice(1));

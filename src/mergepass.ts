@@ -29,10 +29,11 @@ export class EffectLoop implements EffectLike, Generable {
     this.repeat = repeat;
   }
 
-  getSampleNum(mult = 1) {
+  getSampleNum(mult = 1, sliceStart = 0, sliceEnd = this.effects.length) {
     mult *= this.repeat.num;
     let acc = 0;
-    for (const e of this.effects) {
+    const sliced = this.effects.slice(sliceStart, sliceEnd);
+    for (const e of sliced) {
       acc += e.getSampleNum(mult);
     }
     return acc;
@@ -58,8 +59,10 @@ export class EffectLoop implements EffectLike, Generable {
         prevEffects = [];
       }
     };
+    console.log("regrouping");
     for (const e of this.effects) {
       const sampleNum = e.getSampleNum();
+      console.log(sampleNum);
       prevSampleCount = sampleCount;
       sampleCount += sampleNum;
       if (sampleCount > 0) breakOff();
@@ -76,7 +79,11 @@ export class EffectLoop implements EffectLike, Generable {
     vShader: WebGLShader,
     uniformLocs: UniformLocs
   ): WebGLProgramLoop {
-    if (this.getSampleNum() / this.repeat.num <= 1) {
+    // validate
+    const fullSampleNum = this.getSampleNum() / this.repeat.num;
+    const firstSampleNum = this.getSampleNum(undefined, 0, 1) / this.repeat.num;
+    const restSampleNum = this.getSampleNum(undefined, 1) / this.repeat.num;
+    if (fullSampleNum === 0 || (firstSampleNum === 1 && restSampleNum === 0)) {
       // if this group only samples neighbors at most once, create program
       const codeBuilder = new CodeBuilder(this);
       const program = codeBuilder.compileProgram(gl, vShader, uniformLocs);
@@ -253,10 +260,8 @@ export class Merger {
 
     // bind the additional buffers
     let counter = 0;
-    console.log("about to bind textures");
     for (const b of this.buffers) {
       // TODO what's the limit on amount of textures?
-      console.log("binding textures");
       this.gl.activeTexture(this.gl.TEXTURE2 + counter);
       this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.bufTextures[counter]);
       sendTexture(this.gl, b);
