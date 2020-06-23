@@ -15,7 +15,7 @@ precision mediump float;
 uniform sampler2D uSampler;
 uniform mediump vec2 uResolution;\n`;
 
-function bufferSamplerName(buf: number) {
+export function bufferSamplerName(buf: number) {
   // texture 2 sampler has number 0 (0 and 1 are used for back buffer and scene)
   return `uBufferSampler${buf}`;
 }
