@@ -31,8 +31,8 @@ const C = Math.cos;
 const S = Math.sin;
 const T = Math.tan;
 
-const x = source;
-const c = sourceCanvas;
+let x: CanvasRenderingContext2D;
+let c: HTMLCanvasElement;
 let R = (r?: any, g?: any, b?: any, a: any = 1) =>
   `rgba(${r | 0},${g | 0},${b | 0},${a})`;
 
@@ -244,7 +244,7 @@ const demos: Demos = {
 };
 
 interface Draws {
-  [name: string]: (time: number, frames: number) => void;
+  [name: string]: ((time: number, frames: number) => void)[];
 }
 
 // canvas drawing loops
@@ -300,14 +300,18 @@ const waves = (t: number, frames: number) => {
   x.drawImage(c, 0, 1);
 };
 
-const goo = (t: number, frames: number) => {
-  for (let i = 960; i--; ) {
-    x.fillStyle = `hsl(${i / 9 + 99 * C(frames / 60)},90%,${
-      20 * ~~(1 + S(i / 20) + T(t + S(frames / 60 + i / 99)))
-    }%`;
-    x.fillRect(i, 0, 1, 1);
-  }
-  x.drawImage(c, 0, 1);
+const higherOrderGoo = (color: boolean) => {
+  const goo = (t: number, frames: number) => {
+    let ti = frames / 60;
+    for (let i = 960; i--; ) {
+      x.fillStyle = `hsl(${(i / 9 + 99 * C(ti)) * ~~color},90%,${
+        20 * ~~(1 + S(i / 20) + T(ti + S(ti + i / 99)))
+      }%`;
+      x.fillRect(i, 0, 1, 1);
+    }
+    x.drawImage(c, 0, 1);
+  };
+  return goo;
 };
 
 const vectorSpiral = (t: number, frames: number) => {
@@ -352,17 +356,20 @@ const movingGrid = (t: number, frames: number) => {
 };
 
 const draws: Draws = {
-  edgeblur: redSpiral,
-  vectordisplay: vectorSpiral,
-  singlepassgrain: pinkishHelix,
-  redonly: stripes,
-  redzero: stripes,
-  redgreenswap: movingGrid,
-  huerotate: fabric,
-  timehuerotate: fabric,
-  scanlines: pinkishHelix,
-  fxaa: goo,
+  edgeblur: [redSpiral],
+  vectordisplay: [vectorSpiral],
+  singlepassgrain: [pinkishHelix],
+  redonly: [stripes],
+  redzero: [stripes],
+  redgreenswap: [movingGrid],
+  huerotate: [fabric],
+  timehuerotate: [fabric],
+  scanlines: [pinkishHelix],
+  fxaa: [higherOrderGoo(true), higherOrderGoo(false)],
 };
+
+const canvases = [sourceCanvas];
+const contexts = [source];
 
 window.addEventListener("load", () => {
   let mstr = getVariable("m");
@@ -375,8 +382,20 @@ window.addEventListener("load", () => {
   const draw = draws[dstr];
   if (draw === undefined) throw new Error("draw not found");
 
+  // minus 1 because we already included the source canvas and context
+  for (let i = 0; i < draw.length - 1; i++) {
+    const canvas = document.createElement("canvas");
+    const context = canvas.getContext("2d");
+    if (context === null) {
+      throw new Error("couldn't get the context of the canvas");
+    }
+    canvases.push(canvas);
+    contexts.push(context);
+  }
+
   (document.getElementById("title") as HTMLElement).innerText =
     "merge-pass demo: " + mstr;
+
   // unindent code string
   let codeStr = (" ".repeat(4) + demos[mstr])
     .split("\n")
@@ -413,14 +432,21 @@ window.addEventListener("load", () => {
     p.innerHTML += " ";
     counter++;
   }
-  let frame = 0;
 
+  let frame = 0;
   const step = (t = 0) => {
-    draw(t / 1000, frame);
+    let counter = 0;
+    for (const d of draw) {
+      c = canvases[counter];
+      x = contexts[counter];
+      d(t / 1000, frame);
+      counter++;
+    }
     demo.change(demo.merger, t, frame);
     demo.merger.draw(t / 1000);
     requestAnimationFrame(step);
     frame++;
+    console.log(frame);
   };
 
   step(0);

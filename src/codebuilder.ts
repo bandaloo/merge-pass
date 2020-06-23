@@ -15,6 +15,15 @@ precision mediump float;
 uniform sampler2D uSampler;
 uniform mediump vec2 uResolution;\n`;
 
+function bufferSamplerName(buf: number) {
+  // texture 2 sampler has number 0 (0 and 1 are used for back buffer and scene)
+  return `uBufferSampler${buf}`;
+}
+
+function bufferSamplerDeclaration(buf: number) {
+  return `uniform sampler2D uBufferSampler${bufferSamplerName(buf)};`;
+}
+
 export class CodeBuilder {
   private calls: string[] = [];
   private externalFuncs: Set<string> = new Set();
@@ -36,6 +45,7 @@ export class CodeBuilder {
         neighborSample: false,
         sceneBuffer: false,
         timeUniform: false,
+        extraBuffers: new Set(),
       },
     };
     this.addEffectLoop(effectLoop, 1, buildInfo);
@@ -97,6 +107,9 @@ export class CodeBuilder {
       BOILERPLATE +
       (this.totalNeeds.sceneBuffer ? SCENE_SET : "") +
       (this.totalNeeds.timeUniform ? TIME_SET : "") +
+      Array.from(this.totalNeeds.extraBuffers)
+        .map((n) => bufferSamplerDeclaration(n))
+        .join("\n") +
       [...this.uniformDeclarations].join("\n") +
       [...this.externalFuncs].join("\n") +
       "\n" +
@@ -145,20 +158,21 @@ export class CodeBuilder {
 
     if (this.totalNeeds.sceneBuffer) {
       // TODO allow for texture options for scene texture
-      const sceneSamplerLocation = gl.getUniformLocation(
-        program,
-        "uSceneSampler"
-      );
+      const location = gl.getUniformLocation(program, "uSceneSampler");
       // put the scene buffer in texture 1 (0 is used for the backbuffer)
-      gl.uniform1i(sceneSamplerLocation, 1);
+      gl.uniform1i(location, 1);
+    }
+    // set all sampler uniforms
+    for (const b of this.totalNeeds.extraBuffers) {
+      const location = gl.getUniformLocation(program, bufferSamplerName(b));
+      // offset the texture location by 2 (0 and 1 are used for scene and original)
+      gl.uniform1i(location, b + 2);
     }
     // get attribute
     const position = gl.getAttribLocation(program, "aPosition");
     // enable the attribute
     gl.enableVertexAttribArray(position);
-    // this will point to the vertices in the last bound array buffer.
-    // In this example, we only use one array buffer, where we're storing
-    // our vertices
+    // points to the vertices in the last bound array buffer
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
     return new WebGLProgramLoop(
       program,

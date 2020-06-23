@@ -1,5 +1,6 @@
 import { UniformLocs, EffectLoop, EffectLike, Generable } from "../mergepass";
 import { AllVals, Float, TypeString } from "../exprtypes";
+import { updateNeeds } from "../webglprogramloop";
 
 interface UniformTypeMap {
   [name: string]: TypeString;
@@ -30,8 +31,9 @@ export interface DefaultNameMap {
 export interface Needs {
   neighborSample: boolean;
   centerSample: boolean;
-  sceneBuffer: boolean;
+  sceneBuffer: boolean; // texture 1
   timeUniform: boolean;
+  extraBuffers: Set<number>;
 }
 
 export interface SourceLists {
@@ -64,6 +66,7 @@ export abstract class Expr implements Parseable, EffectLike {
     centerSample: false,
     sceneBuffer: false,
     timeUniform: false,
+    extraBuffers: new Set(),
   };
   defaultNames: string[];
   uniformValChangeMap: UniformValChangeMap = {};
@@ -138,13 +141,19 @@ export abstract class Expr implements Parseable, EffectLike {
     }
     this.sourceCode = "";
     buildInfo.exprs.push(this);
-    const updateNeed = (name: keyof Needs) =>
-      (buildInfo.needs[name] = buildInfo.needs[name] || this.needs[name]);
+    /*
+    const updateNeed = (name: keyof Needs) => {
+      if (typeof buildInfo.needs[name] === "boolean" && typeof buildInfo.needs[name]) {
+      return (buildInfo.needs[name] = buildInfo.needs[name] || this.needs[name]);
+      }
+    }
     // update me on change to needs: no good way to iterate through an interface
     updateNeed("centerSample");
     updateNeed("neighborSample");
     updateNeed("sceneBuffer");
     updateNeed("timeUniform");
+    */
+    buildInfo.needs = updateNeeds(buildInfo.needs, this.needs);
     // add each of the external funcs to the builder
     this.externalFuncs.forEach((func) => buildInfo.externalFuncs.add(func));
     // put all of the values between all of the source sections

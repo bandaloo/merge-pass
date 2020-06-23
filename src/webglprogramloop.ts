@@ -1,7 +1,18 @@
-import { Expr, Needs } from "./expressions/expr";
+import { Expr, Needs, BuildInfo } from "./expressions/expr";
 import { LoopInfo, TexInfo, UniformLocs } from "./mergepass";
 
 export type WebGLProgramElement = WebGLProgram | WebGLProgramLoop[];
+
+// update me on change to needs
+export const updateNeeds = (acc: Needs, curr: Needs) => {
+  return {
+    neighborSample: acc.neighborSample || curr.neighborSample,
+    centerSample: acc.centerSample || curr.centerSample,
+    sceneBuffer: acc.sceneBuffer || curr.sceneBuffer,
+    timeUniform: acc.timeUniform || curr.timeUniform,
+    extraBuffers: new Set([...acc.extraBuffers, ...curr.extraBuffers]),
+  };
+};
 
 export class WebGLProgramLoop {
   programElement: WebGLProgramElement;
@@ -47,14 +58,7 @@ export class WebGLProgramLoop {
         allNeeds.push(p.getTotalNeeds());
       }
       // update me on change to needs
-      return allNeeds.reduce((acc, curr) => {
-        return {
-          neighborSample: acc.neighborSample || curr.neighborSample,
-          centerSample: acc.centerSample || curr.centerSample,
-          sceneBuffer: acc.sceneBuffer || curr.sceneBuffer,
-          timeUniform: acc.timeUniform || curr.timeUniform,
-        };
-      });
+      return allNeeds.reduce(updateNeeds);
     }
     if (this.totalNeeds === undefined) {
       throw new Error("total needs of webgl program was somehow undefined");

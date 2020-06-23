@@ -1,6 +1,6 @@
 import { CodeBuilder } from "./codebuilder";
+import { ExprVec4 } from "./expressions/expr";
 import { WebGLProgramLoop } from "./webglprogramloop";
-import { Needs, ExprVec4, Expr } from "./expressions/expr";
 
 export interface LoopInfo {
   num: number;
@@ -115,6 +115,7 @@ interface MergerOptions {
   minFilterMode?: FilterMode;
   maxFilterMode?: FilterMode;
   edgeMode?: ClampMode;
+  buffers?: TexImageSource[];
 }
 
 export interface TexInfo {
@@ -125,7 +126,7 @@ export interface TexInfo {
 
 export class Merger {
   /** the context to render to */
-  gl: WebGL2RenderingContext;
+  readonly gl: WebGL2RenderingContext;
   /** the context to apply post-processing to */
   private source: TexImageSource;
   private tex: TexInfo;
@@ -133,6 +134,8 @@ export class Merger {
   private uniformLocs: UniformLocs = {};
   private effectLoop: EffectLoop;
   private programLoop: WebGLProgramLoop;
+  /** additional buffers */
+  private buffers: TexImageSource[] = [];
 
   private options: MergerOptions | undefined;
 
@@ -142,6 +145,8 @@ export class Merger {
     gl: WebGL2RenderingContext,
     options?: MergerOptions
   ) {
+    // set buffers if provided with buffers
+    if (options?.buffers !== undefined) this.buffers = options?.buffers;
     // wrap the given list of effects as a loop if need be
     if (!(effects instanceof EffectLoop)) {
       this.effectLoop = new EffectLoop(effects, { num: 1 });
@@ -224,11 +229,11 @@ export class Merger {
   }
 
   draw(time: number = 0) {
-    //this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, this.framebuffer);
     this.gl.activeTexture(this.gl.TEXTURE0);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.back);
     sendTexture(this.gl, this.source);
 
+    // bind the scene buffer
     if (
       this.programLoop.getTotalNeeds().sceneBuffer &&
       this.tex.scene !== undefined
@@ -237,6 +242,16 @@ export class Merger {
       this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.scene);
       sendTexture(this.gl, this.source);
     }
+
+    // bind the additional buffers
+    let counter = 0;
+    for (const b of this.buffers) {
+      // TODO what's the limit on amount of textures?
+      this.gl.activeTexture(this.gl.TEXTURE2 + counter);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, b);
+      counter++;
+    }
+
     // swap textures before beginning draw
     this.programLoop.draw(
       this.gl,
