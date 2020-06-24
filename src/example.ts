@@ -1,7 +1,5 @@
 import * as MP from "./index";
 import * as dat from "dat.gui";
-import { Merger } from "./mergepass";
-import { fxaa } from "./expressions/fxaaexpr";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -23,7 +21,6 @@ function getVariable(variable: string) {
 
   for (var i = 0; i < vars.length; i++) {
     let pair = vars[i].split("=");
-
     if (pair[0] == variable) return pair[1];
   }
 }
@@ -66,6 +63,7 @@ const demos: Demos = {
       change: () => {},
     };
   },
+
   vectordisplay: () => {
     const merger = new MP.Merger(
       [
@@ -90,6 +88,7 @@ const demos: Demos = {
       change: () => {},
     };
   },
+
   singlepassgrain: () => {
     let vec: MP.BasicVec2;
     let m: MP.OpExpr<MP.Float, MP.Float>;
@@ -127,6 +126,7 @@ const demos: Demos = {
       },
     };
   },
+
   redonly: () => {
     const merger = new MP.Merger(
       [MP.setcolor(MP.changecomp(MP.fcolor(), MP.vec2(0, 0), "gb"))],
@@ -138,6 +138,7 @@ const demos: Demos = {
       change: () => {},
     };
   },
+
   redzero: () => {
     const merger = new MP.Merger(
       [MP.setcolor(MP.changecomp(MP.fcolor(), 0, "r"))],
@@ -149,6 +150,7 @@ const demos: Demos = {
       change: () => {},
     };
   },
+
   redgreenswap: () => {
     const merger = new MP.Merger(
       [
@@ -164,6 +166,7 @@ const demos: Demos = {
       change: () => {},
     };
   },
+
   huerotate: () => {
     let c: MP.ChangeCompExpr<MP.RGBToHSVExpr, MP.Mutable<MP.PrimitiveFloat>>;
     const merger = new MP.Merger(
@@ -191,6 +194,7 @@ const demos: Demos = {
       },
     };
   },
+
   timehuerotate: () => {
     const merger = new MP.Merger(
       [MP.hsv2rgb(MP.changecomp(MP.rgb2hsv(MP.fcolor()), MP.time(), "r", "+"))],
@@ -202,6 +206,7 @@ const demos: Demos = {
       change: () => {},
     };
   },
+
   scanlines: () => {
     const merger = new MP.Merger(
       [
@@ -238,6 +243,7 @@ const demos: Demos = {
       change: () => {},
     };
   },
+
   fxaa: () => {
     const merger = new MP.Merger([MP.fxaa()], sourceCanvas, gl);
     return {
@@ -289,6 +295,14 @@ const demos: Demos = {
         buffers: buffers,
       }
     );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
+
+  basicdof: (buffers: TexImageSource[] = []) => {
+    const merger = new MP.Merger([MP.fcolor()], sourceCanvas, gl);
     return {
       merger: merger,
       change: () => {},
@@ -404,7 +418,6 @@ const pinkishHelix = (t: number, frames: number) => {
     for (j = 0; j < 3; j++) x.fillRect(i + j, 266 + C(i + j + t) * 50, 32, 8);
   }
 };
-
 const movingGrid = (t: number, frames: number) => {
   let i, j, s;
   c.width |= 0;
@@ -419,6 +432,46 @@ const movingGrid = (t: number, frames: number) => {
         s + i / 9
       )),
         x.fillRect(i, j, s, s);
+};
+
+const higherOrderPerspective = (color: boolean) => {
+  const fillFunc = color
+    ? (i: number) => `hsl(${i * 99},50%,50%)`
+    : (i: number) => R(255 * (1 / (1 + i)));
+  return (t: number, frames: number) => {
+    x.fillStyle = "black";
+    x.fillRect(0, 0, 960, 540);
+    const d = (xp: number, yp: number, zp: number, w: number, h: number) => {
+      x.fillRect(
+        480 + (xp - w / 2) / zp,
+        270 + (yp - h / 2) / zp,
+        w / zp,
+        h / zp
+      );
+      x.fill();
+    };
+    const offset = 200;
+    const size = 64;
+    for (let i = 9; i > 0; i--) {
+      x.fillStyle = fillFunc(i);
+      const span = 14;
+      const spacing = 64;
+      const f = (off: number) => {
+        for (let j = 0; j < span; j++) {
+          d(
+            (j - span / 2) * spacing + spacing / 2,
+            offset * off,
+            i,
+            size * ((span - j) / span),
+            size * ((j + 1) / span)
+          );
+        }
+      };
+      f(-1);
+      f(C(frames / 60));
+      f(1);
+    }
+  };
 };
 
 const draws: Draws = {
@@ -438,6 +491,7 @@ const draws: Draws = {
     higherOrderWaves(false),
     bitwiseGrid(),
   ],
+  basicdof: [higherOrderPerspective(true), higherOrderPerspective(false)],
 };
 
 const canvases = [sourceCanvas];
