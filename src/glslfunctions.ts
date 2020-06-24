@@ -84,18 +84,6 @@ export const glslFuncs = {
   col.rgb *= col.a;
   return col;
 }`,
-  // TODO get rid of this!
-  hsvmask: `void main(vec4 mask, vec4 components, vec4 col) {
-  vec3 hsv = rgb2hsv(col.rgb);
-  vec3 m = mask;
-  hsv.xyz = (vec3(1., 1., 1.) - m) * components + m * hsv.xyz;
-  vec3 rgb = hsv2rgb(hsv);
-  col = vec4(rgb.r, rgb.g, rgb.b, gl_FragColor.a);
-  return col;
-}`,
-  setxyz: `vec4 setxyz (vec3 comp, vec3 mask, vec4 col) {
-  col.xyz = (vec3(1., 1., 1.) - mask) * comp + m * hsv.xyz;
-}`,
   // adapted from https://www.shadertoy.com/view/ls3GWS which was adapted from
   // http://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/3/
   // pass in normalized coordinates to rcpFrame
