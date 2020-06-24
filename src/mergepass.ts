@@ -82,7 +82,6 @@ export class EffectLoop implements EffectLike, Generable {
     const firstSampleNum = this.getSampleNum(undefined, 0, 1) / this.repeat.num;
     const restSampleNum = this.getSampleNum(undefined, 1) / this.repeat.num;
     if (fullSampleNum === 0 || (firstSampleNum === 1 && restSampleNum === 0)) {
-      // if this group only samples neighbors at most once, create program
       const codeBuilder = new CodeBuilder(this);
       const program = codeBuilder.compileProgram(gl, vShader, uniformLocs);
       return program;
@@ -235,6 +234,14 @@ export class Merger {
     console.log(this.programLoop);
 
     // create x amount of empty textures based on buffers needed
+    let buffersNeeded = 0;
+    if (this.programLoop.totalNeeds?.extraBuffers !== undefined) {
+      buffersNeeded = Math.max(...this.programLoop.totalNeeds.extraBuffers) + 1;
+    }
+    let buffersSupplied = this.buffers.length;
+    if (buffersNeeded > buffersSupplied) {
+      throw new Error("not enough buffers supplied for this effect");
+    }
     for (let i = 0; i < this.buffers.length; i++) {
       const texture = makeTexture(this.gl, this.options);
       this.tex.bufTextures.push(texture);
