@@ -9,7 +9,7 @@ function genBlurSource(direction: Vec2, taps: 5 | 9 | 13): SourceLists {
   };
 }
 
-function tapsToKey(taps: 5 | 9 | 13) {
+function tapsToFuncSource(taps: 5 | 9 | 13) {
   switch (taps) {
     case 5:
       return glslFuncs.gauss5;
@@ -21,10 +21,23 @@ function tapsToKey(taps: 5 | 9 | 13) {
 }
 
 export class BlurExpr extends ExprVec4 {
-  constructor(direction: Vec2, taps: 5 | 9 | 13 = 5) {
+  constructor(direction: Vec2, taps: 5 | 9 | 13 = 5, samplerNum?: number) {
     super(genBlurSource(direction, taps), ["uDirection"]);
-    this.externalFuncs = [tapsToKey(taps)];
-    this.needs.neighborSample = true;
+    if (samplerNum === undefined) {
+      this.needs.neighborSample = true;
+      this.externalFuncs = [tapsToFuncSource(taps)];
+    } else {
+      this.needs.extraBuffers = new Set([samplerNum]);
+      this.externalFuncs = [
+        // this relies on the fact that the string `uSampler` doesn't appear
+        // elsewhere in the provided blur functions, which is currently a safe
+        // assumption
+        tapsToFuncSource(taps).replace(
+          /uSampler/g,
+          "uBufferSampler" + samplerNum
+        ),
+      ];
+    }
   }
 
   setDirection(direction: PrimitiveVec2) {
@@ -32,6 +45,10 @@ export class BlurExpr extends ExprVec4 {
   }
 }
 
-export function gauss(direction: Vec2, taps: 5 | 9 | 13 = 5) {
-  return new BlurExpr(direction, taps);
+export function gauss(
+  direction: Vec2,
+  taps: 5 | 9 | 13 = 5,
+  samplerNum?: number
+) {
+  return new BlurExpr(direction, taps, samplerNum);
 }

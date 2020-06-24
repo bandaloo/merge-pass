@@ -255,10 +255,12 @@ const demos: Demos = {
   bufferblur: (buffers: TexImageSource[] = []) => {
     const merger = new MP.Merger(
       [
-        MP.blur2d(
-          MP.getcomp(MP.buffer(0), "r"),
-          MP.getcomp(MP.buffer(0), "r"),
-          5
+        MP.hsv2rgb(
+          MP.changecomp(
+            MP.rgb2hsv(MP.fcolor()),
+            MP.getcomp(MP.gauss(MP.vec2(8, 0), 13, 0), "r"),
+            "z"
+          )
         ),
       ],
       sourceCanvas,
@@ -308,7 +310,7 @@ const demos: Demos = {
     });
 
     class FocusControls {
-      focus: number = 0.5;
+      focus: number = 0.3;
       radius: number = 0.01;
     }
 
