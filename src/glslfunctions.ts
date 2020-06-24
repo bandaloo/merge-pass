@@ -159,4 +159,9 @@ export const glslFuncs = {
   float e = 2.71828;
   return pow(e, -pow(x - a, 2.) / b);
 }`,
+  // for calculating the true distance from 0 to 1 depth buffer
+  truedepth: `float truedepth(float i) {
+  i = max(i, 0.00000001);
+  return (1. - i) / i;
+}`,
 };

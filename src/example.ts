@@ -326,6 +326,27 @@ const demos: Demos = {
       },
     };
   },
+
+  lightbands: (buffers: TexImageSource[] = []) => {
+    const merger = new MP.Merger(
+      [
+        MP.brightness(
+          MP.cos(
+            MP.op(MP.time(), "+", MP.truedepth(MP.getcomp(MP.buffer(0), "r")))
+          )
+        ),
+      ],
+      sourceCanvas,
+      gl,
+      {
+        buffers: buffers,
+      }
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
 };
 
 interface Draws {
@@ -457,7 +478,7 @@ const higherOrderPerspective = (color: boolean) => {
     ? (i: number) => `hsl(${i * 99},50%,50%)`
     : (i: number) => R(255 * (1 / (1 + i)));
   return (t: number, frames: number) => {
-    x.fillStyle = "black";
+    x.fillStyle = R(1, color, color);
     x.fillRect(0, 0, 960, 540);
     const d = (xp: number, yp: number, zp: number, w: number, h: number) => {
       x.fillRect(
@@ -511,6 +532,7 @@ const draws: Draws = {
     bitwiseGrid(),
   ],
   basicdof: [higherOrderPerspective(true), higherOrderPerspective(false)],
+  lightbands: [higherOrderPerspective(true), higherOrderPerspective(false)],
 };
 
 const canvases = [sourceCanvas];
