@@ -33,15 +33,43 @@ export const glslFuncs = {
               d / (q.x + e),
               q.x, co.a);
 }`,
+  // TODO make these take in a sampler to blur other buffers
+  // TODO code-gen gaussian blur of arbitrary taps by calculating the curve?
   // adapted from https://github.com/Jam3/glsl-fast-gaussian-blur/blob/master/5.glsl
   gauss5: `vec4 gauss5(vec2 dir) {
   vec2 uv = gl_FragCoord.xy / uResolution;
-  vec2 direction = dir;
   vec4 col = vec4(0.0);
-  vec2 off1 = vec2(1.3333333333333333) * direction;
+  vec2 off1 = vec2(1.3333333333333333) * dir;
   col += texture2D(uSampler, uv) * 0.29411764705882354;
   col += texture2D(uSampler, uv + (off1 / uResolution)) * 0.35294117647058826;
   col += texture2D(uSampler, uv - (off1 / uResolution)) * 0.35294117647058826;
+  return col;
+}`,
+  gauss9: `vec4 gauss9(vec2 dir) {
+  vec2 uv = gl_FragCoord.xy / uResolution;
+  vec4 col = vec4(0.0);
+  vec2 off1 = vec2(1.3846153846) * dir;
+  vec2 off2 = vec2(3.2307692308) * dir;
+  col += texture2D(uSampler, uv) * 0.2270270270;
+  col += texture2D(uSampler, uv + (off1 / uResolution)) * 0.3162162162;
+  col += texture2D(uSampler, uv - (off1 / uResolution)) * 0.3162162162;
+  col += texture2D(uSampler, uv + (off2 / uResolution)) * 0.0702702703;
+  col += texture2D(uSampler, uv - (off2 / uResolution)) * 0.0702702703;
+  return col;
+}`,
+  gauss13: `vec4 gauss13(vec2 dir) {
+  vec2 uv = gl_FragCoord.xy / uResolution;
+  vec4 col = vec4(0.0);
+  vec2 off1 = vec2(1.411764705882353) * dir;
+  vec2 off2 = vec2(3.2941176470588234) * dir;
+  vec2 off3 = vec2(5.176470588235294) * dir;
+  col += texture2D(uSampler, uv) * 0.1964825501511404;
+  col += texture2D(uSampler, uv + (off1 / uResolution)) * 0.2969069646728344;
+  col += texture2D(uSampler, uv - (off1 / uResolution)) * 0.2969069646728344;
+  col += texture2D(uSampler, uv + (off2 / uResolution)) * 0.09447039785044732;
+  col += texture2D(uSampler, uv - (off2 / uResolution)) * 0.09447039785044732;
+  col += texture2D(uSampler, uv + (off3 / uResolution)) * 0.010381362401148057;
+  col += texture2D(uSampler, uv - (off3 / uResolution)) * 0.010381362401148057;
   return col;
 }`,
   contrast: `vec4 contrast(float val, vec4 col) {
@@ -125,5 +153,10 @@ export const glslFuncs = {
   }
 
   return vec4(rgbB.r, rgbB.g, rgbB.b, alpha);
+}`,
+  // normal curve is a = 0 and b = 1
+  gaussian: `float gaussian(float x, float a, float b) {
+  float e = 2.71828;
+  return pow(e, -pow(x - a, 2.) / b);
 }`,
 };

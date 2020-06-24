@@ -69,8 +69,8 @@ const demos: Demos = {
       [
         MP.loop(
           [
-            MP.gauss5(MP.vec2(1, 0)),
-            MP.gauss5(MP.vec2(0, 1)),
+            MP.gauss(MP.vec2(1, 0)),
+            MP.gauss(MP.vec2(0, 1)),
             MP.brightness(0.15),
             MP.contrast(1.2),
           ],
@@ -95,7 +95,7 @@ const demos: Demos = {
 
     const merger = new MP.Merger(
       [
-        MP.gauss5(MP.vec2(0, 1)),
+        MP.gauss(MP.vec2(0, 1)),
         MP.grain(
           (m = MP.op(
             MP.len(MP.op(MP.ncfcoord(), "+", (vec = MP.vec2(MP.mut(0), 0)))),
@@ -302,10 +302,28 @@ const demos: Demos = {
   },
 
   basicdof: (buffers: TexImageSource[] = []) => {
-    const merger = new MP.Merger([MP.fcolor()], sourceCanvas, gl);
+    const dof = MP.dof(0.5);
+    const merger = new MP.Merger([dof], sourceCanvas, gl, {
+      buffers: buffers,
+    });
+
+    class FocusControls {
+      focus: number = 0.5;
+      radius: number = 0.01;
+    }
+
+    const controls = new FocusControls();
+    const gui = new dat.GUI();
+
+    gui.add(controls, "focus", 0, 1.0, 0.01);
+    gui.add(controls, "radius", 0.01, 0.1, 0.01);
+
     return {
       merger: merger,
-      change: () => {},
+      change: () => {
+        dof.moveFocus(controls.focus);
+        dof.changeRadius(controls.radius);
+      },
     };
   },
 };
@@ -443,16 +461,17 @@ const higherOrderPerspective = (color: boolean) => {
     x.fillRect(0, 0, 960, 540);
     const d = (xp: number, yp: number, zp: number, w: number, h: number) => {
       x.fillRect(
-        480 + (xp - w / 2) / zp,
-        270 + (yp - h / 2) / zp,
-        w / zp,
-        h / zp
+        Math.round(480 + (xp - w / 2) / zp),
+        Math.round(270 + (yp - h / 2) / zp),
+        Math.round(w / zp),
+        Math.round(h / zp)
       );
       x.fill();
     };
     const offset = 200;
     const size = 64;
-    for (let i = 9; i > 0; i--) {
+    const amplitude = 32;
+    for (let i = 12; i > 0; i -= 0.5) {
       x.fillStyle = fillFunc(i);
       const span = 14;
       const spacing = 64;
@@ -460,7 +479,7 @@ const higherOrderPerspective = (color: boolean) => {
         for (let j = 0; j < span; j++) {
           d(
             (j - span / 2) * spacing + spacing / 2,
-            offset * off,
+            offset * off + amplitude * C(j + frames / 60),
             i,
             size * ((span - j) / span),
             size * ((j + 1) / span)

@@ -27,5 +27,6 @@ export * from "./expressions/trigexpr";
 export * from "./expressions/powexpr";
 export * from "./expressions/fxaaexpr";
 export * from "./expressions/buffersampleexpr";
+export * from "./expressions/dofloop";
 
 export * from "./expressions/expr";

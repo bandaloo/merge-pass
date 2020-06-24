@@ -1,11 +1,29 @@
 import { Vec2 } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
-import { ExprVec4, tag, PrimitiveVec2 } from "./expr";
+import { ExprVec4, tag, PrimitiveVec2, SourceLists } from "./expr";
+
+function genBlurSource(direction: Vec2, taps: 5 | 9 | 13): SourceLists {
+  return {
+    sections: [`gauss${taps}(`, ")"],
+    values: [direction],
+  };
+}
+
+function tapsToKey(taps: 5 | 9 | 13) {
+  switch (taps) {
+    case 5:
+      return glslFuncs.gauss5;
+    case 9:
+      return glslFuncs.gauss9;
+    case 13:
+      return glslFuncs.gauss13;
+  }
+}
 
 export class BlurExpr extends ExprVec4 {
-  constructor(direction: Vec2) {
-    super(tag`(gauss5(${direction}))`, ["uDirection"]);
-    this.externalFuncs = [glslFuncs.gauss5];
+  constructor(direction: Vec2, taps: 5 | 9 | 13 = 5) {
+    super(genBlurSource(direction, taps), ["uDirection"]);
+    this.externalFuncs = [tapsToKey(taps)];
     this.needs.neighborSample = true;
   }
 
@@ -14,6 +32,6 @@ export class BlurExpr extends ExprVec4 {
   }
 }
 
-export function gauss5(direction: Vec2) {
-  return new BlurExpr(direction);
+export function gauss(direction: Vec2, taps: 5 | 9 | 13 = 5) {
+  return new BlurExpr(direction, taps);
 }

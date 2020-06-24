@@ -1,5 +1,5 @@
 import { EffectLoop } from "../mergepass";
-import { gauss5 } from "./blurexpr";
+import { gauss } from "./blurexpr";
 import { pvec2 } from "./vecexprs";
 import { mut } from "./expr";
 
@@ -9,8 +9,8 @@ export class PowerBlurLoop extends EffectLoop {
   private size: number;
 
   constructor(size: number) {
-    const side = gauss5(mut(pvec2(size, 0)));
-    const up = gauss5(mut(pvec2(0, size)));
+    const side = gauss(mut(pvec2(size, 0)));
+    const up = gauss(mut(pvec2(0, size)));
     const reps = Math.ceil(baseLog(2, size));
     super([side, up], {
       num: reps + 1,
