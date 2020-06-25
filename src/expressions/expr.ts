@@ -21,6 +21,7 @@ function toGLSLFloatString(num: number) {
 }
 
 export interface UniformValChangeMap {
+  // changed needs to change to a counter (or something similar)
   [name: string]: { val: Primitive; changed: boolean };
 }
 
@@ -53,6 +54,7 @@ interface Parseable {
   added: boolean;
 }
 
+// TODO i guess this isn't used
 export interface Applicable {
   applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation): void;
 }
@@ -95,8 +97,18 @@ export abstract class Expr implements Parseable, EffectLike {
     for (const name in this.uniformValChangeMap) {
       const loc = uniformLocs[name];
       if (this.uniformValChangeMap[name].changed) {
+        //this.uniformValChangeMap[name].changed = false;
+        this.uniformValChangeMap[name].val.applyUniform(
+          gl,
+          loc.locs[loc.counter]
+        );
+      }
+      // increment and reset the counter to wrap back around to first location
+      loc.counter++;
+      loc.counter %= loc.locs.length;
+      // once we have wrapped then we know all uniforms have been changed
+      if (loc.counter === 0) {
         this.uniformValChangeMap[name].changed = false;
-        this.uniformValChangeMap[name].val.applyUniform(gl, loc);
       }
     }
   }
@@ -137,7 +149,8 @@ export abstract class Expr implements Parseable, EffectLike {
   /** parses this expression into a string, adding info as it recurses */
   parse(buildInfo: BuildInfo): string {
     if (this.added) {
-      throw new Error("expression already added to another part of tree");
+      //throw new Error("expression already added to another part of tree");
+      console.warn("expression already added to another part of tree");
     }
     this.sourceCode = "";
     buildInfo.exprs.push(this);
@@ -173,9 +186,8 @@ export class Mutable<T extends Primitive> implements Parseable {
 
   parse(buildInfo: BuildInfo, defaultName: string, enc: Expr | undefined) {
     if (this.added) {
-      throw new Error(
-        "mutable expression already added to another part of tree"
-      );
+      console.warn("mutable expression already added to another part of tree");
+      //throw new Error("mutable expression already added to another part of tree");
     }
     if (enc === undefined) {
       throw new Error("tried to put a mutable expression at the top level");
@@ -209,6 +221,7 @@ export function mut<T extends Primitive>(val: T, name?: string): Mutable<T>;
 export function mut(val: number, name?: string): Mutable<PrimitiveFloat>;
 
 export function mut<T extends Primitive>(val: T | number, name?: string) {
+  // TODO use n2e
   const primitive = typeof val === "number" ? n2p(val) : val;
   return new Mutable(primitive, name);
 }
@@ -228,9 +241,10 @@ export abstract class Primitive implements Parseable {
   parse(buildInfo: BuildInfo, defaultName: string, enc: Expr | undefined) {
     // TODO see if this is okay actually
     if (this.added) {
-      throw new Error(
+      console.warn(
         "primitive expression already added to another part of tree"
       );
+      //throw new Error("primitive expression already added to another part of tree");
     }
     this.added = true;
     return this.toString();

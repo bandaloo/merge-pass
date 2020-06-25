@@ -144,12 +144,17 @@ export class CodeBuilder {
         if (location === null) {
           throw new Error("couldn't find uniform " + name);
         }
-        // makes sure you don't declare uniform with same name
+        // TODO enforce unique names in the same program
+        if (uniformLocs[name] === undefined) {
+          uniformLocs[name] = { locs: [], counter: 0 };
+        }
+        /*
         if (uniformLocs[name] !== undefined) {
           throw new Error("uniforms have to all have unique names");
         }
+        */
         // assign the name to the location
-        uniformLocs[name] = location;
+        uniformLocs[name].locs.push(location);
       }
     }
     // set the uniform resolution (every program has this uniform)

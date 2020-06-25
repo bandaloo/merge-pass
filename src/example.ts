@@ -1,5 +1,6 @@
 import * as MP from "./index";
 import * as dat from "dat.gui";
+import { float } from "./expressions/expr";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -46,14 +47,9 @@ interface Demos {
 
 const demos: Demos = {
   edgeblur: () => {
+    const lenExpr = MP.op(MP.len(MP.ncfcoord()), "*", 3);
     const merger = new MP.Merger(
-      [
-        MP.blur2d(
-          MP.op(MP.len(MP.op(MP.ncfcoord(), "+", MP.vec2(0, 0))), "*", 3),
-          MP.op(MP.len(MP.ncfcoord()), "*", 3),
-          6
-        ),
-      ],
+      [MP.blur2d(lenExpr, lenExpr, 6)],
       sourceCanvas,
       gl
     );
@@ -61,6 +57,26 @@ const demos: Demos = {
     return {
       merger: merger,
       change: () => {},
+    };
+  },
+
+  bluramount: () => {
+    const fl = MP.float(MP.mut(1));
+    const merger = new MP.Merger([MP.blur2d(fl, fl)], sourceCanvas, gl);
+
+    class BlurControls {
+      blur: number = 0;
+    }
+
+    const controls = new BlurControls();
+    const gui = new dat.GUI();
+    gui.add(controls, "blur", 0, 1, 0.01);
+
+    return {
+      merger: merger,
+      change: () => {
+        fl.setVal(controls.blur);
+      },
     };
   },
 
@@ -518,6 +534,7 @@ const higherOrderPerspective = (color: boolean) => {
 
 const draws: Draws = {
   edgeblur: [redSpiral],
+  bluramount: [movingGrid],
   vectordisplay: [vectorSpiral],
   singlepassgrain: [pinkishHelix],
   redonly: [stripes],

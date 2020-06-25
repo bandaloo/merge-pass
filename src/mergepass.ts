@@ -104,7 +104,7 @@ export function loop(effects: EffectElement[], rep: number) {
 type EffectElement = ExprVec4 | EffectLoop;
 
 export interface UniformLocs {
-  [name: string]: WebGLUniformLocation;
+  [name: string]: { locs: WebGLUniformLocation[]; counter: number };
 }
 
 const V_SOURCE = `attribute vec2 aPosition;
