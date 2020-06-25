@@ -48,7 +48,7 @@ const demos: Demos = {
   edgeblur: () => {
     const lenExpr = MP.op(MP.len(MP.ncfcoord()), "*", 3);
     const merger = new MP.Merger(
-      [MP.blur2d(lenExpr, lenExpr, 6)],
+      [MP.blur2d(lenExpr, lenExpr, 3)],
       sourceCanvas,
       gl
     );
@@ -64,7 +64,7 @@ const demos: Demos = {
     const merger = new MP.Merger([MP.blur2d(fl, fl)], sourceCanvas, gl);
 
     class BlurControls {
-      blur: number = 0;
+      blur: number = 1;
     }
 
     const controls = new BlurControls();
@@ -110,7 +110,7 @@ const demos: Demos = {
 
     const merger = new MP.Merger(
       [
-        MP.gauss(MP.vec2(0, 1)),
+        MP.gauss(MP.vec2(0, 1), 13),
         MP.grain(
           (m = MP.op(
             MP.len(MP.op(MP.ncfcoord(), "+", (vec = MP.vec2(MP.mut(0), 0)))),
@@ -346,7 +346,6 @@ const demos: Demos = {
   },
 
   lineardof: (buffers: TexImageSource[] = []) => {
-    //const dof = MP.dof(MP.mut(0.3), MP.mut(0.01));
     const dof = MP.dof(
       // transform a linear depth buffer to hyperbolic where 12 is max depth
       MP.mut(0.3),
@@ -468,7 +467,7 @@ const shaderLike = (fillFunc: (x: number, y: number) => string) => {
 const higherOrderWaves = (color: boolean) =>
   shaderLike(
     color
-      ? (x: number, y: number) => `hsl(${~~((x + y) / 20) * 100},20%,50%)`
+      ? (x: number, y: number) => `hsl(${~~((x + y) / 20) * 100},50%,90%)`
       : (x: number, y: number) =>
           R((256 / 4) * Math.round(2 + S(x / 20) + C(y / 30)))
   );
@@ -600,6 +599,72 @@ const draws: Draws = {
   lightbands: [higherOrderPerspective(true), higherOrderPerspective(false)],
 };
 
+interface Notes {
+  [name: string]: string;
+}
+
+const notes: Notes = {
+  edgeblur:
+    "the blur radius is a function of distance from the center coordinate." +
+    "this makes the image appear more in focus only around the center",
+  basicdof:
+    "the blue rectangles should be most in focus. you can adjust with the controls " +
+    "in the corner",
+  lineardof:
+    "by default, <code>dof</code> assumes that your depth buffer is " +
+    "stored in buffer 0, and that the red channel is normalized so that 1 is right " +
+    "on top of the camera lense, and 0 is all the way at infinity. this example " +
+    "shows how you might transform a depth buffer that stores the absolute depth " +
+    "into the form that <code>dof</code> interprets",
+  buffereyesore:
+    "despite this demo offering very little in the way of aesthetic value, it " +
+    "demonstrates how you can optionally pass a list of images (which can " +
+    "be canvases or videos) into the merger constructor and sample from them",
+  fxaa:
+    "fxaa stands for fast approximate anti-aliasing. amazingly, it only needs " +
+    "the scene buffer. it's not perfect, but it does the job in many cases. you " +
+    "can see how it eliminates jaggies by looking at the unprocessed image",
+  scanlines:
+    "you can use trigonometric functions and exponents to create masks " +
+    "with interesting shapes",
+  huerotate:
+    "you can use <code>rgb2hsv</code> and <code>hsv2rgb</code> and " +
+    "<code>changecomp</code> to change the hue, saturation or value of a color",
+  timehuerotate:
+    "<code>time</code> will insert the time uniform into the generated code." +
+    "update time by passing in the current time to <code>merger.draw</code> in " +
+    "your draw loop",
+  redgreenswap:
+    "you change only a few components of a vector in line with " +
+    "<code>get2comp</code>. using this in conjunction with <code>change2comp</code> " +
+    'you can sort of <a href="https://en.wikipedia.org/wiki/Swizzling_(computer_graphics)">swizzle</a>',
+  singlepassgrain:
+    "even though a vertical blur is used, only one pass is needed here." +
+    "because of this, only one shader pass is generated (check the console) since " +
+    "since the additional grain effect can run directly afterwards in the same shader",
+  bluramount:
+    "even though the blur effect is split up among multiple shaders, you update " +
+    "a uniform in both shaders by changing only a single mutable. " +
+    "the float expression <code>fl</code> gets passed in as both the " +
+    "horizontal and vertical radii of <code>blur2dloop</code>. <code>fl</code> " +
+    "contains a mutable primitive float which we can change with <code>fl.setVal</code>. " +
+    "(also, because the same expression can appear in the effect tree multiple " +
+    "times, and expressions can contain expressions, you can make reference loops, " +
+    "so don't do that)",
+  vectordisplay:
+    "this glowing vector effect is created by repeatedly bluring and increasing the " +
+    "contrast of the original scene. then the fragment color of the original " +
+    "scene buffer (accessed with <code>input</code>) is added on top of the blurred " +
+    "image",
+  bufferblur:
+    "you can use <code>gauss</code> on an extra buffer instead of " +
+    "the scene buffer by passing in an optional argument",
+  lightbands:
+    "even though the value in the depth buffer is actually 1 / (1 + depth), we can " +
+    "calculate the true depth value with <code>truedepth</code>. with this, we can colorize" +
+    "bands of depth in our scene all the way out to infinity",
+};
+
 const canvases = [sourceCanvas];
 const contexts = [source];
 
@@ -611,6 +676,18 @@ window.addEventListener("load", () => {
   if (dstr === undefined || draws[dstr] === undefined) dstr = mstr; // pair with merger
   const draw = draws[dstr];
   if (draw === undefined) throw new Error("draw not found");
+
+  const note = notes[mstr];
+  if (note !== undefined) {
+    const div = document.getElementById("note");
+    const title = document.createElement("h2");
+    const p = document.createElement("p");
+    title.innerText = "note";
+    p.innerHTML = note;
+    if (div === null) throw new Error("notes div was undefined");
+    div.appendChild(title);
+    div.appendChild(p);
+  }
 
   // minus 1 because we already included the source canvas and context
   for (let i = 0; i < draw.length - 1; i++) {

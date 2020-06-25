@@ -6,6 +6,7 @@ interface UniformTypeMap {
   [name: string]: TypeString;
 }
 
+// TODO don't really want to export this
 /** info needed to generate proper declarations */
 export interface BuildInfo {
   uniformTypes: UniformTypeMap;
