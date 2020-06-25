@@ -12,12 +12,12 @@ import { vec2 } from "./vecexprs";
 export class DoFLoop extends EffectLoop {
   gaussian: GaussianExpr;
   constructor(
-    depth: Float = mut(pfloat(0.3)),
+    focus: Float = mut(pfloat(0.3)),
     rad: Float = mut(pfloat(0.01)),
-    reps = 2,
-    bufferNum = 0
+    depth: Float = getcomp(buffer(0), "r"),
+    reps = 2
   ) {
-    let guassianExpr = gaussian(getcomp(buffer(bufferNum), "r"), depth, rad);
+    let guassianExpr = gaussian(depth, focus, rad);
     // TODO should 13 be the default taps?
     const side = gauss(vec2(pow(op(1, "-", guassianExpr), 4), 0), 13);
     const up = gauss(vec2(0, pow(op(1, "-", guassianExpr), 4)), 13);
@@ -37,15 +37,15 @@ export class DoFLoop extends EffectLoop {
 }
 
 export function dof(
-  depth?: Float | number,
+  focus?: Float | number,
   rad?: Float | number,
-  reps?: number,
-  bufferNum?: number
+  depth?: Float | number,
+  reps?: number
 ) {
   return new DoFLoop(
-    depth === undefined ? undefined : n2e(depth),
+    focus === undefined ? undefined : n2e(focus),
     rad === undefined ? undefined : n2e(rad),
-    reps,
-    bufferNum
+    depth === undefined ? undefined : n2e(depth),
+    reps
   );
 }
