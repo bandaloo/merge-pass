@@ -1,6 +1,5 @@
 import * as MP from "./index";
 import * as dat from "dat.gui";
-import { float } from "./expressions/expr";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");

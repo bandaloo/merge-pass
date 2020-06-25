@@ -51,7 +51,6 @@ interface Parseable {
   typeString(): TypeString;
 }
 
-// TODO i guess this isn't used
 export interface Applicable {
   applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation): void;
 }
@@ -165,7 +164,7 @@ export abstract class Expr implements Parseable, EffectLike {
   abstract typeString(): TypeString;
 }
 
-export class Mutable<T extends Primitive> implements Parseable {
+export class Mutable<T extends Primitive> implements Parseable, Applicable {
   primitive: T;
   name: string | undefined;
 
@@ -211,7 +210,7 @@ export function mut<T extends Primitive>(val: T | number, name?: string) {
   return new Mutable(primitive, name);
 }
 
-export abstract class Primitive implements Parseable {
+export abstract class Primitive implements Parseable, Applicable {
   abstract toString(): string;
 
   abstract typeString(): TypeString;

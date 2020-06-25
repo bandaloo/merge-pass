@@ -1,4 +1,3 @@
-// TODO export fewer things for the user
 export * from "./mergepass";
 export * from "./exprtypes";
 export * from "./glslfunctions";
