@@ -49,8 +49,6 @@ interface Parseable {
   ) => string;
 
   typeString(): TypeString;
-
-  added: boolean;
 }
 
 // TODO i guess this isn't used
@@ -60,7 +58,6 @@ export interface Applicable {
 
 export abstract class Expr implements Parseable, EffectLike {
   static count = 0;
-  added = false;
   id: string;
   needs: Needs = {
     neighborSample: false,
@@ -147,10 +144,6 @@ export abstract class Expr implements Parseable, EffectLike {
 
   /** parses this expression into a string, adding info as it recurses */
   parse(buildInfo: BuildInfo): string {
-    if (this.added) {
-      //throw new Error("expression already added to another part of tree");
-      console.warn("expression already added to another part of tree");
-    }
     this.sourceCode = "";
     buildInfo.exprs.push(this);
     buildInfo.needs = updateNeeds(buildInfo.needs, this.needs);
@@ -166,7 +159,6 @@ export abstract class Expr implements Parseable, EffectLike {
     this.sourceCode += this.sourceLists.sections[
       this.sourceLists.sections.length - 1
     ];
-    this.added = true;
     return this.sourceCode;
   }
 
@@ -176,7 +168,6 @@ export abstract class Expr implements Parseable, EffectLike {
 export class Mutable<T extends Primitive> implements Parseable {
   primitive: T;
   name: string | undefined;
-  added = false;
 
   constructor(primitive: T, name?: string) {
     this.primitive = primitive;
@@ -184,10 +175,6 @@ export class Mutable<T extends Primitive> implements Parseable {
   }
 
   parse(buildInfo: BuildInfo, defaultName: string, enc: Expr | undefined) {
-    if (this.added) {
-      console.warn("mutable expression already added to another part of tree");
-      //throw new Error("mutable expression already added to another part of tree");
-    }
     if (enc === undefined) {
       throw new Error("tried to put a mutable expression at the top level");
     }
@@ -202,7 +189,6 @@ export class Mutable<T extends Primitive> implements Parseable {
     };
     // add the new type to the map
     enc.defaultNameMap[defaultName + enc.id] = this.name;
-    this.added = true;
     return this.name;
   }
 
@@ -226,8 +212,6 @@ export function mut<T extends Primitive>(val: T | number, name?: string) {
 }
 
 export abstract class Primitive implements Parseable {
-  added = false;
-
   abstract toString(): string;
 
   abstract typeString(): TypeString;
@@ -238,14 +222,6 @@ export abstract class Primitive implements Parseable {
   ): void;
 
   parse(buildInfo: BuildInfo, defaultName: string, enc: Expr | undefined) {
-    // TODO see if this is okay actually
-    if (this.added) {
-      console.warn(
-        "primitive expression already added to another part of tree"
-      );
-      //throw new Error("primitive expression already added to another part of tree");
-    }
-    this.added = true;
     return this.toString();
   }
 }
