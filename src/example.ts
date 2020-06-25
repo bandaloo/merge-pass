@@ -320,7 +320,8 @@ const demos: Demos = {
   },
 
   basicdof: (buffers: TexImageSource[] = []) => {
-    const dof = MP.dof(0.5);
+    //const dof = MP.dof(MP.mut(0.3), MP.mut(0.01));
+    const dof = MP.dof();
     const merger = new MP.Merger([dof], sourceCanvas, gl, {
       buffers: buffers,
     });
@@ -339,8 +340,8 @@ const demos: Demos = {
     return {
       merger: merger,
       change: () => {
-        dof.moveFocus(controls.focus);
-        dof.changeRadius(controls.radius);
+        dof.setDepth(controls.focus);
+        dof.setRadius(controls.radius);
       },
     };
   },

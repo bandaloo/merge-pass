@@ -1,43 +1,51 @@
+import { Float } from "../exprtypes";
 import { EffectLoop } from "../mergepass";
 import { gauss } from "./blurexpr";
-import { mut, pfloat } from "./expr";
+import { buffer } from "./buffersampleexpr";
+import { pfloat, n2e, mut } from "./expr";
 import { gaussian, GaussianExpr } from "./gaussianexpr";
+import { getcomp } from "./getcompexpr";
 import { op } from "./opexpr";
 import { pow } from "./powexpr";
 import { vec2 } from "./vecexprs";
-import { buffer } from "./buffersampleexpr";
-import { getcomp } from "./getcompexpr";
 
 export class DoFLoop extends EffectLoop {
-  gaussianSide: GaussianExpr;
-  gaussianUp: GaussianExpr;
-  constructor(depth: number, reps = 2, rad = 0.01, bufferNum = 0) {
-    const radSide = mut(pfloat(rad));
-    const radUp = mut(pfloat(rad));
-    const depthSide = mut(pfloat(depth));
-    const depthUp = mut(pfloat(depth));
-    let gSide = gaussian(getcomp(buffer(bufferNum), "r"), depthSide, radSide);
-    let gUp = gaussian(getcomp(buffer(bufferNum), "r"), depthUp, radUp);
-    const side = gauss(vec2(pow(op(1, "-", gSide), 4), 0), 13);
-    const up = gauss(vec2(0, pow(op(1, "-", gUp), 4)), 13);
+  gaussian: GaussianExpr;
+  constructor(
+    depth: Float = mut(pfloat(0.3)),
+    rad: Float = mut(pfloat(0.01)),
+    reps = 2,
+    bufferNum = 0
+  ) {
+    let guassianExpr = gaussian(getcomp(buffer(bufferNum), "r"), depth, rad);
+    // TODO should 13 be the default taps?
+    const side = gauss(vec2(pow(op(1, "-", guassianExpr), 4), 0), 13);
+    const up = gauss(vec2(0, pow(op(1, "-", guassianExpr), 4)), 13);
     super([side, up], { num: reps });
-    this.gaussianSide = gSide;
-    this.gaussianUp = gUp;
+    this.gaussian = guassianExpr;
   }
 
-  moveFocus(depth: number) {
+  setDepth(depth: number) {
     // this translates the gaussian curve to the side
-    this.gaussianSide.setA(depth);
-    this.gaussianUp.setA(depth);
+    this.gaussian.setA(depth);
   }
 
-  changeRadius(radius: number) {
-    // this makes the gaussian curve wider
-    this.gaussianSide.setB(radius);
-    this.gaussianUp.setB(radius);
+  setRadius(radius: number) {
+    // this scales the gaussian curve to focus on a larger band of depth
+    this.gaussian.setB(radius);
   }
 }
 
-export function dof(depth: number, reps?: number) {
-  return new DoFLoop(depth, reps);
+export function dof(
+  depth?: Float | number,
+  rad?: Float | number,
+  reps?: number,
+  bufferNum?: number
+) {
+  return new DoFLoop(
+    depth === undefined ? undefined : n2e(depth),
+    rad === undefined ? undefined : n2e(rad),
+    reps,
+    bufferNum
+  );
 }

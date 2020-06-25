@@ -21,7 +21,6 @@ function toGLSLFloatString(num: number) {
 }
 
 export interface UniformValChangeMap {
-  // changed needs to change to a counter (or something similar)
   [name: string]: { val: Primitive; changed: boolean };
 }
 
