@@ -345,6 +345,47 @@ const demos: Demos = {
     };
   },
 
+  lineardof: (buffers: TexImageSource[] = []) => {
+    //const dof = MP.dof(MP.mut(0.3), MP.mut(0.01));
+    const dof = MP.dof(
+      // transform a linear depth buffer to hyperbolic where 12 is max depth
+      MP.mut(0.3),
+      MP.mut(0.01),
+      MP.op(
+        1,
+        "/",
+        MP.op(
+          1,
+          "+",
+          MP.op(12, "*", MP.op(1, "-", MP.getcomp(MP.buffer(0), "r")))
+        )
+      )
+    );
+
+    const merger = new MP.Merger([dof], sourceCanvas, gl, {
+      buffers: buffers,
+    });
+
+    class FocusControls {
+      focus: number = 0;
+      radius: number = 0.01;
+    }
+
+    const controls = new FocusControls();
+    const gui = new dat.GUI();
+
+    gui.add(controls, "focus", 0, 1.0, 0.01);
+    gui.add(controls, "radius", 0.01, 0.1, 0.01);
+
+    return {
+      merger: merger,
+      change: () => {
+        dof.setDepth(controls.focus);
+        dof.setRadius(controls.radius);
+      },
+    };
+  },
+
   lightbands: (buffers: TexImageSource[] = []) => {
     const merger = new MP.Merger(
       [
@@ -491,12 +532,13 @@ const movingGrid = (t: number, frames: number) => {
         x.fillRect(i, j, s, s);
 };
 
-const higherOrderPerspective = (color: boolean) => {
+const higherOrderPerspective = (color: boolean, normalized = true) => {
+  const layerNum = 12;
   const fillFunc = color
     ? (i: number) => `hsl(${i * 99},50%,50%)`
-    : (i: number) => R(255 * (1 / (1 + i)));
+    : (i: number) => R(255 * (normalized ? 1 / (1 + i) : i / layerNum));
   return (t: number, frames: number) => {
-    x.fillStyle = R(1, color, color);
+    x.fillStyle = !normalized ? R(255) : R(1, color, color);
     x.fillRect(0, 0, 960, 540);
     const d = (xp: number, yp: number, zp: number, w: number, h: number) => {
       x.fillRect(
@@ -510,7 +552,7 @@ const higherOrderPerspective = (color: boolean) => {
     const offset = 200;
     const size = 64;
     const amplitude = 32;
-    for (let i = 12; i > 0; i -= 0.5) {
+    for (let i = layerNum; i > 0; i -= 0.5) {
       x.fillStyle = fillFunc(i);
       const span = 14;
       const spacing = 64;
@@ -551,6 +593,10 @@ const draws: Draws = {
     bitwiseGrid(),
   ],
   basicdof: [higherOrderPerspective(true), higherOrderPerspective(false)],
+  lineardof: [
+    higherOrderPerspective(true),
+    higherOrderPerspective(false, false),
+  ],
   lightbands: [higherOrderPerspective(true), higherOrderPerspective(false)],
 };
 

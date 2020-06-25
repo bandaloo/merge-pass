@@ -2,10 +2,8 @@ import { AllVals, Vec } from "../exprtypes";
 import { Operator as Op, PrimitiveFloat, wrapInValue } from "./expr";
 import { checkLegalComponents, typeStringToLength } from "./getcompexpr";
 
-// TODO this should probably be elsewhere
 export type ArithOp = "/" | "*" | "+" | "-";
 
-// test with just setting
 function getChangeFunc(
   typ: string,
   id: string,

@@ -148,11 +148,6 @@ export class CodeBuilder {
         if (uniformLocs[name] === undefined) {
           uniformLocs[name] = { locs: [], counter: 0 };
         }
-        /*
-        if (uniformLocs[name] !== undefined) {
-          throw new Error("uniforms have to all have unique names");
-        }
-        */
         // assign the name to the location
         uniformLocs[name].locs.push(location);
       }
