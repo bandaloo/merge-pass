@@ -151,9 +151,6 @@ export const glslFuncs = {
   i = max(i, 0.00000001);
   return (1. - i) / i;
 }`,
-  // light position is screen position
-  // TODO pick up here
-  // TODO have some sort of replacement scheme like with sampler in gaussian blurs
   // based off of https://fabiensanglard.net/lightScattering/index.php
   godrays: `vec4 godrays(
     vec4 col,
@@ -172,20 +169,29 @@ export const glslFuncs = {
 
   for (int i=0; i < NUM_SAMPLES; i++) {
     texCoord -= deltaTexCoord;
-    vec4 sample = texture2D(uBufferSampler0, texCoord);
+    vec4 sample = texture2D(uSampler, texCoord);
     sample *= illuminationDecay * weight;
     col += sample;
     illuminationDecay *= decay;
   }
   return col * exposure;
 }`,
-  // TODO replace with uSampler
 };
 
-// sane godray defaults from https://github.com/Erkaman/glsl-godrays/blob/master/example/index.js
-/*
-exposure.val = 1.0;
-decay.val = 1.0 ;
-density.val = 1.0;
-weight.val = 0.01;
-*/
+export function captureAndAppend(str: string, reg: RegExp, suffix: string) {
+  const matches = str.match(reg);
+  if (matches === null) throw new Error("no match in the given string");
+  return str.replace(reg, matches[0] + suffix);
+}
+
+export function replaceSampler(
+  fullString: string,
+  funcRegExp: RegExp,
+  samplerNum: number
+) {
+  return captureAndAppend(
+    fullString.replace(/uSampler/g, "uBufferSampler" + samplerNum),
+    funcRegExp,
+    "_" + samplerNum
+  );
+}
