@@ -405,6 +405,16 @@ const demos: Demos = {
       change: () => {},
     };
   },
+
+  godrays: (buffers: TexImageSource[] = []) => {
+    const merger = new MP.Merger([MP.godrays()], sourceCanvas, gl, {
+      buffers: buffers,
+    });
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
 };
 
 interface Draws {
@@ -573,6 +583,27 @@ const higherOrderPerspective = (color: boolean, normalized = true) => {
   };
 };
 
+const higherOrderDonuts = (color = true) => {
+  const rFunc = (i: number, j: number) =>
+    255 * ~~((1 + 3 * C(i / (99 + 20 * C(j / 5))) * S(j / 2)) % 2);
+  const fillFunc = !color
+    ? (i: number, j: number) => R(255 - rFunc(i, j))
+    : (i: number, j: number) => {
+        let r = rFunc(i, j);
+        return r > 0 ? R(r / 4) : R(0, 0, 99 * C(i / 10) * S(j / 2) + 30);
+      };
+
+  return (t: number, frames: number) => {
+    if (!frames) {
+      x.fillStyle = "black";
+      x.fillRect(0, 0, 960, 540);
+    }
+    let j = frames / 60;
+    for (let i = 960; i--; x.fillStyle = fillFunc(i, j)) x.fillRect(i, 0, 1, 1);
+    x.drawImage(c, 0, 1);
+  };
+};
+
 const draws: Draws = {
   edgeblur: [redSpiral],
   bluramount: [movingGrid],
@@ -597,6 +628,7 @@ const draws: Draws = {
     higherOrderPerspective(false, false),
   ],
   lightbands: [higherOrderPerspective(true), higherOrderPerspective(false)],
+  godrays: [higherOrderDonuts(true), higherOrderDonuts(false)],
 };
 
 interface Notes {

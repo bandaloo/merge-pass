@@ -151,4 +151,43 @@ export const glslFuncs = {
   i = max(i, 0.00000001);
   return (1. - i) / i;
 }`,
+  // light position is screen position
+  // TODO pick up here
+  // TODO have some sort of replacement scheme like with sampler in gaussian blurs
+  // based off of https://fabiensanglard.net/lightScattering/index.php
+  godrays: `vec4 godrays(
+    vec4 col,
+    float exposure,
+    float decay,
+    float density,
+    float weight,
+    vec2 lightPos
+  ) {	
+  // TODO probably don't need the vec2 here
+  // TODO is it okay to use gl_FragCoord.xy / uResolution
+  vec2 texCoord = gl_FragCoord.xy / uResolution;
+  vec2 deltaTexCoord = texCoord - lightPos;
+
+  const int NUM_SAMPLES = 75;
+  deltaTexCoord *= 1. / float(NUM_SAMPLES) * density;
+  float illuminationDecay = 1.0;
+
+  for (int i=0; i < NUM_SAMPLES; i++) {
+    texCoord -= deltaTexCoord;
+    vec4 sample = texture2D(uBufferSampler0, texCoord);
+    sample *= illuminationDecay * weight;
+    col += sample;
+    illuminationDecay *= decay;
+  }
+  return col * exposure;
+}`,
+  // TODO replace with uSampler
 };
+
+// sane godray defaults from https://github.com/Erkaman/glsl-godrays/blob/master/example/index.js
+/*
+exposure.val = 1.0;
+decay.val = 1.0 ;
+density.val = 1.0;
+weight.val = 0.01;
+*/

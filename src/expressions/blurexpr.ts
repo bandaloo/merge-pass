@@ -38,6 +38,7 @@ export class BlurExpr extends ExprVec4 {
         // this relies on the fact that the string `uSampler` doesn't appear
         // elsewhere in the provided blur functions, which is currently a safe
         // assumption
+        // TODO make this replacement function a helper somewhere
         tapsToFuncSource(taps)
           .replace(/uSampler/g, "uBufferSampler" + samplerNum)
           .replace(/vec4\sgauss[0-9]+/g, `vec4 gauss${taps}_${samplerNum}`),

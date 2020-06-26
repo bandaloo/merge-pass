@@ -35,7 +35,8 @@ export function checkLegalComponents(comps: string, vec: Vec) {
   const inLen = typeStringToLength(vec.typeString());
   const rgbaCheck = check(comps, "rgba".substr(0, inLen));
   const xyzwCheck = check(comps, "xyzw".substr(0, inLen));
-  if (!(rgbaCheck || xyzwCheck)) {
+  const stpqCheck = check(comps, "stpq".substr(0, inLen));
+  if (!(rgbaCheck || xyzwCheck || stpqCheck)) {
     throw new Error("component sets are mixed or incorrect entirely");
   }
 }
