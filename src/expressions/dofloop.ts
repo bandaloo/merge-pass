@@ -42,10 +42,5 @@ export function dof(
   depth?: Float | number,
   reps?: number
 ) {
-  return new DoFLoop(
-    focus === undefined ? undefined : n2e(focus),
-    rad === undefined ? undefined : n2e(rad),
-    depth === undefined ? undefined : n2e(depth),
-    reps
-  );
+  return new DoFLoop(n2e(focus), n2e(rad), n2e(depth), reps);
 }

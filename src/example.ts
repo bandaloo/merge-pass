@@ -587,7 +587,10 @@ const higherOrderDonuts = (color = true) => {
   const rFunc = (i: number, j: number) =>
     255 * ~~((1 + 3 * C(i / (99 + 20 * C(j / 5))) * S(j / 2)) % 2);
   const fillFunc = !color
-    ? (i: number, j: number) => R(255 - rFunc(i, j))
+    ? (i: number, j: number) => {
+        let r = 255 - rFunc(i, j);
+        return R(r, r, r);
+      }
     : (i: number, j: number) => {
         let r = rFunc(i, j);
         return r > 0 ? R(r / 4) : R(0, 0, 99 * C(i / 10) * S(j / 2) + 30);

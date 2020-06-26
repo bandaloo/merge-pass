@@ -163,8 +163,6 @@ export const glslFuncs = {
     float weight,
     vec2 lightPos
   ) {	
-  // TODO probably don't need the vec2 here
-  // TODO is it okay to use gl_FragCoord.xy / uResolution
   vec2 texCoord = gl_FragCoord.xy / uResolution;
   vec2 deltaTexCoord = texCoord - lightPos;
 
