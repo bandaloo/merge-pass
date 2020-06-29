@@ -156,7 +156,7 @@ const demos: Demos = {
     return {
       merger: merger,
       change: (merger: MP.Merger, time: number, frame: number) => {
-        vec.setComp(0, controls.location);
+        vec.setComp(0, -controls.location);
         m.setRight(controls.strength);
       },
     };
@@ -787,6 +787,15 @@ const notes: Notes = {
     "even though the value in the depth buffer is actually 1 / (1 + depth), we can " +
     "calculate the true depth value with <code>truedepth</code>. with this, we can colorize" +
     "bands of depth in our scene all the way out to infinity",
+  godrays:
+    "the <code>godrays</code> effect requires an occlusion buffer. black pixels denote the silhouette " +
+    "of the geometry and the white (or any color) pixels denote the light shining behind",
+  depthgodrays:
+    "<code>godrays</code> can also be made to read depth buffer info " +
+    "instead of an occlusion buffer. as the final argument, you must specify an" +
+    "object that has a <code>threshold</code> " +
+    "(all depth values lower than this are not occluded) and a <code>newColor</code> " +
+    "which denotes what color the shining light should be",
 };
 
 const canvases = [sourceCanvas];
