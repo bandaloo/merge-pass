@@ -1,6 +1,6 @@
 import { Vec2 } from "../exprtypes";
 import { glslFuncs, replaceSampler } from "../glslfunctions";
-import { ExprVec4, tag, PrimitiveVec2, SourceLists } from "./expr";
+import { ExprVec4, PrimitiveVec2, SourceLists } from "./expr";
 
 function genBlurSource(
   direction: Vec2,

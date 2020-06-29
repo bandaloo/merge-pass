@@ -1,5 +1,8 @@
 import * as MP from "./index";
 import * as dat from "dat.gui";
+import { fcolor } from "./expressions/fragcolorexpr";
+import { vec4 } from "./expressions/vecexprs";
+import { PrimitiveFloat } from "./expressions/expr";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -415,6 +418,63 @@ const demos: Demos = {
       change: () => {},
     };
   },
+
+  depthgodrays: (buffers: TexImageSource[] = []) => {
+    let pos: MP.BasicFloat;
+    let godrays: MP.GodRaysExpr;
+    const merger = new MP.Merger(
+      [
+        (godrays = MP.godrays(
+          MP.fcolor(),
+          MP.mut(1.0),
+          MP.mut(0.99),
+          MP.mut(1.0),
+          MP.mut(0.01),
+          MP.vec2(
+            MP.op(0.5, "+", MP.op((pos = MP.float(MP.mut(0))), "/", 5)),
+            0.5
+          ),
+          0,
+          {
+            threshold: 0.1,
+            newColor: MP.hsv2rgb(vec4(MP.op(MP.time(), "/", 4), 0.5, 0.5, 1)),
+          }
+        )),
+      ],
+      sourceCanvas,
+      gl,
+      {
+        buffers: buffers,
+      }
+    );
+
+    class LocationControls {
+      location = 0;
+      exposure = 1.0;
+      decay = 1.0;
+      density = 1.0;
+      weight = 0.01;
+    }
+
+    const controls = new LocationControls();
+    const gui = new dat.GUI();
+    gui.add(controls, "location", -1, 1, 0.01);
+    gui.add(controls, "exposure", 0, 1, 0.01);
+    gui.add(controls, "decay", 0.9, 1, 0.001);
+    gui.add(controls, "density", 0, 1, 0.01);
+    gui.add(controls, "weight", 0, 0.02, 0.001);
+
+    return {
+      merger: merger,
+      change: () => {
+        pos.setVal(controls.location);
+        godrays.setExposure(controls.exposure);
+        godrays.setDecay(controls.decay);
+        godrays.setDensity(controls.density);
+        godrays.setWeight(controls.weight);
+      },
+    };
+  },
 };
 
 interface Draws {
@@ -525,6 +585,7 @@ const pinkishHelix = (t: number, frames: number) => {
     for (j = 0; j < 3; j++) x.fillRect(i + j, 266 + C(i + j + t) * 50, 32, 8);
   }
 };
+
 const movingGrid = (t: number, frames: number) => {
   let i, j, s;
   c.width |= 0;
@@ -632,6 +693,7 @@ const draws: Draws = {
   ],
   lightbands: [higherOrderPerspective(true), higherOrderPerspective(false)],
   godrays: [higherOrderDonuts(true), higherOrderDonuts(false)],
+  depthgodrays: [higherOrderPerspective(true), higherOrderPerspective(false)],
 };
 
 interface Notes {

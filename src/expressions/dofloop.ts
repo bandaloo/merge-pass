@@ -11,6 +11,7 @@ import { vec2 } from "./vecexprs";
 
 export class DoFLoop extends EffectLoop {
   gaussian: GaussianExpr;
+
   constructor(
     focus: Float = mut(pfloat(0.3)),
     rad: Float = mut(pfloat(0.01)),

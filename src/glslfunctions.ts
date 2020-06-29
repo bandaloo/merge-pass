@@ -158,24 +158,31 @@ export const glslFuncs = {
     float decay,
     float density,
     float weight,
-    vec2 lightPos
+    vec2 lightPos,
+    float threshold,
+    vec4 newColor
   ) {	
   vec2 texCoord = gl_FragCoord.xy / uResolution;
   vec2 deltaTexCoord = texCoord - lightPos;
 
-  const int NUM_SAMPLES = 75;
+  const int NUM_SAMPLES = 100;
   deltaTexCoord *= 1. / float(NUM_SAMPLES) * density;
   float illuminationDecay = 1.0;
 
   for (int i=0; i < NUM_SAMPLES; i++) {
     texCoord -= deltaTexCoord;
     vec4 sample = texture2D(uSampler, texCoord);
+    //uncomment sample = depth2occlusion(sample, newColor, threshold);
     sample *= illuminationDecay * weight;
     col += sample;
     illuminationDecay *= decay;
   }
   return col * exposure;
 }`,
+  depth2occlusion: `vec4 depth2occlusion(vec4 depthCol, vec4 newCol, float threshold) {
+    float red = 1. - ceil(depthCol.r - threshold);
+    return vec4(newCol.rgb * red, 1.0);
+  }`,
 };
 
 export function captureAndAppend(str: string, reg: RegExp, suffix: string) {
@@ -187,11 +194,12 @@ export function captureAndAppend(str: string, reg: RegExp, suffix: string) {
 export function replaceSampler(
   fullString: string,
   funcRegExp: RegExp,
-  samplerNum: number
+  samplerNum: number,
+  extra?: string
 ) {
   return captureAndAppend(
     fullString.replace(/uSampler/g, "uBufferSampler" + samplerNum),
     funcRegExp,
-    "_" + samplerNum
+    "_" + samplerNum + (extra === undefined ? "" : extra)
   );
 }

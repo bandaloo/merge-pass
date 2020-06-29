@@ -29,5 +29,6 @@ export * from "./expressions/buffersampleexpr";
 export * from "./expressions/dofloop";
 export * from "./expressions/truedepthexpr";
 export * from "./expressions/godraysexpr";
+export * from "./expressions/depthtoocclusionexpr";
 
 export * from "./expressions/expr";
