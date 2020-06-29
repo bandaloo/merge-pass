@@ -4,6 +4,10 @@ export class SetColorExpr extends ExprVec4 {
   constructor(val: Vec4) {
     super(tag`(${val})`, ["uVal"]);
   }
+
+  setVal(val: Vec4) {
+    this.setUniform("uVal", val);
+  }
 }
 
 export function setcolor(val: Vec4) {

@@ -9,7 +9,7 @@ export class TrueDepthExpr extends ExprFloat {
   }
 
   setDist(dist: Float | number) {
-    this.setUniform("uDist", n2e(dist));
+    this.setUniform("uDist", dist);
   }
 }
 

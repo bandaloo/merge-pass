@@ -54,7 +54,7 @@ export class ChangeCompExpr<T extends Vec, U extends AllVals> extends Op<T> {
   }
 
   setNew(setter: U | number) {
-    this.setUniform("uNew" + this.id, wrapInValue(setter));
+    this.setUniform("uNew" + this.id, setter);
   }
 }
 

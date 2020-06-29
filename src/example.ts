@@ -1,8 +1,5 @@
-import * as MP from "./index";
 import * as dat from "dat.gui";
-import { fcolor } from "./expressions/fragcolorexpr";
-import { vec4 } from "./expressions/vecexprs";
-import { PrimitiveFloat } from "./expressions/expr";
+import * as MP from "./index";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -457,7 +454,9 @@ const demos: Demos = {
           0,
           {
             threshold: 0.1,
-            newColor: MP.hsv2rgb(vec4(MP.op(MP.time(), "/", 4), 0.5, 0.5, 1)),
+            newColor: MP.hsv2rgb(
+              MP.vec4(MP.op(MP.time(), "/", 4), 0.5, 0.5, 1)
+            ),
           }
         )),
       ],

@@ -7,11 +7,11 @@ export class PowExpr<T extends AllVals, U extends AllVals> extends Operator<T> {
   }
 
   setBase(left: T | number) {
-    this.setUniform("uBase" + this.id, wrapInValue(left));
+    this.setUniform("uBase" + this.id, left);
   }
 
   setExponent(right: U | number) {
-    this.setUniform("uExponent" + this.id, wrapInValue(right));
+    this.setUniform("uExponent" + this.id, right);
   }
 }
 

@@ -48,7 +48,7 @@ export class BlurExpr extends ExprVec4 {
     }
   }
 
-  setDirection(direction: PrimitiveVec2) {
+  setDirection(direction: Vec2) {
     this.setUniform("uDirection" + this.id, direction);
   }
 }

@@ -7,6 +7,10 @@ export class RGBToHSVExpr extends ExprVec4 {
     super(tag`rgb2hsv(${col})`, ["uRGBCol"]);
     this.externalFuncs = [glslFuncs.rgb2hsv];
   }
+
+  setColor(col: Vec4 | number) {
+    this.setUniform("uRGBCol", col);
+  }
 }
 
 export function rgb2hsv(col: Vec4) {

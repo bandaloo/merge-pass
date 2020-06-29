@@ -19,19 +19,19 @@ export class DoFLoop extends EffectLoop {
     reps = 2
   ) {
     let guassianExpr = gaussian(depth, focus, rad);
-    // TODO should 13 be the default taps?
+    // TODO optional taps number
     const side = gauss(vec2(pow(op(1, "-", guassianExpr), 4), 0), 13);
     const up = gauss(vec2(0, pow(op(1, "-", guassianExpr), 4)), 13);
     super([side, up], { num: reps });
     this.gaussian = guassianExpr;
   }
 
-  setDepth(depth: number) {
+  setDepth(depth: Float | number) {
     // this translates the gaussian curve to the side
     this.gaussian.setA(depth);
   }
 
-  setRadius(radius: number) {
+  setRadius(radius: Float | number) {
     // this scales the gaussian curve to focus on a larger band of depth
     this.gaussian.setB(radius);
   }

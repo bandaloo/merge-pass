@@ -15,7 +15,7 @@ export class GrainExpr extends ExprVec4 {
   }
 
   setGrain(grain: Float | number) {
-    this.setUniform("uGrain" + this.id, n2e(grain));
+    this.setUniform("uGrain" + this.id, grain);
   }
 }
 

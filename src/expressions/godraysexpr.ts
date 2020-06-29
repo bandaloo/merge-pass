@@ -57,19 +57,19 @@ export class GodRaysExpr extends ExprVec4 {
   }
 
   setExposure(exposure: Float | number) {
-    this.setUniform("uExposure" + this.id, n2e(exposure));
+    this.setUniform("uExposure" + this.id, exposure);
   }
 
   setDecay(decay: Float | number) {
-    this.setUniform("uDecay" + this.id, n2e(decay));
+    this.setUniform("uDecay" + this.id, decay);
   }
 
   setDensity(density: Float | number) {
-    this.setUniform("uDensity" + this.id, n2e(density));
+    this.setUniform("uDensity" + this.id, density);
   }
 
   setWeight(weight: Float | number) {
-    this.setUniform("uWeight" + this.id, n2e(weight));
+    this.setUniform("uWeight" + this.id, weight);
   }
 
   setLightPos(lightPos: Vec2) {

@@ -9,15 +9,15 @@ export class GaussianExpr extends ExprFloat {
   }
 
   setX(x: Float | number) {
-    this.setUniform("uFloatX" + this.id, n2e(x));
+    this.setUniform("uFloatX" + this.id, x);
   }
 
   setA(a: Float | number) {
-    this.setUniform("uFloatA" + this.id, n2e(a));
+    this.setUniform("uFloatA" + this.id, a);
   }
 
   setB(b: Float | number) {
-    this.setUniform("uFloatB" + this.id, n2e(b));
+    this.setUniform("uFloatB" + this.id, b);
   }
 }
 

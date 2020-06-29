@@ -1,7 +1,7 @@
-import { ExprVec4, tag, PrimitiveFloat, n2e } from "./expr";
 import { Float } from "../exprtypes";
-import { fcolor } from "./fragcolorexpr";
 import { glslFuncs } from "../glslfunctions";
+import { ExprVec4, n2e, tag } from "./expr";
+import { fcolor } from "./fragcolorexpr";
 
 export class Brightness extends ExprVec4 {
   constructor(val: Float, col: ExprVec4 = fcolor()) {
@@ -9,8 +9,8 @@ export class Brightness extends ExprVec4 {
     this.externalFuncs = [glslFuncs.brightness];
   }
 
-  setBrightness(brightness: PrimitiveFloat | number) {
-    this.setUniform("uBrightness" + this.id, n2e(brightness));
+  setBrightness(brightness: Float | number) {
+    this.setUniform("uBrightness" + this.id, brightness);
   }
 }
 

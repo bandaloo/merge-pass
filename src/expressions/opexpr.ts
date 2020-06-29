@@ -29,11 +29,11 @@ export class OpExpr<T extends AllVals, U extends AllVals> extends Op<T> {
   }
 
   setLeft(left: T | number) {
-    this.setUniform("uLeft" + this.id, wrapInValue(left));
+    this.setUniform("uLeft" + this.id, left);
   }
 
   setRight(right: U | number) {
-    this.setUniform("uRight" + this.id, wrapInValue(right));
+    this.setUniform("uRight" + this.id, right);
   }
 }
 

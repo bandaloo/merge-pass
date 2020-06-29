@@ -3,6 +3,7 @@ import { vec4 } from "./vecexprs";
 import { Float, Vec4 } from "../exprtypes";
 import { channel } from "./buffersampleexpr";
 
+// TODO reconsider whether we need this
 export class DepthToOcclusionExpr extends ExprVec4 {
   constructor(
     depthCol: Vec4 = channel(0),
@@ -15,6 +16,8 @@ export class DepthToOcclusionExpr extends ExprVec4 {
       "uThreshold",
     ]);
   }
+
+  // TODO implement setters if this ends up being a useful expression
 }
 
 export function depth2occlusion(
