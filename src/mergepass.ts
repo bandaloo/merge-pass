@@ -15,8 +15,7 @@ export interface Generable {
   genPrograms(
     gl: WebGL2RenderingContext,
     vShader: WebGLShader,
-    uniformLocs: UniformLocs,
-    sceneSource: TexImageSource
+    uniformLocs: UniformLocs
   ): WebGLProgramLoop;
 }
 
@@ -119,7 +118,7 @@ interface MergerOptions {
   minFilterMode?: FilterMode;
   maxFilterMode?: FilterMode;
   edgeMode?: ClampMode;
-  channels?: TexImageSource[];
+  channels?: (TexImageSource | WebGLTexture)[];
 }
 
 export interface TexInfo {
@@ -133,20 +132,20 @@ export class Merger {
   /** the context to render to */
   readonly gl: WebGL2RenderingContext;
   /** the context to apply post-processing to */
-  private source: TexImageSource;
+  private source: TexImageSource | WebGLTexture;
   private tex: TexInfo;
   private framebuffer: WebGLFramebuffer;
   private uniformLocs: UniformLocs = {};
   private effectLoop: EffectLoop;
   private programLoop: WebGLProgramLoop;
   /** additional channels */
-  private channels: TexImageSource[] = [];
+  private channels: (TexImageSource | WebGLTexture)[] = [];
 
   private options: MergerOptions | undefined;
 
   constructor(
     effects: (ExprVec4 | EffectLoop)[] | EffectLoop,
-    source: TexImageSource,
+    source: TexImageSource | WebGLTexture,
     gl: WebGL2RenderingContext,
     options?: MergerOptions
   ) {
@@ -191,7 +190,12 @@ export class Merger {
 
     // make textures
     this.tex = {
-      front: makeTexture(this.gl, this.options),
+      // make the front texture the source if we're given a texture instead of
+      // an image
+      front:
+        source instanceof WebGLTexture
+          ? source
+          : makeTexture(this.gl, this.options),
       back: makeTexture(this.gl, this.options),
       scene: undefined,
       bufTextures: [],
@@ -234,17 +238,25 @@ export class Merger {
     console.log(this.programLoop);
 
     // create x amount of empty textures based on buffers needed
-    let buffersNeeded = 0;
+    let channelsNeeded = 0;
     if (this.programLoop.totalNeeds?.extraBuffers !== undefined) {
-      buffersNeeded = Math.max(...this.programLoop.totalNeeds.extraBuffers) + 1;
+      channelsNeeded =
+        Math.max(...this.programLoop.totalNeeds.extraBuffers) + 1;
     }
-    let buffersSupplied = this.channels.length;
-    if (buffersNeeded > buffersSupplied) {
-      throw new Error("not enough buffers supplied for this effect");
+    let channelsSupplied = this.channels.length;
+    if (channelsNeeded > channelsSupplied) {
+      throw new Error("not enough channels supplied for this effect");
     }
     for (let i = 0; i < this.channels.length; i++) {
-      const texture = makeTexture(this.gl, this.options);
-      this.tex.bufTextures.push(texture);
+      const texOrImage = this.channels[i];
+      if (!(texOrImage instanceof WebGLTexture)) {
+        // create a new texture; we will update this with the image source every draw
+        const texture = makeTexture(this.gl, this.options);
+        this.tex.bufTextures.push(texture);
+      } else {
+        // this is already a texture; the user will handle updating this
+        this.tex.bufTextures.push(texOrImage);
+      }
     }
   }
 
@@ -335,6 +347,12 @@ export function makeTexture(
   return texture;
 }
 
-export function sendTexture(gl: WebGL2RenderingContext, src: TexImageSource) {
+export function sendTexture(
+  gl: WebGL2RenderingContext,
+  src: TexImageSource | WebGLTexture
+) {
+  // if you are using textures instead of images, the user is responsible for
+  // doing `texImage2D` and updating it with new info, so just return
+  if (src instanceof WebGLTexture) return;
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
 }

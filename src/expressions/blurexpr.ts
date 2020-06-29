@@ -26,6 +26,10 @@ function tapsToFuncSource(taps: 5 | 9 | 13) {
 
 export class BlurExpr extends ExprVec4 {
   constructor(direction: Vec2, taps: 5 | 9 | 13 = 5, samplerNum?: number) {
+    // this is already guaranteed by typescript
+    if (![5, 9, 13].includes(taps)) {
+      throw new Error("taps for gauss blur can only be 5, 9 or 13");
+    }
     super(genBlurSource(direction, taps, samplerNum), ["uDirection"]);
     if (samplerNum === undefined) {
       this.needs.neighborSample = true;
