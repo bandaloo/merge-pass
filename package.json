@@ -1,6 +1,6 @@
 {
   "name": "@bandaloo/merge-pass",
-  "version": "0.3.2",
+  "version": "0.4.0",
   "description": "post-processing library that merges effects",
   "main": "dist/index.js",
   "repository": {
