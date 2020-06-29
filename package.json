@@ -7,6 +7,13 @@
     "type": "git",
     "url": "https://github.com/bandaloo/merge-pass"
   },
+  "keywords": [
+    "glsl",
+    "webgl",
+    "2d",
+    "3d",
+    "canvas"
+  ],
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build": "npx tsc --outDir dist",
