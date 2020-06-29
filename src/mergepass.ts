@@ -140,7 +140,6 @@ export class Merger {
   private programLoop: WebGLProgramLoop;
   /** additional channels */
   private channels: (TexImageSource | WebGLTexture)[] = [];
-
   private options: MergerOptions | undefined;
 
   constructor(

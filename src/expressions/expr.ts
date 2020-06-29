@@ -113,7 +113,8 @@ export abstract class Expr implements Parseable, EffectLike {
     return this.needs.neighborSample ? mult : 0;
   }
 
-  setUniform(name: string, newVal: AllVals) {
+  setUniform(name: string, newVal: AllVals | number) {
+    newVal = wrapInValue(newVal);
     const originalName = name;
     if (typeof newVal === "number") {
       newVal = n2p(newVal);
@@ -206,7 +207,6 @@ export function mut<T extends Primitive>(val: T, name?: string): Mutable<T>;
 export function mut(val: number, name?: string): Mutable<PrimitiveFloat>;
 
 export function mut<T extends Primitive>(val: T | number, name?: string) {
-  // TODO use n2e
   const primitive = typeof val === "number" ? n2p(val) : val;
   return new Mutable(primitive, name);
 }

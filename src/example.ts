@@ -82,6 +82,26 @@ const demos: Demos = {
     };
   },
 
+  bluramountnamed: () => {
+    const fl = MP.float(MP.mut(1, "uCustomName"));
+    const merger = new MP.Merger([MP.blur2d(fl, fl)], sourceCanvas, gl);
+
+    class BlurControls {
+      blur: number = 1;
+    }
+
+    const controls = new BlurControls();
+    const gui = new dat.GUI();
+    gui.add(controls, "blur", 0, 1, 0.01);
+
+    return {
+      merger: merger,
+      change: () => {
+        fl.setUniform("uCustomName", controls.blur);
+      },
+    };
+  },
+
   vectordisplay: () => {
     const merger = new MP.Merger(
       [
@@ -671,6 +691,7 @@ const higherOrderDonuts = (color = true) => {
 const draws: Draws = {
   edgeblur: [redSpiral],
   bluramount: [movingGrid],
+  bluramountnamed: [movingGrid],
   vectordisplay: [vectorSpiral],
   singlepassgrain: [pinkishHelix],
   redonly: [stripes],
@@ -748,6 +769,13 @@ const notes: Notes = {
     "(also, because the same expression can appear in the effect tree multiple " +
     "times, and expressions can contain expressions, you can make reference loops, " +
     "so don't do that)",
+  bluramountnamed:
+    "instead of using member functions on an expression to change a mutable value, you can " +
+    'give a mutable in an expression a custom name with <code>fl = MP.float(MP.mut(1, "uCustomName"))</code> ' +
+    'and do <code>fl.setUniform("uCustomName", 1.0)</code> ' +
+    "instead of <code>fl.setVal(1.0)</code>. honestly, the latter is easier but you have " +
+    "the option! and, giving a mutable a custom name does not prevent you from using " +
+    "<code>setVal</code>",
   vectordisplay:
     "this glowing vector effect is created by repeatedly bluring and increasing the " +
     "contrast of the original scene. then the fragment color of the original " +
