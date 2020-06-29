@@ -153,15 +153,15 @@ export const glslFuncs = {
 }`,
   // based off of https://fabiensanglard.net/lightScattering/index.php
   godrays: `vec4 godrays(
-    vec4 col,
-    float exposure,
-    float decay,
-    float density,
-    float weight,
-    vec2 lightPos,
-    float threshold,
-    vec4 newColor
-  ) {	
+  vec4 col,
+  float exposure,
+  float decay,
+  float density,
+  float weight,
+  vec2 lightPos,
+  float threshold,
+  vec4 newColor
+) {
   vec2 texCoord = gl_FragCoord.xy / uResolution;
   vec2 deltaTexCoord = texCoord - lightPos;
 
@@ -180,9 +180,9 @@ export const glslFuncs = {
   return col * exposure;
 }`,
   depth2occlusion: `vec4 depth2occlusion(vec4 depthCol, vec4 newCol, float threshold) {
-    float red = 1. - ceil(depthCol.r - threshold);
-    return vec4(newCol.rgb * red, 1.0);
-  }`,
+  float red = 1. - ceil(depthCol.r - threshold);
+  return vec4(newCol.rgb * red, 1.0);
+}`,
 };
 
 export function captureAndAppend(str: string, reg: RegExp, suffix: string) {

@@ -110,10 +110,11 @@ export class CodeBuilder {
       Array.from(this.totalNeeds.extraBuffers)
         .map((n) => bufferSamplerDeclaration(n))
         .join("\n") +
+      "\n" +
       [...this.uniformDeclarations].join("\n") +
+      "\n" +
       [...this.externalFuncs].join("\n") +
       "\n" +
-      //this.funcs.join("\n") +
       "void main() {\n" +
       (this.totalNeeds.centerSample ? FRAG_SET : "") +
       this.calls.join("\n") +

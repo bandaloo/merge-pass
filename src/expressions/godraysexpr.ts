@@ -27,7 +27,6 @@ export class GodRaysExpr extends ExprVec4 {
     sourceLists.sections[0] += `godrays_${samplerNum}${
       convertDepth !== undefined ? "_depth" : ""
     }(`;
-    console.log(sourceLists);
     super(sourceLists, [
       "uCol",
       "uExposure",
