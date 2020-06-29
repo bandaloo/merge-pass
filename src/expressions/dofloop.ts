@@ -1,7 +1,7 @@
 import { Float } from "../exprtypes";
 import { EffectLoop } from "../mergepass";
 import { gauss } from "./blurexpr";
-import { buffer } from "./buffersampleexpr";
+import { channel } from "./buffersampleexpr";
 import { pfloat, n2e, mut } from "./expr";
 import { gaussian, GaussianExpr } from "./gaussianexpr";
 import { getcomp } from "./getcompexpr";
@@ -15,7 +15,7 @@ export class DoFLoop extends EffectLoop {
   constructor(
     focus: Float = mut(pfloat(0.3)),
     rad: Float = mut(pfloat(0.01)),
-    depth: Float = getcomp(buffer(0), "r"),
+    depth: Float = getcomp(channel(0), "r"),
     reps = 2
   ) {
     let guassianExpr = gaussian(depth, focus, rad);

@@ -40,7 +40,7 @@ let R = (r?: any, g?: any, b?: any, a: any = 1) =>
 
 interface Demos {
   [name: string]: (
-    buffers?: TexImageSource[]
+    channels?: TexImageSource[]
   ) => {
     merger: MP.Merger;
     change: (merger: MP.Merger, time: number, frame: number) => void;
@@ -270,7 +270,7 @@ const demos: Demos = {
     };
   },
 
-  bufferblur: (buffers: TexImageSource[] = []) => {
+  channelblur: (channels: TexImageSource[] = []) => {
     const merger = new MP.Merger(
       [
         MP.hsv2rgb(
@@ -284,7 +284,7 @@ const demos: Demos = {
       sourceCanvas,
       gl,
       {
-        buffers: buffers,
+        channels: channels,
       }
     );
     return {
@@ -293,15 +293,15 @@ const demos: Demos = {
     };
   },
 
-  buffereyesore: (buffers: TexImageSource[] = []) => {
+  channeleyesore: (channels: TexImageSource[] = []) => {
     const merger = new MP.Merger(
       [
         MP.hsv2rgb(
           MP.changecomp(
             MP.rgb2hsv(MP.fcolor()),
             MP.vec2(
-              MP.getcomp(MP.buffer(0), "x"),
-              MP.getcomp(MP.buffer(1), "x")
+              MP.getcomp(MP.channel(0), "x"),
+              MP.getcomp(MP.channel(1), "x")
             ),
             "xy",
             "+"
@@ -312,7 +312,7 @@ const demos: Demos = {
       sourceCanvas,
       gl,
       {
-        buffers: buffers,
+        channels: channels,
       }
     );
     return {
@@ -321,11 +321,11 @@ const demos: Demos = {
     };
   },
 
-  basicdof: (buffers: TexImageSource[] = []) => {
+  basicdof: (channels: TexImageSource[] = []) => {
     //const dof = MP.dof(MP.mut(0.3), MP.mut(0.01));
     const dof = MP.dof();
     const merger = new MP.Merger([dof], sourceCanvas, gl, {
-      buffers: buffers,
+      channels: channels,
     });
 
     class FocusControls {
@@ -348,7 +348,7 @@ const demos: Demos = {
     };
   },
 
-  lineardof: (buffers: TexImageSource[] = []) => {
+  lineardof: (channels: TexImageSource[] = []) => {
     const dof = MP.dof(
       // transform a linear depth buffer to hyperbolic where 12 is max depth
       MP.mut(0.3),
@@ -359,13 +359,13 @@ const demos: Demos = {
         MP.op(
           1,
           "+",
-          MP.op(12, "*", MP.op(1, "-", MP.getcomp(MP.buffer(0), "r")))
+          MP.op(12, "*", MP.op(1, "-", MP.getcomp(MP.channel(0), "r")))
         )
       )
     );
 
     const merger = new MP.Merger([dof], sourceCanvas, gl, {
-      buffers: buffers,
+      channels: channels,
     });
 
     class FocusControls {
@@ -388,19 +388,19 @@ const demos: Demos = {
     };
   },
 
-  lightbands: (buffers: TexImageSource[] = []) => {
+  lightbands: (channels: TexImageSource[] = []) => {
     const merger = new MP.Merger(
       [
         MP.brightness(
           MP.cos(
-            MP.op(MP.time(), "+", MP.truedepth(MP.getcomp(MP.buffer(0), "r")))
+            MP.op(MP.time(), "+", MP.truedepth(MP.getcomp(MP.channel(0), "r")))
           )
         ),
       ],
       sourceCanvas,
       gl,
       {
-        buffers: buffers,
+        channels: channels,
       }
     );
     return {
@@ -409,9 +409,9 @@ const demos: Demos = {
     };
   },
 
-  godrays: (buffers: TexImageSource[] = []) => {
+  godrays: (channels: TexImageSource[] = []) => {
     const merger = new MP.Merger([MP.godrays()], sourceCanvas, gl, {
-      buffers: buffers,
+      channels: channels,
     });
     return {
       merger: merger,
@@ -419,7 +419,7 @@ const demos: Demos = {
     };
   },
 
-  depthgodrays: (buffers: TexImageSource[] = []) => {
+  depthgodrays: (channels: TexImageSource[] = []) => {
     let pos: MP.BasicFloat;
     let godrays: MP.GodRaysExpr;
     const merger = new MP.Merger(
@@ -444,7 +444,7 @@ const demos: Demos = {
       sourceCanvas,
       gl,
       {
-        buffers: buffers,
+        channels: channels,
       }
     );
 
@@ -467,7 +467,7 @@ const demos: Demos = {
     return {
       merger: merger,
       change: () => {
-        pos.setVal(controls.location);
+        pos.setVal(-controls.location);
         godrays.setExposure(controls.exposure);
         godrays.setDecay(controls.decay);
         godrays.setDensity(controls.density);
@@ -680,8 +680,8 @@ const draws: Draws = {
   timehuerotate: [fabric],
   scanlines: [pinkishHelix],
   fxaa: [higherOrderGoo(true)],
-  bufferblur: [higherOrderGoo(true), higherOrderGoo(false)],
-  buffereyesore: [
+  channelblur: [higherOrderGoo(true), higherOrderGoo(false)],
+  channeleyesore: [
     higherOrderWaves(true),
     higherOrderWaves(false),
     bitwiseGrid(),
@@ -708,18 +708,18 @@ const notes: Notes = {
     "the blue rectangles should be most in focus. you can adjust with the controls " +
     "in the corner",
   lineardof:
-    "by default, <code>dof</code> assumes that your depth buffer is " +
-    "stored in buffer 0, and that the red channel is normalized so that 1 is right " +
+    "by default, <code>dof</code> assumes that the image with your depth buffer info is " +
+    "stored in channel 0, and that the red channel is normalized so that 1 is right " +
     "on top of the camera lense, and 0 is all the way at infinity. this example " +
     "shows how you might transform a depth buffer that stores the absolute depth " +
     "into the form that <code>dof</code> interprets",
-  buffereyesore:
+  channeleyesore:
     "despite this demo offering very little in the way of aesthetic value, it " +
     "demonstrates how you can optionally pass a list of images (which can " +
     "be canvases or videos) into the merger constructor and sample from them",
   fxaa:
     "fxaa stands for fast approximate anti-aliasing. amazingly, it only needs " +
-    "the scene buffer. it's not perfect, but it does the job in many cases. you " +
+    "the scene buffer info. it's not perfect, but it does the job in many cases. you " +
     "can see how it eliminates jaggies by looking at the unprocessed image",
   scanlines:
     "you can use trigonometric functions and exponents to create masks " +
@@ -751,11 +751,11 @@ const notes: Notes = {
   vectordisplay:
     "this glowing vector effect is created by repeatedly bluring and increasing the " +
     "contrast of the original scene. then the fragment color of the original " +
-    "scene buffer (accessed with <code>input</code>) is added on top of the blurred " +
+    "scene (accessed with <code>input</code>) is added on top of the blurred " +
     "image",
-  bufferblur:
-    "you can use <code>gauss</code> on an extra buffer instead of " +
-    "the scene buffer by passing in an optional argument",
+  channelblur:
+    "you can use <code>gauss</code> on an extra channel instead of " +
+    "the scene channel by passing in an optional argument",
   lightbands:
     "even though the value in the depth buffer is actually 1 / (1 + depth), we can " +
     "calculate the true depth value with <code>truedepth</code>. with this, we can colorize" +
@@ -798,7 +798,7 @@ window.addEventListener("load", () => {
     canvases.push(canvas);
     contexts.push(context);
     const header = document.createElement("h3");
-    header.innerText = "buffer " + i;
+    header.innerText = "channel " + i;
     document.getElementById("buffers")?.appendChild(header);
     document.getElementById("buffers")?.appendChild(canvas);
   }

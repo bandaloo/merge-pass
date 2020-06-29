@@ -17,6 +17,6 @@ export class BufferSampleExpr extends ExprVec4 {
   }
 }
 
-export function buffer(buf: number, vec?: Vec2) {
-  return new BufferSampleExpr(buf, vec);
+export function channel(channel: number, vec?: Vec2) {
+  return new BufferSampleExpr(channel, vec);
 }

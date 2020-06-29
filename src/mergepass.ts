@@ -119,7 +119,7 @@ interface MergerOptions {
   minFilterMode?: FilterMode;
   maxFilterMode?: FilterMode;
   edgeMode?: ClampMode;
-  buffers?: TexImageSource[];
+  channels?: TexImageSource[];
 }
 
 export interface TexInfo {
@@ -139,8 +139,8 @@ export class Merger {
   private uniformLocs: UniformLocs = {};
   private effectLoop: EffectLoop;
   private programLoop: WebGLProgramLoop;
-  /** additional buffers */
-  private buffers: TexImageSource[] = [];
+  /** additional channels */
+  private channels: TexImageSource[] = [];
 
   private options: MergerOptions | undefined;
 
@@ -150,8 +150,8 @@ export class Merger {
     gl: WebGL2RenderingContext,
     options?: MergerOptions
   ) {
-    // set buffers if provided with buffers
-    if (options?.buffers !== undefined) this.buffers = options?.buffers;
+    // set channels if provided with channels
+    if (options?.channels !== undefined) this.channels = options?.channels;
     // wrap the given list of effects as a loop if need be
     if (!(effects instanceof EffectLoop)) {
       this.effectLoop = new EffectLoop(effects, { num: 1 });
@@ -238,11 +238,11 @@ export class Merger {
     if (this.programLoop.totalNeeds?.extraBuffers !== undefined) {
       buffersNeeded = Math.max(...this.programLoop.totalNeeds.extraBuffers) + 1;
     }
-    let buffersSupplied = this.buffers.length;
+    let buffersSupplied = this.channels.length;
     if (buffersNeeded > buffersSupplied) {
       throw new Error("not enough buffers supplied for this effect");
     }
-    for (let i = 0; i < this.buffers.length; i++) {
+    for (let i = 0; i < this.channels.length; i++) {
       const texture = makeTexture(this.gl, this.options);
       this.tex.bufTextures.push(texture);
     }
@@ -265,7 +265,7 @@ export class Merger {
 
     // bind the additional buffers
     let counter = 0;
-    for (const b of this.buffers) {
+    for (const b of this.channels) {
       // TODO what's the limit on amount of textures?
       this.gl.activeTexture(this.gl.TEXTURE2 + counter);
       this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.bufTextures[counter]);
