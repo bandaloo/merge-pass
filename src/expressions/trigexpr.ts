@@ -1,11 +1,12 @@
 import { AllVals } from "../exprtypes";
-import { Operator, SourceLists, wrapInValue } from "./expr";
+import { Operator, SourceLists, wrapInValue, PrimitiveFloat } from "./expr";
+import { Arity2HomogenousExpr } from "./powexpr";
 
 // these all work on (from khronos documentation) genType x so it should be okay
 // to sub in any of these strings
 // TODO can we just make this expression any function that takes 1 genTypeX and
 // returns a genTypeX?
-type Trig =
+type Arity1HomogenousName =
   | "sin"
   | "cos"
   | "tan"
@@ -17,20 +18,25 @@ type Trig =
   | "atan"
   | "asinh"
   | "acosh"
-  | "atanh";
+  | "atanh"
+  | "floor"
+  | "ceil";
 
-function genTrigSourceList(operation: Trig, val: AllVals): SourceLists {
+function genArity1SourceList(
+  name: Arity1HomogenousName,
+  val: AllVals
+): SourceLists {
   return {
-    sections: [operation + "(", ")"],
+    sections: [name + "(", ")"],
     values: [val],
   };
 }
 
-export class TrigExpr<T extends AllVals> extends Operator<T> {
+export class Arity1HomogenousExpr<T extends AllVals> extends Operator<T> {
   val: T;
 
-  constructor(val: T, operation: Trig) {
-    super(val, genTrigSourceList(operation, val), ["uVal"]);
+  constructor(val: T, operation: Arity1HomogenousName) {
+    super(val, genArity1SourceList(operation, val), ["uVal"]);
     this.val = val;
   }
 
@@ -39,14 +45,19 @@ export class TrigExpr<T extends AllVals> extends Operator<T> {
   }
 }
 
-export function sin<T extends AllVals>(val: T) {
-  return new TrigExpr(val, "sin");
-}
+export function a1<T extends AllVals>(
+  name: Arity1HomogenousName,
+  val: T
+): Arity1HomogenousExpr<T>;
 
-export function cos<T extends AllVals>(val: T) {
-  return new TrigExpr(val, "cos");
-}
+export function a1<T extends AllVals>(
+  name: Arity1HomogenousName,
+  val: number
+): Arity1HomogenousExpr<PrimitiveFloat>;
 
-export function tan<T extends AllVals>(val: T) {
-  return new TrigExpr(val, "tan");
+export function a1<T extends AllVals>(
+  name: Arity1HomogenousName,
+  val: T | number
+) {
+  return new Arity1HomogenousExpr(wrapInValue(val), name);
 }

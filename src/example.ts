@@ -1,5 +1,6 @@
 import * as dat from "dat.gui";
 import * as MP from "./index";
+import { a2 } from "./expressions/powexpr";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -250,8 +251,10 @@ const demos: Demos = {
             MP.op(
               -1,
               "*",
-              MP.pow(
-                MP.cos(
+              MP.a2(
+                "pow",
+                MP.a1(
+                  "cos",
                   MP.op(MP.getcomp(MP.nfcoord(), "y"), "*", (260 / 2) * Math.PI)
                 ),
                 6
@@ -262,9 +265,9 @@ const demos: Demos = {
               1,
               "*",
               MP.op(
-                MP.pow(MP.getcomp(MP.op(MP.ncfcoord(), "*", 2), "x"), 4),
+                MP.a2("pow", MP.getcomp(MP.op(MP.ncfcoord(), "*", 2), "x"), 4),
                 "+",
-                MP.pow(MP.getcomp(MP.op(MP.ncfcoord(), "*", 2), "y"), 4)
+                MP.a2("pow", MP.getcomp(MP.op(MP.ncfcoord(), "*", 2), "y"), 4)
               )
             )
           )
@@ -288,6 +291,8 @@ const demos: Demos = {
   },
 
   channelblur: (channels: TexImageSource[] = []) => {
+    // TODO get rid of this
+    const a = MP.a1("sin", 1);
     const merger = new MP.Merger(
       [
         MP.hsv2rgb(
@@ -409,7 +414,8 @@ const demos: Demos = {
     const merger = new MP.Merger(
       [
         MP.brightness(
-          MP.cos(
+          MP.a1(
+            "cos",
             MP.op(MP.time(), "+", MP.truedepth(MP.getcomp(MP.channel(0), "r")))
           )
         ),

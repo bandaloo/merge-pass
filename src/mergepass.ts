@@ -246,6 +246,7 @@ export class Merger {
     if (channelsNeeded > channelsSupplied) {
       throw new Error("not enough channels supplied for this effect");
     }
+
     for (let i = 0; i < this.channels.length; i++) {
       const texOrImage = this.channels[i];
       if (!(texOrImage instanceof WebGLTexture)) {

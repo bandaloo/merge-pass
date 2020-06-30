@@ -6,7 +6,7 @@ import { pfloat, n2e, mut } from "./expr";
 import { gaussian, GaussianExpr } from "./gaussianexpr";
 import { getcomp } from "./getcompexpr";
 import { op } from "./opexpr";
-import { pow } from "./powexpr";
+import { a2 } from "./powexpr";
 import { vec2 } from "./vecexprs";
 
 export class DoFLoop extends EffectLoop {
@@ -20,8 +20,8 @@ export class DoFLoop extends EffectLoop {
   ) {
     let guassianExpr = gaussian(depth, focus, rad);
     // TODO optional taps number
-    const side = gauss(vec2(pow(op(1, "-", guassianExpr), 4), 0), 13);
-    const up = gauss(vec2(0, pow(op(1, "-", guassianExpr), 4)), 13);
+    const side = gauss(vec2(a2("pow", op(1, "-", guassianExpr), 4), 0), 13);
+    const up = gauss(vec2(0, a2("pow", op(1, "-", guassianExpr), 4)), 13);
     super([side, up], { num: reps });
     this.gaussian = guassianExpr;
   }

@@ -169,12 +169,14 @@ export class CodeBuilder {
       // offset the texture location by 2 (0 and 1 are used for scene and original)
       gl.uniform1i(location, b + 2);
     }
+
     // get attribute
     const position = gl.getAttribLocation(program, "aPosition");
     // enable the attribute
     gl.enableVertexAttribArray(position);
     // points to the vertices in the last bound array buffer
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
+
     return new WebGLProgramLoop(
       program,
       this.baseLoop.repeat,
