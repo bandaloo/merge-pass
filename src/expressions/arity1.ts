@@ -1,6 +1,6 @@
 import { AllVals } from "../exprtypes";
 import { Operator, SourceLists, wrapInValue, PrimitiveFloat } from "./expr";
-import { Arity2HomogenousExpr } from "./powexpr";
+import { Arity2HomogenousExpr } from "./arity2";
 
 // these all work on (from khronos documentation) genType x so it should be okay
 // to sub in any of these strings

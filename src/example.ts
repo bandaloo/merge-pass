@@ -1,6 +1,6 @@
 import * as dat from "dat.gui";
 import * as MP from "./index";
-import { a2 } from "./expressions/powexpr";
+import { a2 } from "./expressions/arity2";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");

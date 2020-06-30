@@ -6,7 +6,7 @@ import { pfloat, n2e, mut } from "./expr";
 import { gaussian, GaussianExpr } from "./gaussianexpr";
 import { getcomp } from "./getcompexpr";
 import { op } from "./opexpr";
-import { a2 } from "./powexpr";
+import { a2 } from "./arity2";
 import { vec2 } from "./vecexprs";
 
 export class DoFLoop extends EffectLoop {
