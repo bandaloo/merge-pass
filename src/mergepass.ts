@@ -191,11 +191,11 @@ export class Merger {
     this.tex = {
       // make the front texture the source if we're given a texture instead of
       // an image
-      front:
+      back:
         source instanceof WebGLTexture
           ? source
           : makeTexture(this.gl, this.options),
-      back: makeTexture(this.gl, this.options),
+      front: makeTexture(this.gl, this.options),
       scene: undefined,
       bufTextures: [],
     };
@@ -261,6 +261,10 @@ export class Merger {
   }
 
   draw(time: number = 0) {
+    // TODO double check if this is neccessary
+    const originalFront = this.tex.front;
+    const originalBack = this.tex.back;
+
     this.gl.activeTexture(this.gl.TEXTURE0);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.back);
     sendTexture(this.gl, this.source);
@@ -294,6 +298,10 @@ export class Merger {
       this.programLoop.last,
       time
     );
+
+    // make sure front and back are in same order
+    this.tex.front = originalFront;
+    this.tex.back = originalBack;
   }
 }
 
