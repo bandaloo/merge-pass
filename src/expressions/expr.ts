@@ -33,6 +33,7 @@ export interface Needs {
   centerSample: boolean;
   sceneBuffer: boolean; // texture 1
   timeUniform: boolean;
+  mouseUniform: boolean;
   extraBuffers: Set<number>;
 }
 
@@ -63,6 +64,7 @@ export abstract class Expr implements Parseable, EffectLike {
     centerSample: false,
     sceneBuffer: false,
     timeUniform: false,
+    mouseUniform: false,
     extraBuffers: new Set(),
   };
   defaultNames: string[];

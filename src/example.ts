@@ -1,9 +1,10 @@
 import * as dat from "dat.gui";
 import * as MP from "./index";
-import { a2 } from "./expressions/arity2";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
+
+const mousePos = { x: 0, y: 0 };
 
 if (gl === null) {
   throw new Error("problem getting the gl context");
@@ -500,6 +501,30 @@ const demos: Demos = {
       },
     };
   },
+
+  mouseposition: (channels: TexImageSource[] = []) => {
+    const merger = new MP.Merger(
+      [
+        MP.godrays(
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          undefined,
+          MP.op(MP.mouse(), "/", MP.resolution())
+        ),
+      ],
+      sourceCanvas,
+      gl,
+      {
+        channels: channels,
+      }
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
 };
 
 interface Draws {
@@ -566,6 +591,13 @@ const higherOrderWaves = (color: boolean) =>
       : (x: number, y: number) =>
           R((256 / 4) * Math.round(2 + S(x / 20) + C(y / 30)))
   );
+
+const uncommonCheckerboard = shaderLike((x, y) => {
+  y /= 60;
+  return `hsl(${x / 9 + y * 9},40%,${
+    9 + 60 * ~~((1 + C(y) + 4 * C(x / (99 + 20 * C(y / 5))) * S(y / 2)) % 2)
+  }%)`;
+});
 
 const bitwiseGrid = () => shaderLike((x: number, y: number) => R((x & y) * 20));
 
@@ -703,7 +735,7 @@ const draws: Draws = {
   redzero: [stripes],
   redgreenswap: [movingGrid],
   huerotate: [fabric],
-  timehuerotate: [fabric],
+  timehuerotate: [uncommonCheckerboard],
   scanlines: [pinkishHelix],
   fxaa: [higherOrderGoo(true)],
   channelblur: [higherOrderGoo(true), higherOrderGoo(false)],
@@ -720,6 +752,7 @@ const draws: Draws = {
   lightbands: [higherOrderPerspective(true), higherOrderPerspective(false)],
   godrays: [higherOrderDonuts(true), higherOrderDonuts(false)],
   depthgodrays: [higherOrderPerspective(true), higherOrderPerspective(false)],
+  mouseposition: [higherOrderDonuts(true), higherOrderDonuts(false)],
 };
 
 interface Notes {
@@ -798,10 +831,13 @@ const notes: Notes = {
     "of the geometry and the white (or any color) pixels denote the light shining behind",
   depthgodrays:
     "<code>godrays</code> can also be made to read depth buffer info " +
-    "instead of an occlusion buffer. as the final argument, you must specify an" +
+    "instead of an occlusion buffer. as the final argument, you must specify an " +
     "object that has a <code>threshold</code> " +
     "(all depth values lower than this are not occluded) and a <code>newColor</code> " +
     "which denotes what color the shining light should be",
+  mouseposition:
+    "move the mouse around to change the light position of the godrays! you can get the mouse " +
+    "position with <code>MP.mouse()</code> and the resolution with <code>MP.resolution()</code>",
 };
 
 const canvases = [sourceCanvas];
@@ -898,7 +934,7 @@ window.addEventListener("load", () => {
       counter++;
     }
     demo.change(demo.merger, t, frame);
-    demo.merger.draw(t / 1000);
+    demo.merger.draw(t / 1000, mousePos.x, mousePos.y);
     requestAnimationFrame(step);
     frame++;
   };
@@ -907,4 +943,10 @@ window.addEventListener("load", () => {
 });
 
 glCanvas.addEventListener("click", () => glCanvas.requestFullscreen());
+glCanvas.addEventListener("mousemove", (e) => {
+  const rect = glCanvas.getBoundingClientRect();
+  mousePos.x = (960 * (e.clientX - rect.left)) / rect.width;
+  mousePos.y = (540 * (rect.height - (e.clientY - rect.top))) / rect.height;
+  console.log(rect.width);
+});
 sourceCanvas.addEventListener("click", () => sourceCanvas.requestFullscreen());

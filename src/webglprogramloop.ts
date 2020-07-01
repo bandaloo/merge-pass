@@ -1,4 +1,4 @@
-import { Expr, Needs, BuildInfo } from "./expressions/expr";
+import { Expr, Needs } from "./expressions/expr";
 import { LoopInfo, TexInfo, UniformLocs } from "./mergepass";
 
 export type WebGLProgramElement = WebGLProgram | WebGLProgramLoop[];
@@ -10,9 +10,16 @@ export const updateNeeds = (acc: Needs, curr: Needs) => {
     centerSample: acc.centerSample || curr.centerSample,
     sceneBuffer: acc.sceneBuffer || curr.sceneBuffer,
     timeUniform: acc.timeUniform || curr.timeUniform,
+    mouseUniform: acc.mouseUniform || curr.mouseUniform,
     extraBuffers: new Set([...acc.extraBuffers, ...curr.extraBuffers]),
   };
 };
+
+interface DefaultUniforms {
+  time: number;
+  mouseX: number;
+  mouseY: number;
+}
 
 export class WebGLProgramLoop {
   programElement: WebGLProgramElement;
@@ -21,6 +28,7 @@ export class WebGLProgramLoop {
   last = false;
   totalNeeds: Needs | undefined;
   timeLoc?: WebGLUniformLocation;
+  mouseLoc?: WebGLUniformLocation;
 
   constructor(
     programElement: WebGLProgramElement,
@@ -39,6 +47,8 @@ export class WebGLProgramLoop {
           "program element is a program but context is undefined"
         );
       }
+
+      // get the time uniform location
       if (this.totalNeeds?.timeUniform) {
         gl.useProgram(programElement);
         const timeLoc = gl.getUniformLocation(programElement, "uTime");
@@ -46,6 +56,16 @@ export class WebGLProgramLoop {
           throw new Error("could not get the time uniform location");
         }
         this.timeLoc = timeLoc;
+      }
+
+      // get the mouse uniform location
+      if (this.totalNeeds?.mouseUniform) {
+        gl.useProgram(programElement);
+        const mouseLoc = gl.getUniformLocation(programElement, "uMouse");
+        if (mouseLoc === null) {
+          throw new Error("could not get the mouse uniform location");
+        }
+        this.mouseLoc = mouseLoc;
       }
     }
   }
@@ -72,7 +92,7 @@ export class WebGLProgramLoop {
     framebuffer: WebGLFramebuffer,
     uniformLocs: UniformLocs,
     last: boolean,
-    time: number
+    defaultUniforms: DefaultUniforms
   ) {
     for (let i = 0; i < this.repeat.num; i++) {
       const newLast = i === this.repeat.num - 1;
@@ -92,11 +112,32 @@ export class WebGLProgramLoop {
           for (const effect of this.effects) {
             effect.applyUniforms(gl, uniformLocs);
           }
+
+          // set time uniform if needed
           if (this.totalNeeds?.timeUniform) {
-            if (this.timeLoc === undefined || time === undefined) {
+            if (
+              this.timeLoc === undefined ||
+              defaultUniforms.time === undefined
+            ) {
               throw new Error("time or location is undefined");
             }
-            gl.uniform1f(this.timeLoc, time);
+            gl.uniform1f(this.timeLoc, defaultUniforms.time);
+          }
+
+          // set mouse uniforms if needed
+          if (this.totalNeeds?.mouseUniform) {
+            if (
+              this.mouseLoc === undefined ||
+              defaultUniforms.mouseX === undefined ||
+              defaultUniforms.mouseY === undefined
+            ) {
+              throw new Error("mouse uniform or location is undefined");
+            }
+            gl.uniform2f(
+              this.mouseLoc,
+              defaultUniforms.mouseX,
+              defaultUniforms.mouseY
+            );
           }
         }
         if (newLast && last && this.last) {
@@ -120,7 +161,6 @@ export class WebGLProgramLoop {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, tex.back);
         [tex.back, tex.front] = [tex.front, tex.back];
-        // go back to the default framebuffer object
         // use our last program as the draw program
         gl.drawArrays(gl.TRIANGLES, 0, 6);
       } else {
@@ -128,7 +168,7 @@ export class WebGLProgramLoop {
           this.repeat.func(i);
         }
         for (const p of this.programElement) {
-          p.draw(gl, tex, framebuffer, uniformLocs, newLast, time);
+          p.draw(gl, tex, framebuffer, uniformLocs, newLast, defaultUniforms);
         }
       }
     }

@@ -260,7 +260,7 @@ export class Merger {
     }
   }
 
-  draw(time: number = 0) {
+  draw(time: number = 0, mouseX = 0, mouseY = 0) {
     // TODO double check if this is neccessary
     const originalFront = this.tex.front;
     const originalBack = this.tex.back;
@@ -296,7 +296,7 @@ export class Merger {
       this.framebuffer,
       this.uniformLocs,
       this.programLoop.last,
-      time
+      { time: time, mouseX: mouseX, mouseY: mouseY }
     );
 
     // make sure front and back are in same order

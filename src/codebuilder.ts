@@ -8,6 +8,8 @@ const SCENE_SET = `uniform sampler2D uSceneSampler;\n`;
 
 const TIME_SET = `uniform mediump float uTime;\n`;
 
+const MOUSE_SET = `uniform mediump vec2 uMouse;\n`;
+
 const BOILERPLATE = `#ifdef GL_ES
 precision mediump float;
 #endif
@@ -45,6 +47,7 @@ export class CodeBuilder {
         neighborSample: false,
         sceneBuffer: false,
         timeUniform: false,
+        mouseUniform: false,
         extraBuffers: new Set(),
       },
     };
@@ -107,6 +110,7 @@ export class CodeBuilder {
       BOILERPLATE +
       (this.totalNeeds.sceneBuffer ? SCENE_SET : "") +
       (this.totalNeeds.timeUniform ? TIME_SET : "") +
+      (this.totalNeeds.mouseUniform ? MOUSE_SET : "") +
       Array.from(this.totalNeeds.extraBuffers)
         .map((n) => bufferSamplerDeclaration(n))
         .join("\n") +

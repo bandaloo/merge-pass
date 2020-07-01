@@ -30,5 +30,7 @@ export * from "./expressions/dofloop";
 export * from "./expressions/truedepthexpr";
 export * from "./expressions/godraysexpr";
 export * from "./expressions/depthtoocclusionexpr";
+export * from "./expressions/resolutionexpr"
+export * from "./expressions/mouseexpr"
 
 export * from "./expressions/expr";
