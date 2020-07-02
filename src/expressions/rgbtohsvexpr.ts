@@ -3,13 +3,17 @@ import { Vec4 } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
 
 export class RGBToHSVExpr extends ExprVec4 {
-  constructor(col: Vec4) {
-    super(tag`rgb2hsv(${col})`, ["uRGBCol"]);
+  color: Vec4;
+
+  constructor(color: Vec4) {
+    super(tag`rgb2hsv(${color})`, ["uRGBCol"]);
+    this.color = color;
     this.externalFuncs = [glslFuncs.rgb2hsv];
   }
 
-  setColor(col: Vec4 | number) {
-    this.setUniform("uRGBCol", col);
+  setColor(color: Vec4) {
+    this.setUniform("uRGBCol", color);
+    this.color = color;
   }
 }
 

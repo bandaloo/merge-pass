@@ -1,11 +1,8 @@
 import { AllVals } from "../exprtypes";
-import { Operator, SourceLists, wrapInValue, PrimitiveFloat } from "./expr";
-import { Arity2HomogenousExpr } from "./arity2";
+import { Operator, PrimitiveFloat, SourceLists, wrapInValue } from "./expr";
 
-// these all work on (from khronos documentation) genType x so it should be okay
-// to sub in any of these strings
-// TODO can we just make this expression any function that takes 1 genTypeX and
-// returns a genTypeX?
+// these all work on genTypeX so it should be okay to sub in any of these
+// strings (genTypeX is term from Khronos documentation)
 type Arity1HomogenousName =
   | "sin"
   | "cos"
@@ -40,8 +37,10 @@ export class Arity1HomogenousExpr<T extends AllVals> extends Operator<T> {
     this.val = val;
   }
 
-  setVal(right: T | number) {
-    this.setUniform("uVal" + this.id, right);
+  setVal(val: T | number) {
+    this.setUniform("uVal" + this.id, val);
+    // TODO way to get rid of this cast?
+    this.val = wrapInValue(val) as T;
   }
 }
 

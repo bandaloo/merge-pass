@@ -5,6 +5,15 @@ import { fcolor } from "./fragcolorexpr";
 import { pvec2, vec4 } from "./vecexprs";
 
 export class GodRaysExpr extends ExprVec4 {
+  col: Vec4;
+  exposure: Float;
+  decay: Float;
+  density: Float;
+  weight: Float;
+  lightPos: Vec2;
+  threshold?: Float;
+  newColor?: Vec4;
+
   constructor(
     col: Vec4 = fcolor(),
     exposure: Float = mut(1.0),
@@ -37,6 +46,14 @@ export class GodRaysExpr extends ExprVec4 {
       "uThreshold",
       "uNewColor",
     ]);
+    this.col = col;
+    this.exposure = exposure;
+    this.decay = decay;
+    this.density = density;
+    this.weight = weight;
+    this.lightPos = lightPos;
+    this.threshold = convertDepth?.threshold;
+    this.newColor = convertDepth?.newColor;
     let customGodRayFunc = replaceSampler(
       glslFuncs.godrays,
       /vec4\sgodrays/g,
@@ -54,37 +71,45 @@ export class GodRaysExpr extends ExprVec4 {
 
   setColor(color: Vec4) {
     this.setUniform("uCol" + this.id, color);
+    this.col = color;
   }
 
   setExposure(exposure: Float | number) {
     this.setUniform("uExposure" + this.id, exposure);
+    this.exposure = n2e(exposure);
   }
 
   setDecay(decay: Float | number) {
     this.setUniform("uDecay" + this.id, decay);
+    this.decay = n2e(decay);
   }
 
   setDensity(density: Float | number) {
     this.setUniform("uDensity" + this.id, density);
+    this.density = n2e(density);
   }
 
   setWeight(weight: Float | number) {
     this.setUniform("uWeight" + this.id, weight);
+    this.weight = n2e(weight);
   }
 
   setLightPos(lightPos: Vec2) {
     this.setUniform("uLightPos" + this.id, lightPos);
+    this.lightPos = lightPos;
   }
 
   // these only matter when you're using a depth buffer and not an occlusion
   // buffer (although right now, you'll still be able to set them)
 
-  setThreshold(threshold: Float) {
+  setThreshold(threshold: Float | number) {
     this.setUniform("uThreshold" + this.id, threshold);
+    this.threshold = n2e(threshold);
   }
 
   setNewcolor(newColor: Vec4) {
     this.setUniform("uNewColor" + this.id, newColor);
+    this.newColor = newColor;
   }
 }
 

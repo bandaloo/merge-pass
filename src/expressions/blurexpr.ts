@@ -1,6 +1,6 @@
 import { Vec2 } from "../exprtypes";
 import { glslFuncs, replaceSampler } from "../glslfunctions";
-import { ExprVec4, PrimitiveVec2, SourceLists } from "./expr";
+import { ExprVec4, SourceLists } from "./expr";
 
 function genBlurSource(
   direction: Vec2,
@@ -25,12 +25,16 @@ function tapsToFuncSource(taps: 5 | 9 | 13) {
 }
 
 export class BlurExpr extends ExprVec4 {
+  direction: Vec2;
+
   constructor(direction: Vec2, taps: 5 | 9 | 13 = 5, samplerNum?: number) {
-    // this is already guaranteed by typescript
+    // this is already guaranteed by typescript, but creates helpful error for
+    // use in gibber
     if (![5, 9, 13].includes(taps)) {
       throw new Error("taps for gauss blur can only be 5, 9 or 13");
     }
     super(genBlurSource(direction, taps, samplerNum), ["uDirection"]);
+    this.direction = direction;
     if (samplerNum === undefined) {
       this.needs.neighborSample = true;
       this.externalFuncs = [tapsToFuncSource(taps)];
@@ -50,6 +54,7 @@ export class BlurExpr extends ExprVec4 {
 
   setDirection(direction: Vec2) {
     this.setUniform("uDirection" + this.id, direction);
+    this.direction = direction;
   }
 }
 

@@ -1,11 +1,5 @@
 import { AllVals, Float, Vec2, Vec3, Vec4 } from "../exprtypes";
-import {
-  Operator,
-  PrimitiveFloat,
-  tag,
-  wrapInValue,
-  SourceLists,
-} from "./expr";
+import { Operator, PrimitiveFloat, wrapInValue, SourceLists } from "./expr";
 
 type Arity2HomogenousName = "pow" | "step";
 
@@ -24,16 +18,25 @@ export class Arity2HomogenousExpr<
   T extends AllVals,
   U extends AllVals
 > extends Operator<T> {
+  val1: T;
+  val2: U;
+
   constructor(name: Arity2HomogenousName, val1: T, val2: U) {
-    super(val1, genArity1SourceList(name, val1, val2), ["uBase", "uExponent"]);
+    super(val1, genArity1SourceList(name, val1, val2), ["uVal1", "uVal2"]);
+    this.val1 = val1;
+    this.val2 = val2;
   }
 
-  setFirstVal(left: T | number) {
-    this.setUniform("uBase" + this.id, left);
+  setFirstVal(val1: T | number) {
+    this.setUniform("uVal1" + this.id, val1);
+    // TODO get rid of this cast
+    this.val1 = wrapInValue(val1) as T;
   }
 
-  setSecondVal(right: U | number) {
-    this.setUniform("uExponent" + this.id, right);
+  setSecondVal(val2: U | number) {
+    this.setUniform("uVal2" + this.id, val2);
+    // TODO get rid of this cast
+    this.val2 = wrapInValue(val2) as U;
   }
 }
 

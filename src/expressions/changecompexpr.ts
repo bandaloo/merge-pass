@@ -1,5 +1,5 @@
 import { AllVals, Vec } from "../exprtypes";
-import { Operator as Op, PrimitiveFloat, wrapInValue } from "./expr";
+import { Operator as Op, PrimitiveFloat, wrapInValue, n2e } from "./expr";
 import { checkLegalComponents, typeStringToLength } from "./getcompexpr";
 
 export type ArithOp = "/" | "*" | "+" | "-";
@@ -35,6 +35,9 @@ function duplicateComponents(comps: string) {
 }
 
 export class ChangeCompExpr<T extends Vec, U extends AllVals> extends Op<T> {
+  originalVec: T;
+  newVal: U;
+
   constructor(vec: T, setter: U, comps: string, op?: ArithOp) {
     checkGetComponents(comps, setter, vec);
     // part of name of custom function
@@ -44,17 +47,22 @@ export class ChangeCompExpr<T extends Vec, U extends AllVals> extends Op<T> {
       { sections: [`changecomp_${suffix}(`, ", ", ")"], values: [vec, setter] },
       ["uOriginal", "uNew"]
     );
+    this.originalVec = vec;
+    this.newVal = setter;
     this.externalFuncs = [
       getChangeFunc(vec.typeString(), suffix, setter, comps, op),
     ];
   }
 
-  setOriginal(vec: T) {
-    this.setUniform("uOriginal" + this.id, vec);
+  setOriginal(originalVec: T) {
+    this.setUniform("uOriginal" + this.id, originalVec);
+    this.originalVec = originalVec;
   }
 
-  setNew(setter: U | number) {
-    this.setUniform("uNew" + this.id, setter);
+  setNew(newVal: U | number) {
+    this.setUniform("uNew" + this.id, newVal);
+    // TODO way to get rid of this cast?
+    this.newVal = wrapInValue(newVal) as U;
   }
 }
 

@@ -11,6 +11,7 @@ export class LenExpr<T extends Vec> extends ExprFloat {
 
   setVec(vec: T) {
     this.setUniform("uVec" + this.id, vec);
+    this.vec = vec;
   }
 }
 

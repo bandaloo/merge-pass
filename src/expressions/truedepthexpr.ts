@@ -3,16 +3,20 @@ import { Float } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
 
 export class TrueDepthExpr extends ExprFloat {
-  constructor(dist: Float) {
-    super(tag`truedepth(${dist})`, ["uDist"]);
+  depth: Float;
+
+  constructor(depth: Float) {
+    super(tag`truedepth(${depth})`, ["uDist"]);
+    this.depth = depth;
     this.externalFuncs = [glslFuncs.truedepth];
   }
 
-  setDist(dist: Float | number) {
-    this.setUniform("uDist", dist);
+  setDist(depth: Float | number) {
+    this.setUniform("uDist", depth);
+    this.depth = n2e(depth);
   }
 }
 
-export function truedepth(dist: Float | number) {
-  return new TrueDepthExpr(n2e(dist));
+export function truedepth(depth: Float | number) {
+  return new TrueDepthExpr(n2e(depth));
 }

@@ -30,10 +30,14 @@ export class OpExpr<T extends AllVals, U extends AllVals> extends Op<T> {
 
   setLeft(left: T | number) {
     this.setUniform("uLeft" + this.id, left);
+    // TODO way to get rid of this cast?
+    this.left = wrapInValue(left) as T;
   }
 
   setRight(right: U | number) {
     this.setUniform("uRight" + this.id, right);
+    // TODO way to get rid of this cast?
+    this.right = wrapInValue(right) as U;
   }
 }
 
