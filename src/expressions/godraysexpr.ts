@@ -1,18 +1,18 @@
-import { ExprVec4, tag, n2e, float } from "./expr";
-import { fcolor } from "./fragcolorexpr";
+import { Float, Vec2, Vec4 } from "../exprtypes";
 import { glslFuncs, replaceSampler } from "../glslfunctions";
-import { Float, Vec4, Vec2 } from "../exprtypes";
-import { vec2, vec4 } from "./vecexprs";
+import { ExprVec4, float, mut, n2e, tag } from "./expr";
+import { fcolor } from "./fragcolorexpr";
+import { pvec2, vec4 } from "./vecexprs";
 
 export class GodRaysExpr extends ExprVec4 {
   constructor(
-    col: Vec4,
-    exposure: Float,
-    decay: Float,
-    density: Float,
-    weight: Float,
-    lightPos: Vec2,
-    samplerNum: number,
+    col: Vec4 = fcolor(),
+    exposure: Float = mut(1.0),
+    decay: Float = mut(1.0),
+    density: Float = mut(1.0),
+    weight: Float = mut(0.01),
+    lightPos: Vec2 = mut(pvec2(0.5, 0.5)),
+    samplerNum: number = 0,
     convertDepth?: { threshold: Float; newColor: Vec4 }
   ) {
     // TODO the metaprogramming here is not so good!
@@ -88,30 +88,32 @@ export class GodRaysExpr extends ExprVec4 {
   }
 }
 
+interface GodraysOptions {
+  color?: Vec4;
+  exposure?: Float | number;
+  decay?: Float | number;
+  density?: Float | number;
+  weight?: Float | number;
+  lightPos?: Vec2;
+  samplerNum?: number;
+  convertDepth?: { threshold: Float | number; newColor: Vec4 };
+}
+
 // sane godray defaults from https://github.com/Erkaman/glsl-godrays/blob/master/example/index.js
-export function godrays(
-  col: Vec4 = fcolor(),
-  exposure: Float | number = 1.0,
-  decay: Float | number = 1.0,
-  density: Float | number = 1.0,
-  weight: Float | number = 0.01,
-  lightPos: Vec2 = vec2(0.5, 0.5),
-  samplerNum: number = 0,
-  convertDepth?: { threshold: Float | number; newColor: Vec4 }
-) {
+export function godrays(options: GodraysOptions = {}) {
   return new GodRaysExpr(
-    col,
-    n2e(exposure),
-    n2e(decay),
-    n2e(density),
-    n2e(weight),
-    lightPos,
-    samplerNum,
-    convertDepth === undefined
+    options.color,
+    n2e(options.exposure),
+    n2e(options.decay),
+    n2e(options.density),
+    n2e(options.weight),
+    options.lightPos,
+    options.samplerNum,
+    options.convertDepth === undefined
       ? undefined
       : {
-          threshold: n2e(convertDepth.threshold),
-          newColor: convertDepth.newColor,
+          threshold: n2e(options.convertDepth.threshold),
+          newColor: options.convertDepth.newColor,
         }
   );
 }

@@ -444,28 +444,17 @@ const demos: Demos = {
   },
 
   depthgodrays: (channels: TexImageSource[] = []) => {
-    let pos: MP.BasicFloat;
     let godrays: MP.GodRaysExpr;
     const merger = new MP.Merger(
       [
-        (godrays = MP.godrays(
-          MP.fcolor(),
-          MP.mut(1.0),
-          MP.mut(0.99),
-          MP.mut(1.0),
-          MP.mut(0.01),
-          MP.vec2(
-            MP.op(0.5, "+", MP.op((pos = MP.float(MP.mut(0))), "/", 5)),
-            0.5
-          ),
-          0,
-          {
+        (godrays = MP.godrays({
+          convertDepth: {
             threshold: 0.1,
             newColor: MP.hsv2rgb(
               MP.vec4(MP.op(MP.time(), "/", 4), 0.5, 0.5, 1)
             ),
-          }
-        )),
+          },
+        })),
       ],
       sourceCanvas,
       gl,
@@ -493,7 +482,7 @@ const demos: Demos = {
     return {
       merger: merger,
       change: () => {
-        pos.setVal(-controls.location);
+        godrays.setLightPos(MP.pvec2(0.5 + -controls.location / 5, 0.5));
         godrays.setExposure(controls.exposure);
         godrays.setDecay(controls.decay);
         godrays.setDensity(controls.density);
@@ -504,16 +493,7 @@ const demos: Demos = {
 
   mouseposition: (channels: TexImageSource[] = []) => {
     const merger = new MP.Merger(
-      [
-        MP.godrays(
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          undefined,
-          MP.op(MP.mouse(), "/", MP.resolution())
-        ),
-      ],
+      [MP.godrays({ lightPos: MP.op(MP.mouse(), "/", MP.resolution()) })],
       sourceCanvas,
       gl,
       {
