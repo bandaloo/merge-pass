@@ -433,16 +433,6 @@ const demos: Demos = {
     };
   },
 
-  godrays: (channels: TexImageSource[] = []) => {
-    const merger = new MP.Merger([MP.godrays()], sourceCanvas, gl, {
-      channels: channels,
-    });
-    return {
-      merger: merger,
-      change: () => {},
-    };
-  },
-
   depthgodrays: (channels: TexImageSource[] = []) => {
     let godrays: MP.GodRaysExpr;
     const merger = new MP.Merger(
@@ -491,7 +481,7 @@ const demos: Demos = {
     };
   },
 
-  mouseposition: (channels: TexImageSource[] = []) => {
+  mousegodrays: (channels: TexImageSource[] = []) => {
     const merger = new MP.Merger(
       [MP.godrays({ lightPos: MP.op(MP.mouse(), "/", MP.resolution()) })],
       sourceCanvas,
@@ -730,9 +720,8 @@ const draws: Draws = {
     higherOrderPerspective(false, false),
   ],
   lightbands: [higherOrderPerspective(true), higherOrderPerspective(false)],
-  godrays: [higherOrderDonuts(true), higherOrderDonuts(false)],
   depthgodrays: [higherOrderPerspective(true), higherOrderPerspective(false)],
-  mouseposition: [higherOrderDonuts(true), higherOrderDonuts(false)],
+  mousegodrays: [higherOrderDonuts(true), higherOrderDonuts(false)],
 };
 
 interface Notes {
@@ -806,18 +795,19 @@ const notes: Notes = {
     "even though the value in the depth buffer is actually 1 / (1 + depth), we can " +
     "calculate the true depth value with <code>truedepth</code>. with this, we can colorize" +
     "bands of depth in our scene all the way out to infinity",
-  godrays:
-    "the <code>godrays</code> effect requires an occlusion buffer. black pixels denote the silhouette " +
-    "of the geometry and the white (or any color) pixels denote the light shining behind",
   depthgodrays:
     "<code>godrays</code> can also be made to read depth buffer info " +
     "instead of an occlusion buffer. as the final argument, you must specify an " +
     "object that has a <code>threshold</code> " +
     "(all depth values lower than this are not occluded) and a <code>newColor</code> " +
     "which denotes what color the shining light should be",
-  mouseposition:
-    "move the mouse around to change the light position of the godrays! you can get the mouse " +
-    "position with <code>MP.mouse()</code> and the resolution with <code>MP.resolution()</code>",
+  mousegodrays:
+    "the <code>godrays</code> effect requires an occlusion buffer. black pixels denote the silhouette " +
+    "of the geometry and the white (or any color) pixels denote the light shining behind. " +
+    "move the mouse around to change the light position of the light source! you can get the mouse " +
+    "position with <code>MP.mouse()</code> and the resolution with <code>MP.resolution()</code>. " +
+    "if you are using mouse input, pass the x and y position (in pixels) of the mouse in as the " +
+    "second and third arguments like this: <code>merger.draw(time, mouseX, mouseY)</code>.",
 };
 
 const canvases = [sourceCanvas];
