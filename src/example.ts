@@ -1,5 +1,6 @@
 import * as dat from "dat.gui";
 import * as MP from "./index";
+import { nfcoord } from "./expressions/normfragcoordexpr";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -495,6 +496,18 @@ const demos: Demos = {
       change: () => {},
     };
   },
+
+  mitosis: () => {
+    // prettier-ignore
+    const merger = new MP.Merger([MP.input(
+      MP.changecomp(MP.nfcoord(), MP.op(MP.op(MP.op(0.5, "+", MP.op(0.5, "*", MP.a1("cos", MP.time()))), "*", 0.3), "*", MP.a1("cos",
+      MP.op(MP.getcomp(MP.nfcoord(), "x"), "*", 3 * Math.PI))), "x", "+")), MP.fxaa()],
+      sourceCanvas, gl);
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
 };
 
 interface Draws {
@@ -722,6 +735,7 @@ const draws: Draws = {
   lightbands: [higherOrderPerspective(true), higherOrderPerspective(false)],
   depthgodrays: [higherOrderPerspective(true), higherOrderPerspective(false)],
   mousegodrays: [higherOrderDonuts(true), higherOrderDonuts(false)],
+  mitosis: [uncommonCheckerboard],
 };
 
 interface Notes {
@@ -808,6 +822,9 @@ const notes: Notes = {
     "position with <code>MP.mouse()</code> and the resolution with <code>MP.resolution()</code>. " +
     "if you are using mouse input, pass the x and y position (in pixels) of the mouse in as the " +
     "second and third arguments like this: <code>merger.draw(time, mouseX, mouseY)</code>.",
+  mitosis:
+    "if you sample the original scene at some offset of the pixel coordinate, you can distort " +
+    "the original scene. (fxaa is used here just because we can)",
 };
 
 const canvases = [sourceCanvas];
@@ -917,6 +934,5 @@ glCanvas.addEventListener("mousemove", (e) => {
   const rect = glCanvas.getBoundingClientRect();
   mousePos.x = (960 * (e.clientX - rect.left)) / rect.width;
   mousePos.y = (540 * (rect.height - (e.clientY - rect.top))) / rect.height;
-  console.log(rect.width);
 });
 sourceCanvas.addEventListener("click", () => sourceCanvas.requestFullscreen());

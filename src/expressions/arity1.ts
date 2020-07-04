@@ -17,7 +17,8 @@ type Arity1HomogenousName =
   | "acosh"
   | "atanh"
   | "floor"
-  | "ceil";
+  | "ceil"
+  | "abs";
 
 function genArity1SourceList(
   name: Arity1HomogenousName,
