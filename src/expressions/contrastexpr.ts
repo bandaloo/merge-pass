@@ -18,6 +18,13 @@ export class Contrast extends ExprVec4 {
   }
 }
 
+/**
+ * changes the contrast of a color
+ * @param val float for how much to change the contrast by (should probably be
+ * between -1 and 1)
+ * @param col the color to increase the contrast of (defaults to current
+ * fragment color)
+ */
 export function contrast(val: Float | number, col?: Vec4) {
   return new Contrast(n2e(val), col);
 }

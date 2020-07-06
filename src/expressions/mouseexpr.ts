@@ -7,6 +7,7 @@ export class MouseExpr extends ExprVec2 {
   }
 }
 
+/** gets a vec2 representing the mouse position in pixels */
 export function mouse() {
   return new MouseExpr();
 }

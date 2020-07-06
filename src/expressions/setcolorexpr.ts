@@ -17,6 +17,10 @@ export class SetColorExpr extends ExprVec4 {
   }
 }
 
+/**
+ * sets the frag color to a new color
+ * @param val the color to set the frag color to
+ */
 export function setcolor(val: Vec4) {
   return new SetColorExpr(val);
 }

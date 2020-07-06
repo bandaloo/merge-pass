@@ -25,6 +25,7 @@ export class TranslateExpr extends ExprVec2 {
   }
 }
 
+/** translates the position of a vector by another vector */
 export function translate(vec: Vec2, pos: Vec2) {
   return new TranslateExpr(vec, pos);
 }

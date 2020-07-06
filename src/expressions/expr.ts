@@ -206,6 +206,11 @@ export function mut<T extends Primitive>(val: T, name?: string): Mutable<T>;
 
 export function mut(val: number, name?: string): Mutable<PrimitiveFloat>;
 
+/**
+ * makes a primitive value mutable
+ * @param val the primitive float or primitive vec to make mutable
+ * @param name the optional name for the uniform
+ */
 export function mut<T extends Primitive>(val: T | number, name?: string) {
   const primitive = typeof val === "number" ? n2p(val) : val;
   return new Mutable(primitive, name);
@@ -221,6 +226,7 @@ export abstract class Primitive implements Parseable, Applicable {
     loc: WebGLUniformLocation
   ): void;
 
+  // TODO get rid of these arguments (should still work with interface)
   parse(buildInfo: BuildInfo, defaultName: string, enc: Expr | undefined) {
     return this.toString();
   }
@@ -450,12 +456,14 @@ export function n2e(num: number | Float | undefined) {
   return new PrimitiveFloat(num);
 }
 
+// TODO see if we need this
 /** number to primitive float */
 export function n2p(num: number | PrimitiveFloat) {
   if (num instanceof PrimitiveFloat) return num;
   return new PrimitiveFloat(num);
 }
 
+/** creates a primitive float */
 export function pfloat(num: number) {
   return new PrimitiveFloat(num);
 }

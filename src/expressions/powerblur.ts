@@ -31,6 +31,7 @@ export class PowerBlurLoop extends EffectLoop {
 
 /**
  * fast approximate blur for large blur radius that might look good in some cases
+ * @param size the radius of the blur
  */
 export function pblur(size: number) {
   return new PowerBlurLoop(size);

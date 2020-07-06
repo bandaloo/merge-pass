@@ -80,6 +80,16 @@ export function changecomp<T extends Vec, U extends AllVals>(
   op?: ArithOp
 ): ChangeCompExpr<T, U>;
 
+/**
+ * change the components of a vector
+ * @param vec the vector to augment components of
+ * @param setter the vector (or float, if only one component is changed) for
+ * how to change the components
+ * @param comps string representing the components to change (e.g. `"xy"` or
+ * `"r"` or `"stpq"`.)
+ * @param op optionally do an operation (`"+"`, `"-"`, `"/"`, `"*"`) instead of
+ * setting the component directly
+ */
 export function changecomp(vec: any, setter: any, comps: string, op?: ArithOp) {
   return new ChangeCompExpr(vec, wrapInValue(setter), comps, op);
 }

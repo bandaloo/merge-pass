@@ -17,3 +17,11 @@ export class RandomExpr extends ExprVec4 {
     this.seed = seed;
   }
 }
+
+/**
+ * creates expression that evaluates to a pseudorandom number
+ * @param seed vec2 to to seed the random number (defaults to the normalized frag coord)
+ */
+export function random(seed: Vec2) {
+  return new RandomExpr(seed);
+}

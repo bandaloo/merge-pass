@@ -55,6 +55,11 @@ export function a1<T extends AllVals>(
   val: number
 ): Arity1HomogenousExpr<PrimitiveFloat>;
 
+/**
+ * built-in functions that take in one `genType x` and return a `genType x`
+ * @param name function name (trigonometric functions, rounding functions, etc.)
+ * @param val the `genType x` argument
+ */
 export function a1<T extends AllVals>(
   name: Arity1HomogenousName,
   val: T | number

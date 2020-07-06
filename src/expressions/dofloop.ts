@@ -13,12 +13,12 @@ export class DoFLoop extends EffectLoop {
   gaussian: GaussianExpr;
 
   constructor(
-    focus: Float = mut(pfloat(0.3)),
+    depth: Float = mut(pfloat(0.3)),
     rad: Float = mut(pfloat(0.01)),
-    depth: Float = getcomp(channel(0), "r"),
+    depthInfo: Float = getcomp(channel(0), "r"),
     reps = 2
   ) {
-    let guassianExpr = gaussian(depth, focus, rad);
+    let guassianExpr = gaussian(depthInfo, depth, rad);
     // TODO optional taps number
     const side = gauss(vec2(a2("pow", op(1, "-", guassianExpr), 4), 0), 13);
     const up = gauss(vec2(0, a2("pow", op(1, "-", guassianExpr), 4)), 13);
@@ -37,11 +37,20 @@ export class DoFLoop extends EffectLoop {
   }
 }
 
+/**
+ * depth of field effect
+ * @param depth float for what inverse depth to focus on (1 on top of the
+ * camera; 0 is infinity)
+ * @param rad float for how deep the band of in-focus geometry is (a value
+ * between 0.01 and 0.1 is reasonable)
+ * @param depthInfo float the expression that represents
+ * @param reps
+ */
 export function dof(
-  focus?: Float | number,
-  rad?: Float | number,
   depth?: Float | number,
+  rad?: Float | number,
+  depthInfo?: Float | number,
   reps?: number
 ) {
-  return new DoFLoop(n2e(focus), n2e(rad), n2e(depth), reps);
+  return new DoFLoop(n2e(depth), n2e(rad), n2e(depthInfo), reps);
 }

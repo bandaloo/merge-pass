@@ -15,6 +15,7 @@ export class LenExpr<T extends Vec> extends ExprFloat {
   }
 }
 
-export function len(vec: Vec) {
+/** gets the length of a vector */
+export function len<T extends Vec>(vec: T) {
   return new LenExpr(vec);
 }

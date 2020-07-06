@@ -106,18 +106,38 @@ export class Get4CompExpr extends ExprVec4 {
   }
 }
 
+/**
+ * get one component of vector to return a float
+ * @param vec the vector to get components of
+ * @param comps components string
+ */
 export function getcomp(vec: Vec, comps: string) {
   return new GetCompExpr(vec, comps);
 }
 
+/**
+ * get two components of vector to return a vec2
+ * @param vec the vector to get components of
+ * @param comps components string
+ */
 export function get2comp(vec: Vec2 | Vec3 | Vec4, comps: string) {
   return new Get2CompExpr(vec, comps);
 }
 
+/**
+ * get three components of vector to return a vec3
+ * @param vec the vector to get components of
+ * @param comps components string
+ */
 export function get3comp(vec: Vec3 | Vec4, comps: string) {
   return new Get3CompExpr(vec, comps);
 }
 
+/**
+ * get four components of vector to return a vec4
+ * @param vec the vector to get components of
+ * @param comps components string
+ */
 export function get4comp(vec: Vec4, comps: string) {
   return new Get4CompExpr(vec, comps);
 }

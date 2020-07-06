@@ -9,6 +9,7 @@ class FXAAExpr extends ExprVec4 {
   }
 }
 
+/** FXAA antaliasing expression */
 export function fxaa() {
   return new FXAAExpr();
 }

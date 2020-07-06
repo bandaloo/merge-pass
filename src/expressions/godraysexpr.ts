@@ -113,18 +113,35 @@ export class GodRaysExpr extends ExprVec4 {
   }
 }
 
+/** options that define how the godrays will look */
 interface GodraysOptions {
   color?: Vec4;
+  /** multiplies final output */
   exposure?: Float | number;
+  /** how much to decrease light for each sample */
   decay?: Float | number;
+  /** how close samples are together */
   density?: Float | number;
+  /** multiplies the original background colors */
   weight?: Float | number;
+  /** where the rays eminate from */
   lightPos?: Vec2;
+  /** where to sample from */
   samplerNum?: number;
-  convertDepth?: { threshold: Float | number; newColor: Vec4 };
+  /** information for how to convert a depth buffer into an occlusion buffer */
+  convertDepth?: {
+    /** what depth is unoccluded (assumes `1 / distance` depth buffer) */
+    threshold: Float | number;
+    /** what the unoccluded color should be */
+    newColor: Vec4;
+  };
 }
 
 // sane godray defaults from https://github.com/Erkaman/glsl-godrays/blob/master/example/index.js
+/**
+ * create a godrays expression which requires an occlusion map
+ * @param options object that defines godrays properties (has sane defaults)
+ */
 export function godrays(options: GodraysOptions = {}) {
   return new GodRaysExpr(
     options.color,

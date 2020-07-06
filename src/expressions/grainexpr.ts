@@ -23,6 +23,10 @@ export class GrainExpr extends ExprVec4 {
   }
 }
 
+/**
+ * adds random grain
+ * @param val how much the grain should impact the image (0 to 1 is reasonable)
+ */
 export function grain(val: Float | number) {
   return new GrainExpr(n2e(val));
 }

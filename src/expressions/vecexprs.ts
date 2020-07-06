@@ -23,10 +23,12 @@ function vecSourceList(...components: Float[]): [SourceLists, string[]] {
 
 // expression vector shorthands
 
+/** creates a basic vec2 expression */
 export function vec2(comp1: Float | number, comp2: Float | number) {
   return new BasicVec2(...vecSourceList(...[comp1, comp2].map((c) => n2e(c))));
 }
 
+/** creates a basic vec3 expression */
 export function vec3(
   comp1: Float | number,
   comp2: Float | number,
@@ -37,6 +39,7 @@ export function vec3(
   );
 }
 
+/** creates a basic vec4 expression */
 export function vec4(
   comp1: Float | number,
   comp2: Float | number,
@@ -50,14 +53,17 @@ export function vec4(
 
 // primitive vector shorthands
 
+/** creates a primitive vec2 expression */
 export function pvec2(comp1: number, comp2: number) {
   return new PrimitiveVec2([comp1, comp2]);
 }
 
+/** creates a primitive vec3 expression */
 export function pvec3(comp1: number, comp2: number, comp3: number) {
   return new PrimitiveVec2([comp1, comp2, comp3]);
 }
 
+/** creates a primitive vec4 expression */
 export function pvec4(
   comp1: number,
   comp2: number,

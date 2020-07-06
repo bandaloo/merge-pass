@@ -18,6 +18,13 @@ export class Brightness extends ExprVec4 {
   }
 }
 
+/**
+ * changes the brightness of a color
+ * @param val float for how much to change the brightness by (should probably be
+ * between -1 and 1)
+ * @param col the color to increase the brightness of (defaults to current
+ * fragment color)
+ */
 export function brightness(val: Float | number, col?: ExprVec4) {
   return new Brightness(n2e(val), col);
 }

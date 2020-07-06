@@ -20,6 +20,14 @@ export class DepthToOcclusionExpr extends ExprVec4 {
   // TODO implement setters if this ends up being a useful expression
 }
 
+/**
+ * converts a `1 / distance` depth buffer to an occlusion buffer
+ * @param depthCol values below this are not occluded (set to something low,
+ * like 0.1)
+ * @param newCol the color to replace unoccluded areas by (defaults to white)
+ * @param threshold values below this are not occluded (set to something low,
+ * like 0.1 or lower)
+ */
 export function depth2occlusion(
   depthCol: Vec4,
   newCol: Vec4,

@@ -88,6 +88,12 @@ export function a2<T extends Vec4, U extends Vec4>(
 
 // implementation
 
+/**
+ * built-in functions that take in two `genType x` arguments and return a `genType x`
+ * @param name function name (like "pow" or "step")
+ * @param val1 the first `genType x` argument
+ * @param val2 the second `genType x` argument
+ */
 export function a2(name: Arity2HomogenousName, val1: any, val2: any) {
   return new Arity2HomogenousExpr(name, wrapInValue(val1), wrapInValue(val2));
 }

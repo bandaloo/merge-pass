@@ -103,6 +103,12 @@ export function op<T extends Vec>(
 
 // implementation
 
+/**
+ * creates an arithmetic operator expression
+ * @param left expression left of operator
+ * @param op string representing arithmetic operator
+ * @param right expression right of operator
+ */
 export function op(left: any, op: ArithOp, right: any) {
   return new OpExpr(wrapInValue(left), op, wrapInValue(right));
 }

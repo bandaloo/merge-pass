@@ -17,6 +17,10 @@ export class RGBToHSVExpr extends ExprVec4 {
   }
 }
 
+/**
+ * converts a color (with an alpha component) from rgb to hsv
+ * @param col the rgba color to convert to hsva
+ */
 export function rgb2hsv(col: Vec4) {
   return new RGBToHSVExpr(col);
 }

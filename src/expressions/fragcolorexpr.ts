@@ -7,6 +7,7 @@ export class FragColorExpr extends ExprVec4 {
   }
 }
 
+/** fragment color expression */
 export function fcolor() {
   return new FragColorExpr();
 }

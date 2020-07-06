@@ -30,6 +30,12 @@ export class GaussianExpr extends ExprFloat {
   }
 }
 
+/**
+ * gaussian function that defaults to normal distribution
+ * @param x x position in the curve
+ * @param a horizontal position of peak (defaults to 0 for normal distribution)
+ * @param b horizontal stretch of the curve (defaults to 1 for normal distribution)
+ */
 export function gaussian(
   x: Float | number,
   a: Float | number = 0,

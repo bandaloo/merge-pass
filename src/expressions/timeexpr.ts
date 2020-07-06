@@ -7,6 +7,7 @@ export class TimeExpr extends ExprFloat {
   }
 }
 
+/** creates a time expression that evaluates to the current time */
 export function time() {
   return new TimeExpr();
 }

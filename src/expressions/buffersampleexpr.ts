@@ -25,6 +25,12 @@ export class BufferSampleExpr extends ExprVec4 {
   }
 }
 
+/**
+ * sample from one of the channels
+ * @param channel which channel to sample from
+ * @param vec where to sample the channel texture (defaults to the normalized
+ * frag coord)
+ */
 export function channel(channel: number, vec?: Vec2) {
   return new BufferSampleExpr(channel, vec);
 }

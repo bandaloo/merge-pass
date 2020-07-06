@@ -24,6 +24,11 @@ export class RotateExpr extends ExprVec2 {
   }
 }
 
+/**
+ * rotates a vector by a given angle
+ * @param vec the vector to rotate
+ * @param angle radians to rotate vector by
+ */
 export function rotate(vec: Vec2, angle: Float | number) {
   return new RotateExpr(vec, n2e(angle));
 }

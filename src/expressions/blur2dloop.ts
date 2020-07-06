@@ -34,6 +34,13 @@ export class Blur2dLoop extends EffectLoop {
   }
 }
 
+/**
+ *
+ * @param horizontalExpr float for the horizontal blur (1 pixel default)
+ * @param verticalExpr float for the vertical blur (1 pixel default)
+ * @param reps how many passes (defaults to 2)
+ * @param taps how many taps (5, 9, or 13, defaults to 5)
+ */
 export function blur2d(
   horizontalExpr?: Float | number,
   verticalExpr?: Float | number,

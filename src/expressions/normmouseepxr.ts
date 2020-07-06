@@ -7,6 +7,9 @@ export class NormMouseExpr extends ExprVec2 {
   }
 }
 
+/**
+ * creates an expression that calculates the normalized mouse position
+ */
 export function nmouse() {
   return new NormMouseExpr();
 }
