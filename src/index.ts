@@ -10,6 +10,7 @@ export * from "./expressions/opexpr";
 export * from "./expressions/powerblur";
 export * from "./expressions/blur2dloop";
 export * from "./expressions/lenexpr";
+export * from "./expressions/fragcoordexpr";
 export * from "./expressions/normfragcoordexpr";
 export * from "./expressions/normcenterfragcoordexpr";
 export * from "./expressions/scenesampleexpr";
@@ -30,7 +31,10 @@ export * from "./expressions/dofloop";
 export * from "./expressions/truedepthexpr";
 export * from "./expressions/godraysexpr";
 export * from "./expressions/depthtoocclusionexpr";
-export * from "./expressions/resolutionexpr"
-export * from "./expressions/mouseexpr"
+export * from "./expressions/resolutionexpr";
+export * from "./expressions/mouseexpr";
+export * from "./expressions/rotateexpr";
+export * from "./expressions/translateexpr";
+export * from "./expressions/normmouseepxr";
 
 export * from "./expressions/expr";

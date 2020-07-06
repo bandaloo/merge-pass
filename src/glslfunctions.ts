@@ -4,12 +4,9 @@ export const glslFuncs = {
   random: `float random(vec2 st) {
   return fract(sin(dot(st.xy / 99., vec2(12.9898, 78.233))) * 43758.5453123);
 }`,
-  //  rotate2d: `mat2 rotate2d(float angle) {
-  //  return mat2(cos(angle), -sin(angle), sin(angle), cos(angle));
-  //}`,
-  //  scale: `mat2 scale(vec2 scale) {
-  //  return mat2(scale.x, 0.0, 0.0, scale.y);
-  //}`,
+  rotate2d: `vec2 rotate2d(vec2 v, float angle) {
+  return mat2(cos(angle), -sin(angle), sin(angle), cos(angle)) * v;
+}`,
   hsv2rgb: `vec4 hsv2rgb(vec4 co){
   vec3 c = co.xyz;
   vec3 rgb = clamp(abs(mod(

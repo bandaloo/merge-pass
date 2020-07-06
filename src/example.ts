@@ -498,11 +498,46 @@ const demos: Demos = {
   },
 
   mitosis: () => {
-    // prettier-ignore
-    const merger = new MP.Merger([MP.input(
-      MP.changecomp(MP.nfcoord(), MP.op(MP.op(MP.op(0.5, "+", MP.op(0.5, "*", MP.a1("cos", MP.time()))), "*", 0.3), "*", MP.a1("cos",
-      MP.op(MP.getcomp(MP.nfcoord(), "x"), "*", 3 * Math.PI))), "x", "+")), MP.fxaa()],
-      sourceCanvas, gl);
+    const merger = new MP.Merger(
+      [
+        MP.input(
+          MP.changecomp(
+            MP.nfcoord(),
+            MP.op(
+              MP.op(
+                MP.op(0.5, "+", MP.op(0.5, "*", MP.a1("cos", MP.time()))),
+                "*",
+                0.3
+              ),
+              "*",
+              MP.a1(
+                "cos",
+                MP.op(MP.getcomp(MP.nfcoord(), "x"), "*", 3 * Math.PI)
+              )
+            ),
+            "x",
+            "+"
+          )
+        ),
+        MP.fxaa(),
+      ],
+      sourceCanvas,
+      gl
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
+
+  swirl: () => {
+    const vec = MP.nmouse();
+    const dist = MP.op(MP.len(MP.op(MP.nfcoord(), "-", vec)), "*", 99);
+    const angle = MP.op(MP.op(1, "/", MP.op(1, "+", dist)), "*", 20);
+    const centered = MP.translate(MP.nfcoord(), MP.op(vec, "*", -1));
+    const rot = MP.rotate(centered, angle);
+    const reverted = MP.translate(rot, vec);
+    const merger = new MP.Merger([MP.input(reverted)], sourceCanvas, gl);
     return {
       merger: merger,
       change: () => {},
@@ -736,6 +771,7 @@ const draws: Draws = {
   depthgodrays: [higherOrderPerspective(true), higherOrderPerspective(false)],
   mousegodrays: [higherOrderDonuts(true), higherOrderDonuts(false)],
   mitosis: [uncommonCheckerboard],
+  swirl: [stripes],
 };
 
 interface Notes {
@@ -825,6 +861,9 @@ const notes: Notes = {
   mitosis:
     "if you sample the original scene at some offset of the pixel coordinate, you can distort " +
     "the original scene. (fxaa is used here just because we can)",
+  swirl:
+    "this distortion is done with rotatiosn and translations based on the distance " +
+    "from the mouse position",
 };
 
 const canvases = [sourceCanvas];
