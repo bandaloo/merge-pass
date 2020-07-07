@@ -4,6 +4,7 @@ import { ExprVec4, float, mut, n2e, tag } from "./expr";
 import { fcolor } from "./fragcolorexpr";
 import { pvec2, vec4 } from "./vecexprs";
 
+/** godrays expression */
 export class GodRaysExpr extends ExprVec4 {
   col: Vec4;
   exposure: Float;
@@ -69,31 +70,37 @@ export class GodRaysExpr extends ExprVec4 {
     this.needs.extraBuffers = new Set([0]);
   }
 
+  /** sets the light color */
   setColor(color: Vec4) {
     this.setUniform("uCol" + this.id, color);
     this.col = color;
   }
 
+  /** sets the exposure */
   setExposure(exposure: Float | number) {
     this.setUniform("uExposure" + this.id, exposure);
     this.exposure = n2e(exposure);
   }
 
+  /** sets the decay */
   setDecay(decay: Float | number) {
     this.setUniform("uDecay" + this.id, decay);
     this.decay = n2e(decay);
   }
 
+  /** sets the density */
   setDensity(density: Float | number) {
     this.setUniform("uDensity" + this.id, density);
     this.density = n2e(density);
   }
 
+  /** sets the weight */
   setWeight(weight: Float | number) {
     this.setUniform("uWeight" + this.id, weight);
     this.weight = n2e(weight);
   }
 
+  /** sets the light position */
   setLightPos(lightPos: Vec2) {
     this.setUniform("uLightPos" + this.id, lightPos);
     this.lightPos = lightPos;

@@ -2,6 +2,7 @@ import { ExprVec4, tag } from "./expr";
 import { Vec4 } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
 
+/** RGB to HSV expression */
 export class RGBToHSVExpr extends ExprVec4 {
   color: Vec4;
 
@@ -18,7 +19,8 @@ export class RGBToHSVExpr extends ExprVec4 {
 }
 
 /**
- * converts a color (with an alpha component) from rgb to hsv
+ * creates an expression that converts a color (with an alpha component) from
+ * rgb to hsv
  * @param col the rgba color to convert to hsva
  */
 export function rgb2hsv(col: Vec4) {

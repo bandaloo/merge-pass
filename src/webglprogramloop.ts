@@ -15,12 +15,14 @@ export const updateNeeds = (acc: Needs, curr: Needs) => {
   };
 };
 
+/** values to set the default uniforms `uTime` and `uMouse` to */
 interface DefaultUniforms {
   timeVal: number;
   mouseX: number;
   mouseY: number;
 }
 
+/** recursive data structure of compiled programs */
 export class WebGLProgramLoop {
   programElement: WebGLProgramElement;
   repeat: LoopInfo;
@@ -70,6 +72,7 @@ export class WebGLProgramLoop {
     }
   }
 
+  /** get all needs from all programs */
   getTotalNeeds(): Needs {
     // go through needs of program loop
     if (!(this.programElement instanceof WebGLProgram)) {
@@ -86,6 +89,11 @@ export class WebGLProgramLoop {
     return this.totalNeeds;
   }
 
+  // TODO rename this
+  /**
+   * recursively uses all programs in the loop, binding the appropriate textures
+   * and setting the appropriate uniforms
+   */
   draw(
     gl: WebGL2RenderingContext,
     tex: TexInfo,

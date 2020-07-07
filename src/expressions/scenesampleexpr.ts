@@ -2,6 +2,7 @@ import { Vec2 } from "../exprtypes";
 import { ExprVec4, tag } from "./expr";
 import { nfcoord } from "./normfragcoordexpr";
 
+/** scene sample expression */
 export class SceneSampleExpr extends ExprVec4 {
   coord: Vec2;
 
@@ -11,6 +12,7 @@ export class SceneSampleExpr extends ExprVec4 {
     this.needs.sceneBuffer = true;
   }
 
+  /** sets coordinate where scene is being sampled from */
   setCoord(coord: Vec2) {
     this.setUniform("uCoord", coord);
     this.coord = coord;
@@ -18,7 +20,7 @@ export class SceneSampleExpr extends ExprVec4 {
 }
 
 /**
- * creates an expression that samples the scene
+ * creates an expression that samples the original scene
  * @param vec where to sample the original scene texture (defaults to the normalized frag
  * coord, but change this if you want to deform the original image)
  */

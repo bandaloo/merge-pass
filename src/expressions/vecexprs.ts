@@ -8,6 +8,7 @@ import {
   SourceLists,
 } from "./expr";
 
+/** @ignore */
 function vecSourceList(...components: Float[]): [SourceLists, string[]] {
   const sections = ["vec" + components.length + "("];
   for (let i = 0; i < components.length - 1; i++) {

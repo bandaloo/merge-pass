@@ -1,6 +1,7 @@
 import { Vec } from "../exprtypes";
 import { ExprFloat, tag } from "./expr";
 
+/** length expression */
 export class LenExpr<T extends Vec> extends ExprFloat {
   vec: T;
 
@@ -15,7 +16,7 @@ export class LenExpr<T extends Vec> extends ExprFloat {
   }
 }
 
-/** gets the length of a vector */
+/** creates an expreession that calculates the length of a vector */
 export function len<T extends Vec>(vec: T) {
   return new LenExpr(vec);
 }

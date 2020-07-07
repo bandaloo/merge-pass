@@ -5,6 +5,7 @@ import { mut } from "./expr";
 
 const baseLog = (x: number, y: number) => Math.log(y) / Math.log(x);
 
+/** power blur loop */
 export class PowerBlurLoop extends EffectLoop {
   private size: number;
 
@@ -23,6 +24,7 @@ export class PowerBlurLoop extends EffectLoop {
     };
   }
 
+  /** sets the size of the radius */
   setSize(size: number) {
     this.size = size;
     this.repeat.num = Math.ceil(baseLog(2, size));

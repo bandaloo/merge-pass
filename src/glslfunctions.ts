@@ -1,4 +1,5 @@
 // adapted from The Book of Shaders
+/** glsl source code for external functions */
 export const glslFuncs = {
   // TODO replace with a better one
   random: `float random(vec2 st) {
@@ -182,12 +183,14 @@ export const glslFuncs = {
 }`,
 };
 
+/** @ignore */
 export function captureAndAppend(str: string, reg: RegExp, suffix: string) {
   const matches = str.match(reg);
   if (matches === null) throw new Error("no match in the given string");
   return str.replace(reg, matches[0] + suffix);
 }
 
+/** @ignore */
 export function replaceSampler(
   fullString: string,
   funcRegExp: RegExp,

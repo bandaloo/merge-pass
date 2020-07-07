@@ -1,5 +1,6 @@
 import { ExprFloat, tag } from "./expr";
 
+/** time expression */
 export class TimeExpr extends ExprFloat {
   constructor() {
     super(tag`uTime`, []);

@@ -1,5 +1,6 @@
 import { ExprVec2, tag } from "./expr";
 
+/** normalized mouse position expression */
 export class NormMouseExpr extends ExprVec2 {
   constructor() {
     super(tag`(uMouse / uResolution.xy)`, []);
@@ -9,6 +10,7 @@ export class NormMouseExpr extends ExprVec2 {
 
 /**
  * creates an expression that calculates the normalized mouse position
+ * (coordinates range from 0 to 1)
  */
 export function nmouse() {
   return new NormMouseExpr();

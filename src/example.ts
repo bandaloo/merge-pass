@@ -1,6 +1,6 @@
+/** @ignore */
 import * as dat from "dat.gui";
 import * as MP from "./index";
-import { nfcoord } from "./expressions/normfragcoordexpr";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");

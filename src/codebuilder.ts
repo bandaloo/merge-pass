@@ -2,14 +2,19 @@ import { BuildInfo, Expr, Needs } from "./expressions/expr";
 import { EffectLoop, UniformLocs } from "./mergepass";
 import { WebGLProgramLoop } from "./webglprogramloop";
 
+/** @ignore */
 const FRAG_SET = `  gl_FragColor = texture2D(uSampler, gl_FragCoord.xy / uResolution);\n`;
 
+/** @ignore */
 const SCENE_SET = `uniform sampler2D uSceneSampler;\n`;
 
+/** @ignore */
 const TIME_SET = `uniform mediump float uTime;\n`;
 
+/** @ignore */
 const MOUSE_SET = `uniform mediump vec2 uMouse;\n`;
 
+/** @ignore */
 const BOILERPLATE = `#ifdef GL_ES
 precision mediump float;
 #endif
@@ -17,15 +22,26 @@ precision mediump float;
 uniform sampler2D uSampler;
 uniform mediump vec2 uResolution;\n`;
 
+// TODO rename this
+/**
+ * returns the string name of the sampler uniform
+ * @param buf channel number to sample from
+ */
 export function bufferSamplerName(buf: number) {
   // texture 2 sampler has number 0 (0 and 1 are used for back buffer and scene)
   return `uBufferSampler${buf}`;
 }
 
+// TODO rename this
+/**
+ * returns the string of the declaration of the sampler
+ * @param buf channel number to sample from
+ */
 function bufferSamplerDeclaration(buf: number) {
   return `uniform sampler2D ${bufferSamplerName(buf)};`;
 }
 
+/** class that manages generation and compilation of GLSL code */
 export class CodeBuilder {
   private calls: string[] = [];
   private externalFuncs: Set<string> = new Set();
@@ -57,7 +73,6 @@ export class CodeBuilder {
       const typeName = buildInfo.uniformTypes[name];
       this.uniformDeclarations.add(`uniform mediump ${typeName} ${name};`);
     }
-    //this.uniformNames = Object.keys(buildInfo.uniformTypes);
     // add all external functions from the `BuildInfo` instance
     buildInfo.externalFuncs.forEach((func) => this.externalFuncs.add(func));
     this.totalNeeds = buildInfo.needs;
@@ -96,6 +111,7 @@ export class CodeBuilder {
     }
   }
 
+  /** generate the code and compile the program into a loop */
   compileProgram(
     gl: WebGL2RenderingContext,
     vShader: WebGLShader,

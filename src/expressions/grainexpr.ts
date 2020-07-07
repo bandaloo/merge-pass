@@ -2,6 +2,7 @@ import { Float } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
 import { ExprVec4, n2e, tag } from "./expr";
 
+/** grain expression */
 export class GrainExpr extends ExprVec4 {
   grain: Float;
 

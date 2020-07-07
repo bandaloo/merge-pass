@@ -12,6 +12,7 @@ export class RandomExpr extends ExprVec4 {
     this.externalFuncs = [glslFuncs.random];
   }
 
+  /** sets the seed (vary this over time to get a moving effect) */
   setSeed(seed: Vec2) {
     this.setUniform("uSeed", seed);
     this.seed = seed;

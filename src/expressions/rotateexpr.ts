@@ -2,6 +2,7 @@ import { ExprVec2, tag, n2e } from "./expr";
 import { glslFuncs } from "../glslfunctions";
 import { Vec2, Float } from "../exprtypes";
 
+/** rotate expression */
 export class RotateExpr extends ExprVec2 {
   vec: Vec2;
   angle: Float;
@@ -25,7 +26,7 @@ export class RotateExpr extends ExprVec2 {
 }
 
 /**
- * rotates a vector by a given angle
+ * creates an expression that rotates a vector by a given angle
  * @param vec the vector to rotate
  * @param angle radians to rotate vector by
  */

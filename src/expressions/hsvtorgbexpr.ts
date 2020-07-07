@@ -2,6 +2,7 @@ import { ExprVec4, tag } from "./expr";
 import { Vec4 } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
 
+/** HSV to RGB expression */
 export class HSVToRGBExpr extends ExprVec4 {
   color: Vec4;
 

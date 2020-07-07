@@ -11,6 +11,7 @@ export class SetColorExpr extends ExprVec4 {
     this.vec = vec;
   }
 
+  /** sets the value which will be set to the color */
   setVal(vec: Vec4) {
     this.setUniform("uVal", vec);
     this.vec = vec;

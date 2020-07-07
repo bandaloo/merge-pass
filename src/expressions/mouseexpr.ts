@@ -1,5 +1,6 @@
 import { ExprVec2, tag } from "./expr";
 
+/** mouse position expression */
 export class MouseExpr extends ExprVec2 {
   constructor() {
     super(tag`uMouse`, []);
@@ -7,7 +8,10 @@ export class MouseExpr extends ExprVec2 {
   }
 }
 
-/** gets a vec2 representing the mouse position in pixels */
+/**
+ * creates an expression that evaluates to a vector representing the mouse
+ * position in pixels
+ */
 export function mouse() {
   return new MouseExpr();
 }

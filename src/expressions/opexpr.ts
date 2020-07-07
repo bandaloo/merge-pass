@@ -87,7 +87,7 @@ export function op<T extends Vec4, U extends Vec4>(
   right: U
 ): OpExpr<T, U>;
 
-// vec and float at to right
+// vec and float at right
 
 export function op<T extends Vec, U extends Float>(
   left: T,

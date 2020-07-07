@@ -49,10 +49,15 @@ interface Parseable {
     enc: Expr | undefined
   ) => string;
 
+  /** returns the GLSL type as a string */
   typeString(): TypeString;
 }
 
 export interface Applicable {
+  /**
+   * directly sets a uniform in a program; user should use [[setUniform]]
+   * instead
+   */
   applyUniform(gl: WebGL2RenderingContext, loc: WebGLUniformLocation): void;
 }
 
@@ -114,6 +119,11 @@ export abstract class Expr implements Parseable, EffectLike {
     return this.needs.neighborSample ? mult : 0;
   }
 
+  /**
+   * set a uniform by name directly
+   * @param name uniform name in the source code
+   * @param newVal value to set the uniform to
+   */
   setUniform(name: string, newVal: AllVals | number) {
     newVal = wrapInValue(newVal);
     const originalName = name;
@@ -316,6 +326,7 @@ export abstract class BasicVec extends Expr {
     return ("vec" + this.values.length) as TypeString;
   }
 
+  /** sets a component of the vector */
   setComp(index: number, primitive: PrimitiveFloat | number) {
     if (index < 0 || index >= this.values.length) {
       throw new Error("out of bounds of setting component");

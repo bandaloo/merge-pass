@@ -1,5 +1,6 @@
 import { ExprVec2, tag } from "./expr";
 
+/** resolution expression */
 export class ResolutionExpr extends ExprVec2 {
   constructor() {
     super(tag`uResolution`, []);

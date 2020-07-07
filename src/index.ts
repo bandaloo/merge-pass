@@ -37,4 +37,5 @@ export * from "./expressions/rotateexpr";
 export * from "./expressions/translateexpr";
 export * from "./expressions/normmouseepxr";
 
+// TODO move this out of expressions
 export * from "./expressions/expr";

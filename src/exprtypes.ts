@@ -18,35 +18,42 @@ import {
   BasicVec4,
 } from "./expressions/expr";
 
+/** all possible float expressions */
 export type Float =
   | PrimitiveFloat
   | ExprFloat
   | Operator<Float>
   | Mutable<PrimitiveFloat>
   | BasicFloat;
+/** all possible vec expressions */
 export type Vec =
   | PrimitiveVec
   | ExprVec
   | Operator<Vec>
   | Mutable<PrimitiveVec>
   | BasicVec;
+/** all possible vec2 expressions */
 export type Vec2 =
   | PrimitiveVec2
   | ExprVec2
   | Operator<Vec2>
   | Mutable<PrimitiveVec2>
   | BasicVec2;
+/** all possible vec3 expressions */
 export type Vec3 =
   | PrimitiveVec3
   | ExprVec3
   | Operator<Vec3>
   | Mutable<PrimitiveVec3>
   | BasicVec3;
+/** all possible vec4 expressions */
 export type Vec4 =
   | PrimitiveVec4
   | ExprVec4
   | Operator<Vec4>
   | Mutable<PrimitiveVec4>
   | BasicVec4;
+/** all possible expressions */
 export type AllVals = Float | Vec;
+/** all type strings */
 export type TypeString = "float" | "vec2" | "vec3" | "vec4";

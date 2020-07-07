@@ -2,16 +2,28 @@ import { CodeBuilder } from "./codebuilder";
 import { ExprVec4 } from "./expressions/expr";
 import { WebGLProgramLoop } from "./webglprogramloop";
 
+/** repetitions and callback for loop */
 export interface LoopInfo {
+  /** amount of times to repeat the loop */
   num: number;
+  /** optional callback for loop */
   func?: (arg0: number) => void;
 }
 
 export interface EffectLike {
+  /**
+   * gets the amount of times an effect will need to sample the original scene
+   * @param mult multiplier of the loop
+   */
   getSampleNum(mult: number): number;
 }
 
+/**
+ * a class implementing this interface can be compiled into a
+ * [[WebGLProgramLoop]] which can contain nested loops
+ */
 export interface Generable {
+  /** recursively generate programs out of this effect and all nested effects */
   genPrograms(
     gl: WebGL2RenderingContext,
     vShader: WebGLShader,
@@ -19,6 +31,7 @@ export interface Generable {
   ): WebGLProgramLoop;
 }
 
+/** effect loop, which can loop over other effects or effect loops */
 export class EffectLoop implements EffectLike, Generable {
   effects: EffectElement[];
   repeat: LoopInfo;
@@ -28,7 +41,6 @@ export class EffectLoop implements EffectLike, Generable {
     this.repeat = repeat;
   }
 
-  /** @ignore */
   getSampleNum(mult = 1, sliceStart = 0, sliceEnd = this.effects.length) {
     mult *= this.repeat.num;
     let acc = 0;
@@ -74,10 +86,6 @@ export class EffectLoop implements EffectLike, Generable {
     return regroupedEffects;
   }
 
-  /**
-   * @ignore
-   * recursively parse all effects into programs
-   */
   genPrograms(
     gl: WebGL2RenderingContext,
     vShader: WebGLShader,
@@ -108,6 +116,10 @@ export function loop(effects: EffectElement[], rep: number) {
   return new EffectLoop(effects, { num: rep });
 }
 
+/**
+ * type denoting that expressions that return a vec4 or loops can be considered
+ * "effects"
+ */
 type EffectElement = ExprVec4 | EffectLoop;
 
 export interface UniformLocs {
@@ -120,7 +132,9 @@ void main() {
   gl_Position = vec4(aPosition, 0.0, 1.0);
 }\n`;
 
+/** setting for min and max texture filtering modes */
 type FilterMode = "linear" | "nearest";
+/** setting for clamp */
 type ClampMode = "clamp" | "wrap";
 
 /** extra texture options for the merger */
@@ -143,6 +157,7 @@ export interface TexInfo {
   bufTextures: WebGLTexture[];
 }
 
+/** class that can merge effects */
 export class Merger {
   /** the context to render to */
   readonly gl: WebGL2RenderingContext;
@@ -336,6 +351,7 @@ export class Merger {
   }
 }
 
+/** creates a texture given a context and options */
 export function makeTexture(
   gl: WebGL2RenderingContext,
   options?: MergerOptions
@@ -386,6 +402,7 @@ export function makeTexture(
   return texture;
 }
 
+/** copies onto texture */
 export function sendTexture(
   gl: WebGL2RenderingContext,
   src: TexImageSource | WebGLTexture
