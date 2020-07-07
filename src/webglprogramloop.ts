@@ -1,5 +1,6 @@
 import { Expr, Needs } from "./exprs/expr";
 import { LoopInfo, TexInfo, UniformLocs } from "./mergepass";
+import { glslFuncs } from "./glslfunctions";
 
 export type WebGLProgramElement = WebGLProgram | WebGLProgramLoop[];
 
@@ -181,6 +182,16 @@ export class WebGLProgramLoop {
         for (const p of this.programElement) {
           p.run(gl, tex, framebuffer, uniformLocs, newLast, defaultUniforms);
         }
+      }
+    }
+  }
+
+  delete(gl: WebGL2RenderingContext) {
+    if (this.programElement instanceof WebGLProgram) {
+      gl.deleteProgram(this.programElement);
+    } else {
+      for (const p of this.programElement) {
+        p.delete(gl);
       }
     }
   }

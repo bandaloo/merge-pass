@@ -31,7 +31,8 @@ export interface Generable {
   genPrograms(
     gl: WebGL2RenderingContext,
     vShader: WebGLShader,
-    uniformLocs: UniformLocs
+    uniformLocs: UniformLocs,
+    shaders: WebGLShader[]
   ): WebGLProgramLoop;
 }
 
@@ -93,7 +94,8 @@ export class EffectLoop implements EffectLike, Generable {
   genPrograms(
     gl: WebGL2RenderingContext,
     vShader: WebGLShader,
-    uniformLocs: UniformLocs
+    uniformLocs: UniformLocs,
+    shaders: WebGLShader[]
   ): WebGLProgramLoop {
     // validate
     const fullSampleNum = this.getSampleNum() / this.repeat.num;
@@ -101,14 +103,19 @@ export class EffectLoop implements EffectLike, Generable {
     const restSampleNum = this.getSampleNum(undefined, 1) / this.repeat.num;
     if (fullSampleNum === 0 || (firstSampleNum === 1 && restSampleNum === 0)) {
       const codeBuilder = new CodeBuilder(this);
-      const program = codeBuilder.compileProgram(gl, vShader, uniformLocs);
+      const program = codeBuilder.compileProgram(
+        gl,
+        vShader,
+        uniformLocs,
+        shaders
+      );
       return program;
     }
     // otherwise, regroup and try again on regrouped loops
     this.effects = this.regroup();
     // okay to have undefined needs here
     return new WebGLProgramLoop(
-      this.effects.map((e) => e.genPrograms(gl, vShader, uniformLocs)),
+      this.effects.map((e) => e.genPrograms(gl, vShader, uniformLocs, shaders)),
       this.repeat,
       gl
     );
@@ -180,6 +187,9 @@ export class Merger {
   /** additional channels */
   private channels: (TexImageSource | WebGLTexture)[] = [];
   private options: MergerOptions | undefined;
+  private vertexBuffer: WebGLBuffer;
+  private vShader: WebGLShader;
+  private fShaders: WebGLShader[] = [];
 
   /**
    *
@@ -219,16 +229,23 @@ export class Merger {
 
     // set up the vertex buffer
     const vertexBuffer = this.gl.createBuffer();
+    if (vertexBuffer === null) {
+      throw new Error("problem creating vertex buffer");
+    }
     this.gl.bindBuffer(this.gl.ARRAY_BUFFER, vertexBuffer);
     const vertexArray = [-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1];
     const triangles = new Float32Array(vertexArray);
     this.gl.bufferData(this.gl.ARRAY_BUFFER, triangles, this.gl.STATIC_DRAW);
+    // save the vertex buffer reference just so we can delete it later
+    this.vertexBuffer = vertexBuffer;
 
     // compile the simple vertex shader (2 big triangles)
     const vShader = this.gl.createShader(this.gl.VERTEX_SHADER);
     if (vShader === null) {
       throw new Error("problem creating the vertex shader");
     }
+    // save the vertex shader reference just so we can delete it later
+    this.vShader = vShader;
 
     this.gl.shaderSource(vShader, V_SOURCE);
     this.gl.compileShader(vShader);
@@ -257,8 +274,12 @@ export class Merger {
     this.programLoop = this.effectLoop.genPrograms(
       this.gl,
       vShader,
-      this.uniformLocs
+      this.uniformLocs,
+      this.fShaders
     );
+    // side effect: `fShaders` is populated after the call to `genPrograms`
+    // TODO get rid of this
+    console.log(this.fShaders);
 
     // find the final program
     let atBottom = false;
@@ -360,6 +381,43 @@ export class Merger {
     this.tex.front = originalFront;
     this.tex.back = originalBack;
   }
+
+  /**
+   * delete all resources created by construction of this [[Merger]]; use right before
+   * intentionally losing a reference to this merger object. this is useful if you want
+   * to construct another [[Merger]] to use new effects
+   */
+  delete() {
+    // call bind with null on all textures
+    for (let i = 0; i < 2 + this.tex.bufTextures.length; i++) {
+      // this gets rid of final texture, scene texture and channels
+      this.gl.activeTexture(this.gl.TEXTURE0);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, null);
+    }
+    // call bind with null on all vertex buffers (just 1)
+    this.gl.bindBuffer(this.gl.ARRAY_BUFFER, null);
+    // call bind with null on all frame buffers (just 1)
+    // (this might be redundant because this happens at end of draw call)
+    this.gl.bindFramebuffer(this.gl.FRAMEBUFFER, null);
+    // delete all programs
+    this.programLoop.delete(this.gl);
+    // delete all textures
+    this.gl.deleteTexture(this.tex.front);
+    this.gl.deleteTexture(this.tex.back);
+    for (const c of this.tex.bufTextures) {
+      this.gl.deleteTexture(c);
+    }
+    // delete all vertex buffers (just 1)
+    this.gl.deleteBuffer(this.vertexBuffer);
+    // delete all frame buffers (just 1)
+    this.gl.deleteFramebuffer(this.framebuffer);
+    // delete all vertex shaders (just 1)
+    this.gl.deleteShader(this.vShader);
+    // delete all fragment shaders
+    for (const f of this.fShaders) {
+      this.gl.deleteShader(f);
+    }
+  }
 }
 
 /** creates a texture given a context and options */
@@ -419,7 +477,7 @@ export function sendTexture(
   src: TexImageSource | WebGLTexture
 ) {
   // if you are using textures instead of images, the user is responsible for
-  // doing `texImage2D` and updating it with new info, so just return
+  // updating that texture, so just return
   if (src instanceof WebGLTexture) return;
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
 }

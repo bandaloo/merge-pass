@@ -114,7 +114,8 @@ export class CodeBuilder {
   compileProgram(
     gl: WebGL2RenderingContext,
     vShader: WebGLShader,
-    uniformLocs: UniformLocs
+    uniformLocs: UniformLocs,
+    shaders: WebGLShader[] = []
   ) {
     // set up the fragment shader
     const fShader = gl.createShader(gl.FRAGMENT_SHADER);
@@ -145,8 +146,10 @@ export class CodeBuilder {
     if (program === null) {
       throw new Error("problem creating program");
     }
+    // TODO are we attaching the vertex shader more times than is necessary?
     gl.attachShader(program, vShader);
     gl.attachShader(program, fShader);
+    shaders.push(fShader);
     const shaderLog = (name: string, shader: WebGLShader) => {
       const output = gl.getShaderInfoLog(shader);
       if (output) console.log(`${name} shader info log\n${output}`);

@@ -4,6 +4,7 @@
  */
 import * as dat from "dat.gui";
 import * as MP from "./index";
+import { Merger } from "./mergepass";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -41,13 +42,13 @@ let c: HTMLCanvasElement;
 let R = (r?: any, g?: any, b?: any, a: any = 1) =>
   `rgba(${r | 0},${g | 0},${b | 0},${a})`;
 
+interface Demo {
+  merger: MP.Merger;
+  change: (merger: MP.Merger, time: number, frame: number) => void;
+}
+
 interface Demos {
-  [name: string]: (
-    channels?: TexImageSource[]
-  ) => {
-    merger: MP.Merger;
-    change: (merger: MP.Merger, time: number, frame: number) => void;
-  };
+  [name: string]: (channels?: TexImageSource[]) => Demo;
 }
 
 const demos: Demos = {
@@ -872,6 +873,9 @@ const notes: Notes = {
 const canvases = [sourceCanvas];
 const contexts = [source];
 
+let demo: Demo;
+let key: string;
+
 window.addEventListener("load", () => {
   let mstr = getVariable("m");
   let dstr = getVariable("d");
@@ -910,7 +914,8 @@ window.addEventListener("load", () => {
     document.getElementById("buffers")?.appendChild(canvas);
   }
 
-  const demo = demos[mstr](canvases.slice(1));
+  key = mstr;
+  demo = demos[key](canvases.slice(1));
   if (demo === undefined) throw new Error("merger not found");
 
   (document.getElementById("title") as HTMLElement).innerText =
@@ -971,6 +976,15 @@ window.addEventListener("load", () => {
   step(0);
 });
 
+// used to test destruction and creation of merger
+function destroyAndCreate(str: string) {
+  demo.merger.delete();
+  console.log("deleted old merger");
+  demo = demos[str](canvases.slice(1));
+  if (demo === undefined) throw new Error("merger not found");
+  console.log("created another merger");
+}
+
 glCanvas.addEventListener("click", () => glCanvas.requestFullscreen());
 glCanvas.addEventListener("mousemove", (e) => {
   const rect = glCanvas.getBoundingClientRect();
@@ -978,3 +992,6 @@ glCanvas.addEventListener("mousemove", (e) => {
   mousePos.y = (540 * (rect.height - (e.clientY - rect.top))) / rect.height;
 });
 sourceCanvas.addEventListener("click", () => sourceCanvas.requestFullscreen());
+
+// uncomment to test destruction and creation of merger
+//setTimeout(() => destroyAndCreate("redgreenswap"), 2000);

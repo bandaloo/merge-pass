@@ -437,12 +437,14 @@ export abstract class ExprVec4 extends ExprVec implements Generable {
   genPrograms(
     gl: WebGL2RenderingContext,
     vShader: WebGLShader,
-    uniformLocs: UniformLocs
+    uniformLocs: UniformLocs,
+    shaders: WebGLShader[]
   ) {
     return new EffectLoop([this], { num: 1 }).genPrograms(
       gl,
       vShader,
-      uniformLocs
+      uniformLocs,
+      shaders
     );
   }
 
