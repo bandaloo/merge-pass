@@ -1,5 +1,5 @@
 import { CodeBuilder } from "./codebuilder";
-import { ExprVec4 } from "./expressions/expr";
+import { ExprVec4 } from "./exprs/expr";
 import { WebGLProgramLoop } from "./webglprogramloop";
 
 /** repetitions and callback for loop */

@@ -1,4 +1,4 @@
-import { BuildInfo, Expr, Needs } from "./expressions/expr";
+import { BuildInfo, Expr, Needs } from "./exprs/expr";
 import { EffectLoop, UniformLocs } from "./mergepass";
 import { WebGLProgramLoop } from "./webglprogramloop";
 

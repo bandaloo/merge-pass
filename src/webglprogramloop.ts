@@ -1,10 +1,10 @@
-import { Expr, Needs } from "./expressions/expr";
+import { Expr, Needs } from "./exprs/expr";
 import { LoopInfo, TexInfo, UniformLocs } from "./mergepass";
 
 export type WebGLProgramElement = WebGLProgram | WebGLProgramLoop[];
 
 // update me on change to needs
-export const updateNeeds = (acc: Needs, curr: Needs) => {
+export function updateNeeds(acc: Needs, curr: Needs): Needs {
   return {
     neighborSample: acc.neighborSample || curr.neighborSample,
     centerSample: acc.centerSample || curr.centerSample,
@@ -13,7 +13,7 @@ export const updateNeeds = (acc: Needs, curr: Needs) => {
     mouseUniform: acc.mouseUniform || curr.mouseUniform,
     extraBuffers: new Set([...acc.extraBuffers, ...curr.extraBuffers]),
   };
-};
+}
 
 /** values to set the default uniforms `uTime` and `uMouse` to */
 interface DefaultUniforms {
@@ -89,10 +89,10 @@ export class WebGLProgramLoop {
     return this.totalNeeds;
   }
 
-  // TODO rename this
   /**
-   * recursively uses all programs in the loop, binding the appropriate textures
-   * and setting the appropriate uniforms
+   * recursively uses all programs in the loop, binding the appropriate
+   * textures and setting the appropriate uniforms; the user should only have
+   * to call [[draw]] on [[Merger]]
    */
   run(
     gl: WebGL2RenderingContext,

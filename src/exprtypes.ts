@@ -16,7 +16,7 @@ import {
   BasicVec2,
   BasicVec3,
   BasicVec4,
-} from "./expressions/expr";
+} from "./exprs/expr";
 
 /** all possible float expressions */
 export type Float =
