@@ -94,7 +94,7 @@ export class WebGLProgramLoop {
    * recursively uses all programs in the loop, binding the appropriate textures
    * and setting the appropriate uniforms
    */
-  draw(
+  run(
     gl: WebGL2RenderingContext,
     tex: TexInfo,
     framebuffer: WebGLFramebuffer,
@@ -176,7 +176,7 @@ export class WebGLProgramLoop {
           this.repeat.func(i);
         }
         for (const p of this.programElement) {
-          p.draw(gl, tex, framebuffer, uniformLocs, newLast, defaultUniforms);
+          p.run(gl, tex, framebuffer, uniformLocs, newLast, defaultUniforms);
         }
       }
     }

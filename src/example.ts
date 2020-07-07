@@ -1,4 +1,7 @@
-/** @ignore */
+/**
+ * @packageDocumentation
+ * @ignore
+ */
 import * as dat from "dat.gui";
 import * as MP from "./index";
 

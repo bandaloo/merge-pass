@@ -22,23 +22,21 @@ precision mediump float;
 uniform sampler2D uSampler;
 uniform mediump vec2 uResolution;\n`;
 
-// TODO rename this
 /**
  * returns the string name of the sampler uniform
- * @param buf channel number to sample from
+ * @param num channel number to sample from
  */
-export function bufferSamplerName(buf: number) {
+export function channelSamplerName(num: number) {
   // texture 2 sampler has number 0 (0 and 1 are used for back buffer and scene)
-  return `uBufferSampler${buf}`;
+  return `uBufferSampler${num}`;
 }
 
-// TODO rename this
 /**
  * returns the string of the declaration of the sampler
- * @param buf channel number to sample from
+ * @param num channel number to sample from
  */
-function bufferSamplerDeclaration(buf: number) {
-  return `uniform sampler2D ${bufferSamplerName(buf)};`;
+function channelSamplerDeclaration(num: number) {
+  return `uniform sampler2D ${channelSamplerName(num)};`;
 }
 
 /** class that manages generation and compilation of GLSL code */
@@ -128,7 +126,7 @@ export class CodeBuilder {
       (this.totalNeeds.timeUniform ? TIME_SET : "") +
       (this.totalNeeds.mouseUniform ? MOUSE_SET : "") +
       Array.from(this.totalNeeds.extraBuffers)
-        .map((n) => bufferSamplerDeclaration(n))
+        .map((n) => channelSamplerDeclaration(n))
         .join("\n") +
       "\n" +
       [...this.uniformDeclarations].join("\n") +
@@ -185,7 +183,7 @@ export class CodeBuilder {
     }
     // set all sampler uniforms
     for (const b of this.totalNeeds.extraBuffers) {
-      const location = gl.getUniformLocation(program, bufferSamplerName(b));
+      const location = gl.getUniformLocation(program, channelSamplerName(b));
       // offset the texture location by 2 (0 and 1 are used for scene and original)
       gl.uniform1i(location, b + 2);
     }

@@ -336,7 +336,7 @@ export class Merger {
     }
 
     // swap textures before beginning draw
-    this.programLoop.draw(
+    this.programLoop.run(
       this.gl,
       this.tex,
       this.framebuffer,

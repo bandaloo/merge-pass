@@ -1,11 +1,11 @@
-import { bufferSamplerName } from "../codebuilder";
+import { channelSamplerName } from "../codebuilder";
 import { Vec2 } from "../exprtypes";
 import { ExprVec4, SourceLists } from "./expr";
 import { nfcoord } from "./normfragcoordexpr";
 
 function genBufferSamplerSource(buf: number, coord: Vec2): SourceLists {
   return {
-    sections: [`texture2D(${bufferSamplerName(buf)}, `, `)`],
+    sections: [`texture2D(${channelSamplerName(buf)}, `, `)`],
     values: [coord],
   };
 }
