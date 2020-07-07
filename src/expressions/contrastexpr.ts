@@ -12,6 +12,7 @@ export class Contrast extends ExprVec4 {
     this.externalFuncs = [glslFuncs.contrast];
   }
 
+  /** sets the contrast */
   setContrast(contrast: Float) {
     this.setUniform("uContrast" + this.id, contrast);
     this.contrast = contrast;

@@ -1,8 +1,10 @@
 import { AllVals, Float, Vec2, Vec3, Vec4 } from "../exprtypes";
 import { Operator, PrimitiveFloat, wrapInValue, SourceLists } from "./expr";
 
+/** valid function names for [[a2]] */
 type Arity2HomogenousName = "pow" | "step";
 
+/** @ignore */
 function genArity1SourceList(
   name: Arity2HomogenousName,
   val1: AllVals,
@@ -14,6 +16,7 @@ function genArity1SourceList(
   };
 }
 
+/** arity 2 homogenous function expression */
 export class Arity2HomogenousExpr<
   T extends AllVals,
   U extends AllVals
@@ -27,12 +30,14 @@ export class Arity2HomogenousExpr<
     this.val2 = val2;
   }
 
+  /** set the first value being passed into the arity 2 homogenous function */
   setFirstVal(val1: T | number) {
     this.setUniform("uVal1" + this.id, val1);
     // TODO get rid of this cast
     this.val1 = wrapInValue(val1) as T;
   }
 
+  /** set the second value being passed into the arity 2 homogenous function */
   setSecondVal(val2: U | number) {
     this.setUniform("uVal2" + this.id, val2);
     // TODO get rid of this cast
@@ -90,7 +95,7 @@ export function a2<T extends Vec4, U extends Vec4>(
 
 /**
  * built-in functions that take in two `genType x` arguments and return a `genType x`
- * @param name function name (like "pow" or "step")
+ * @param name function name (see [[Arity2HomogenousName]] for valid function names)
  * @param val1 the first `genType x` argument
  * @param val2 the second `genType x` argument
  */

@@ -3,6 +3,7 @@ import { glslFuncs } from "../glslfunctions";
 import { ExprVec4, n2e, tag } from "./expr";
 import { fcolor } from "./fragcolorexpr";
 
+/** brightness expression */
 export class Brightness extends ExprVec4 {
   brightness: Float;
 
@@ -12,6 +13,7 @@ export class Brightness extends ExprVec4 {
     this.externalFuncs = [glslFuncs.brightness];
   }
 
+  /** set the brightness (should probably be between -1 and 1) */
   setBrightness(brightness: Float | number) {
     this.setUniform("uBrightness" + this.id, brightness);
     this.brightness = n2e(brightness);

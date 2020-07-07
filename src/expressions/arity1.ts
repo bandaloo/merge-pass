@@ -3,6 +3,7 @@ import { Operator, PrimitiveFloat, SourceLists, wrapInValue } from "./expr";
 
 // these all work on genTypeX so it should be okay to sub in any of these
 // strings (genTypeX is term from Khronos documentation)
+/** valid function names for [[a1]] */
 type Arity1HomogenousName =
   | "sin"
   | "cos"
@@ -20,6 +21,7 @@ type Arity1HomogenousName =
   | "ceil"
   | "abs";
 
+/** @ignore */
 function genArity1SourceList(
   name: Arity1HomogenousName,
   val: AllVals
@@ -30,6 +32,7 @@ function genArity1SourceList(
   };
 }
 
+/** arity 1 homogenous function expression */
 export class Arity1HomogenousExpr<T extends AllVals> extends Operator<T> {
   val: T;
 
@@ -38,6 +41,7 @@ export class Arity1HomogenousExpr<T extends AllVals> extends Operator<T> {
     this.val = val;
   }
 
+  /** set the value being passed into the arity 1 homogenous function */
   setVal(val: T | number) {
     this.setUniform("uVal" + this.id, val);
     // TODO way to get rid of this cast?
@@ -57,7 +61,7 @@ export function a1<T extends AllVals>(
 
 /**
  * built-in functions that take in one `genType x` and return a `genType x`
- * @param name function name (trigonometric functions, rounding functions, etc.)
+ * @param name function name (see [[Arity1HomogenousName]] for valid function names)
  * @param val the `genType x` argument
  */
 export function a1<T extends AllVals>(

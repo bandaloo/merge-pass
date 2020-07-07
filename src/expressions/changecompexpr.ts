@@ -4,6 +4,7 @@ import { checkLegalComponents, typeStringToLength } from "./getcompexpr";
 
 export type ArithOp = "/" | "*" | "+" | "-";
 
+/** @ignore */
 function getChangeFunc(
   typ: string,
   id: string,
@@ -17,12 +18,18 @@ function getChangeFunc(
 }`;
 }
 
+/**
+ * throws a runtime error if component access is not valid
+ * @param comps string of components
+ * @param setter how the components are being changed
+ * @param vec the vector where components are being accessed
+ */
 function checkGetComponents(comps: string, setter: AllVals, vec: Vec) {
   // setter has different length than components
   if (comps.length !== typeStringToLength(setter.typeString())) {
     throw new Error("components length must be equal to the target float/vec");
   }
-  // duplicate components
+  // duplicate components/se
   if (duplicateComponents(comps)) {
     throw new Error("duplicate components not allowed on left side");
   }
@@ -30,10 +37,12 @@ function checkGetComponents(comps: string, setter: AllVals, vec: Vec) {
   checkLegalComponents(comps, vec);
 }
 
+/** @ignore */
 function duplicateComponents(comps: string) {
   return new Set(comps.split("")).size !== comps.length;
 }
 
+/** change component expression */
 export class ChangeCompExpr<T extends Vec, U extends AllVals> extends Op<T> {
   originalVec: T;
   newVal: U;
@@ -54,11 +63,13 @@ export class ChangeCompExpr<T extends Vec, U extends AllVals> extends Op<T> {
     ];
   }
 
+  /** set the original vector */
   setOriginal(originalVec: T) {
     this.setUniform("uOriginal" + this.id, originalVec);
     this.originalVec = originalVec;
   }
 
+  /** set the neww vector */
   setNew(newVal: U | number) {
     this.setUniform("uNew" + this.id, newVal);
     // TODO way to get rid of this cast?

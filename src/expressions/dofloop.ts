@@ -43,8 +43,9 @@ export class DoFLoop extends EffectLoop {
  * camera; 0 is infinity)
  * @param rad float for how deep the band of in-focus geometry is (a value
  * between 0.01 and 0.1 is reasonable)
- * @param depthInfo float the expression that represents
- * @param reps
+ * @param depthInfo float the expression that represents the inverse depth
+ * (defaults to sampling the red component from channel 0)
+ * @param reps how many times to repeat the gaussian blur
  */
 export function dof(
   depth?: Float | number,

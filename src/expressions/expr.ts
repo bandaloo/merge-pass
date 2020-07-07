@@ -468,11 +468,13 @@ export function pfloat(num: number) {
   return new PrimitiveFloat(num);
 }
 
+/** @ignore */
 export function wrapInValue(num: number | AllVals) {
   if (typeof num === "number") return pfloat(num);
   return num;
 }
 
+/** @ignore */
 export function tag(
   strings: TemplateStringsArray,
   ...values: AllVals[]

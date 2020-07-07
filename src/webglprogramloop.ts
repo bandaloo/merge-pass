@@ -16,7 +16,7 @@ export const updateNeeds = (acc: Needs, curr: Needs) => {
 };
 
 interface DefaultUniforms {
-  time: number;
+  timeVal: number;
   mouseX: number;
   mouseY: number;
 }
@@ -117,11 +117,11 @@ export class WebGLProgramLoop {
           if (this.totalNeeds?.timeUniform) {
             if (
               this.timeLoc === undefined ||
-              defaultUniforms.time === undefined
+              defaultUniforms.timeVal === undefined
             ) {
               throw new Error("time or location is undefined");
             }
-            gl.uniform1f(this.timeLoc, defaultUniforms.time);
+            gl.uniform1f(this.timeLoc, defaultUniforms.timeVal);
           }
 
           // set mouse uniforms if needed

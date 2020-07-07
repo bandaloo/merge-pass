@@ -2,6 +2,7 @@ import { Float } from "../exprtypes";
 import { ExprFloat, n2e, tag } from "./expr";
 import { glslFuncs } from "../glslfunctions";
 
+/** gaussian expression */
 export class GaussianExpr extends ExprFloat {
   x: Float;
   a: Float;

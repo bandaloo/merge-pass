@@ -2,6 +2,7 @@ import { Vec2 } from "../exprtypes";
 import { glslFuncs, replaceSampler } from "../glslfunctions";
 import { ExprVec4, SourceLists } from "./expr";
 
+/** @ignore */
 function genBlurSource(
   direction: Vec2,
   taps: 5 | 9 | 13,
@@ -13,6 +14,7 @@ function genBlurSource(
   };
 }
 
+/** @ignore */
 function tapsToFuncSource(taps: 5 | 9 | 13) {
   switch (taps) {
     case 5:
@@ -24,12 +26,13 @@ function tapsToFuncSource(taps: 5 | 9 | 13) {
   }
 }
 
+/** gaussian blur expression */
 export class BlurExpr extends ExprVec4 {
   direction: Vec2;
 
   constructor(direction: Vec2, taps: 5 | 9 | 13 = 5, samplerNum?: number) {
     // this is already guaranteed by typescript, but creates helpful error for
-    // use in gibber
+    // use in gibber or anyone just using javascript
     if (![5, 9, 13].includes(taps)) {
       throw new Error("taps for gauss blur can only be 5, 9 or 13");
     }
@@ -52,6 +55,7 @@ export class BlurExpr extends ExprVec4 {
     }
   }
 
+  /** set the blur direction (keep magnitude no greater than 1 for best effect) */
   setDirection(direction: Vec2) {
     this.setUniform("uDirection" + this.id, direction);
     this.direction = direction;
@@ -59,9 +63,10 @@ export class BlurExpr extends ExprVec4 {
 }
 
 /**
- * one pass of a gaussian blur
- * @param direction direction to blur
- * @param taps number of taps (5, 9 or 13, defaults to 5)
+ * creates expression that performs one pass of a gaussian blur
+ * @param direction direction to blur (keep magnitude no greater than 1 for
+ * best effect)
+ * @param taps number of taps (defaults to 5)
  * @param samplerNum which channel to sample from (defaut 0)
  */
 export function gauss(

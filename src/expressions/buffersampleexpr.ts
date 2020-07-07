@@ -26,7 +26,7 @@ export class BufferSampleExpr extends ExprVec4 {
 }
 
 /**
- * sample from one of the channels
+ * creates an expression that samples from one of the user-defined channels
  * @param channel which channel to sample from
  * @param vec where to sample the channel texture (defaults to the normalized
  * frag coord)

@@ -2,6 +2,7 @@ import { Vec, Vec3, Vec2, Vec4, TypeString } from "../exprtypes";
 import { ExprFloat, ExprVec2, ExprVec3, ExprVec4, SourceLists } from "./expr";
 
 // TODO this should probably be somewhere else
+/** @ignore */
 export function typeStringToLength(str: TypeString) {
   switch (str) {
     case "float":
@@ -15,6 +16,7 @@ export function typeStringToLength(str: TypeString) {
   }
 }
 
+/** @ignore */
 function genCompSource(vec: Vec, components: string): SourceLists {
   return {
     sections: ["", "." + components],
@@ -22,6 +24,12 @@ function genCompSource(vec: Vec, components: string): SourceLists {
   };
 }
 
+/**
+ * checks if components accessing a vector are legal (duplicate components like
+ * `xyx` are allowed in GLSL when they are not being assigned to)
+ * @param comps components string
+ * @param vec vector being accessed
+ */
 export function checkLegalComponents(comps: string, vec: Vec) {
   const check = (range: string, domain: string) => {
     let inside = 0;
@@ -41,103 +49,114 @@ export function checkLegalComponents(comps: string, vec: Vec) {
   }
 }
 
+/**
+ * checks if components are legal and the number of accessed components does
+ * not exceed the size of the vector being assigned to
+ * @param comps components string
+ * @param outLen length of the resultant vector
+ * @param vec vector being accessed
+ */
 function checkGetComponents(comps: string, outLen: number, vec: Vec) {
   if (comps.length > outLen) throw new Error("too many components");
   checkLegalComponents(comps, vec);
 }
 
-export class GetCompExpr extends ExprFloat {
-  vec1Min: Vec;
+/** get component expression */
+export class GetCompExpr<T extends Vec> extends ExprFloat {
+  vec1Min: T;
 
-  constructor(vec: Vec, comps: string) {
+  constructor(vec: T, comps: string) {
     checkGetComponents(comps, 1, vec);
     super(genCompSource(vec, comps), ["uVec1Min"]);
     this.vec1Min = vec;
   }
 
-  setVec(vec: Vec) {
+  setVec(vec: T) {
     this.setUniform("uVec1Min", vec);
     this.vec1Min = vec;
   }
 }
 
-export class Get2CompExpr extends ExprVec2 {
-  vec2Min: Vec2 | Vec3 | Vec4;
+/** get 2 components expression */
+export class Get2CompExpr<T extends Vec> extends ExprVec2 {
+  vec2Min: T;
 
-  constructor(vec: Vec2 | Vec3 | Vec4, comps: string) {
+  constructor(vec: T, comps: string) {
     checkGetComponents(comps, 2, vec);
     super(genCompSource(vec, comps), ["uVec2Min"]);
     this.vec2Min = vec;
   }
 
-  setVec(vec: Vec2 | Vec3 | Vec4) {
+  setVec(vec: T) {
     this.setUniform("uVec2Min", vec);
     this.vec2Min = vec;
   }
 }
 
-export class Get3CompExpr extends ExprVec3 {
-  vec3Min: Vec3 | Vec4;
+/** get 3 components expression */
+export class Get3CompExpr<T extends Vec> extends ExprVec3 {
+  vec3Min: T;
 
-  constructor(vec: Vec3 | Vec4, comps: string) {
+  constructor(vec: T, comps: string) {
     checkGetComponents(comps, 3, vec);
     super(genCompSource(vec, comps), ["uVec3Min"]);
     this.vec3Min = vec;
   }
 
-  setVec(vec: Vec3 | Vec4) {
+  setVec(vec: T) {
     this.setUniform("uVec3Min", vec);
     this.vec3Min = vec;
   }
 }
 
-export class Get4CompExpr extends ExprVec4 {
-  vec4Min: Vec4;
+/** get 3 components expression */
+export class Get4CompExpr<T extends Vec> extends ExprVec4 {
+  vec4Min: T;
 
-  constructor(vec: Vec4, comps: string) {
+  constructor(vec: T, comps: string) {
     checkGetComponents(comps, 4, vec);
     super(genCompSource(vec, comps), ["uVec4Min"]);
     this.vec4Min = vec;
   }
 
-  setVec(vec: Vec4) {
+  setVec(vec: T) {
     this.setUniform("uVec4Min", vec);
     this.vec4Min = vec;
   }
 }
 
 /**
- * get one component of vector to return a float
+ * creates an expression that gets 1 component from a vector
  * @param vec the vector to get components of
  * @param comps components string
  */
-export function getcomp(vec: Vec, comps: string) {
+export function getcomp<T extends Vec>(vec: T, comps: string) {
   return new GetCompExpr(vec, comps);
 }
 
 /**
- * get two components of vector to return a vec2
+ * creates an expression that gets 2 components from a vector
  * @param vec the vector to get components of
  * @param comps components string
  */
-export function get2comp(vec: Vec2 | Vec3 | Vec4, comps: string) {
+export function get2comp<T extends Vec>(vec: T, comps: string) {
   return new Get2CompExpr(vec, comps);
 }
 
 /**
- * get three components of vector to return a vec3
+ * creates an expression that gets 3 components from a vector
  * @param vec the vector to get components of
  * @param comps components string
  */
-export function get3comp(vec: Vec3 | Vec4, comps: string) {
+export function get3comp<T extends Vec>(vec: T, comps: string) {
   return new Get3CompExpr(vec, comps);
 }
 
 /**
- * get four components of vector to return a vec4
+ * creates an expression that gets 4 components from a vector
  * @param vec the vector to get components of
  * @param comps components string
  */
-export function get4comp(vec: Vec4, comps: string) {
+export function get4comp<T extends Vec>(vec: T, comps: string) {
   return new Get4CompExpr(vec, comps);
 }

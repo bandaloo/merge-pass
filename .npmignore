@@ -2,3 +2,4 @@ dist/example.*
 example.html
 bundle.js
 src
+docs

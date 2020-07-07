@@ -28,6 +28,7 @@ export class EffectLoop implements EffectLike, Generable {
     this.repeat = repeat;
   }
 
+  /** @ignore */
   getSampleNum(mult = 1, sliceStart = 0, sliceEnd = this.effects.length) {
     mult *= this.repeat.num;
     let acc = 0;
@@ -38,7 +39,10 @@ export class EffectLoop implements EffectLike, Generable {
     return acc;
   }
 
-  /** places effects into loops broken up by sampling effects */
+  /**
+   * @ignore
+   * places effects into loops broken up by sampling effects
+   */
   regroup() {
     let sampleCount = 0;
     /** number of samples in all previous */
@@ -70,7 +74,10 @@ export class EffectLoop implements EffectLike, Generable {
     return regroupedEffects;
   }
 
-  /** recursive descent parser for turning effects into programs */
+  /**
+   * @ignore
+   * recursively parse all effects into programs
+   */
   genPrograms(
     gl: WebGL2RenderingContext,
     vShader: WebGLShader,
@@ -96,6 +103,7 @@ export class EffectLoop implements EffectLike, Generable {
   }
 }
 
+/** creates an effect loop */
 export function loop(effects: EffectElement[], rep: number) {
   return new EffectLoop(effects, { num: rep });
 }
@@ -106,6 +114,7 @@ export interface UniformLocs {
   [name: string]: { locs: WebGLUniformLocation[]; counter: number };
 }
 
+/** @ignore */
 const V_SOURCE = `attribute vec2 aPosition;
 void main() {
   gl_Position = vec4(aPosition, 0.0, 1.0);
@@ -114,13 +123,19 @@ void main() {
 type FilterMode = "linear" | "nearest";
 type ClampMode = "clamp" | "wrap";
 
+/** extra texture options for the merger */
 interface MergerOptions {
+  /** min filtering mode for the texture */
   minFilterMode?: FilterMode;
+  /** max filtering mode for the texture */
   maxFilterMode?: FilterMode;
+  /** how the edges of the texture should be handled */
   edgeMode?: ClampMode;
+  /** textures or images to use as extra channels */
   channels?: (TexImageSource | WebGLTexture)[];
 }
 
+/** @ignore */
 export interface TexInfo {
   front: WebGLTexture;
   back: WebGLTexture;
@@ -142,6 +157,13 @@ export class Merger {
   private channels: (TexImageSource | WebGLTexture)[] = [];
   private options: MergerOptions | undefined;
 
+  /**
+   *
+   * @param effects list of effects that define the final effect
+   * @param source the source image or texture
+   * @param gl the target rendering context
+   * @param options additional options for the texture
+   */
   constructor(
     effects: (ExprVec4 | EffectLoop)[] | EffectLoop,
     source: TexImageSource | WebGLTexture,
@@ -260,7 +282,16 @@ export class Merger {
     }
   }
 
-  draw(time: number = 0, mouseX = 0, mouseY = 0) {
+  /**
+   * use the source and channels to draw effect to target context
+   * @param timeVal number to set the time uniform to (supply this if you plan to
+   * use [[time]])
+   * @param mouseX the x position of the mouse (supply this if you plan to use
+   * [[mouse]] or [[nmouse]])
+   * @param mouseY the y position of the mouse (supply this if you plan to use
+   * [[mouse]] or [[nmouse]])
+   */
+  draw(timeVal = 0, mouseX = 0, mouseY = 0) {
     // TODO double check if this is neccessary
     const originalFront = this.tex.front;
     const originalBack = this.tex.back;
@@ -296,7 +327,7 @@ export class Merger {
       this.framebuffer,
       this.uniformLocs,
       this.programLoop.last,
-      { time: time, mouseX: mouseX, mouseY: mouseY }
+      { timeVal: timeVal, mouseX: mouseX, mouseY: mouseY }
     );
 
     // make sure front and back are in same order

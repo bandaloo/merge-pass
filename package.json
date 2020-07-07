@@ -20,7 +20,8 @@
     "bundle": "npx browserify dist/example.js -o bundle.js",
     "buildwatch": "npx tsc -w --outDir dist",
     "bundlewatch": "npx watchify dist/example.js -o bundle.js",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "docs": "npx typedoc --out docs src"
   },
   "author": "Cole Granof",
   "license": "MIT",
@@ -28,6 +29,7 @@
     "@types/dat.gui": "^0.7.5",
     "browserify": "^16.5.1",
     "dat.gui": "^0.7.7",
+    "typedoc": "^0.17.8",
     "typescript": "^3.9.5",
     "watchify": "^3.11.1"
   },
