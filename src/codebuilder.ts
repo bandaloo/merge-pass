@@ -23,7 +23,7 @@ uniform sampler2D uSampler;
 uniform mediump vec2 uResolution;\n`;
 
 /**
- * returns the string name of the sampler uniform
+ * returns the string name of the sampler uniform for code generation purposes
  * @param num channel number to sample from
  */
 export function channelSamplerName(num: number) {
@@ -32,7 +32,8 @@ export function channelSamplerName(num: number) {
 }
 
 /**
- * returns the string of the declaration of the sampler
+ * returns the string of the declaration of the sampler for code generation
+ * purposes
  * @param num channel number to sample from
  */
 function channelSamplerDeclaration(num: number) {

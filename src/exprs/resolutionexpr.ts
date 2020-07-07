@@ -7,7 +7,7 @@ export class ResolutionExpr extends ExprVec2 {
   }
 }
 
-/** creates an expression that evaluates to a vec2 representing the resolution */
+/** creates an expression that evaluates to a vector representing the resolution */
 export function resolution() {
   return new ResolutionExpr();
 }

@@ -14,6 +14,12 @@ export interface BuildInfo {
   needs: Needs;
 }
 
+// TODO check for Infinity and NaN
+/**
+ * adds a `.` after a number if needed (e.g converts `1` to `"1."` but leaves
+ * `1.2` as `"1.2"`)
+ * @param num number to convert
+ */
 function toGLSLFloatString(num: number) {
   let str = "" + num;
   if (!str.includes(".")) str += ".";
@@ -62,9 +68,12 @@ export interface Applicable {
 }
 
 export abstract class Expr implements Parseable, EffectLike {
+  /**
+   * increments for each expression created; used to uniquely id each expression
+   */
   static count = 0;
-  id: string;
-  needs: Needs = {
+  readonly id: string;
+  readonly needs: Needs = {
     neighborSample: false,
     centerSample: false,
     sceneBuffer: false,
@@ -72,11 +81,11 @@ export abstract class Expr implements Parseable, EffectLike {
     mouseUniform: false,
     extraBuffers: new Set(),
   };
-  defaultNames: string[];
-  uniformValChangeMap: UniformValChangeMap = {};
-  defaultNameMap: DefaultNameMap = {};
+  readonly defaultNames: string[];
+  readonly uniformValChangeMap: UniformValChangeMap = {};
+  readonly defaultNameMap: DefaultNameMap = {};
   externalFuncs: string[] = [];
-  sourceLists: SourceLists;
+  private sourceLists: SourceLists;
   sourceCode: string = "";
 
   constructor(sourceLists: SourceLists, defaultNames: string[]) {
@@ -153,7 +162,10 @@ export abstract class Expr implements Parseable, EffectLike {
     this.uniformValChangeMap[name].changed = true;
   }
 
-  /** parses this expression into a string, adding info as it recurses */
+  /**
+   * parses this expression into a string, adding info as it recurses into
+   * nested expressions
+   */
   parse(buildInfo: BuildInfo): string {
     this.sourceCode = "";
     buildInfo.exprs.push(this);
@@ -217,7 +229,10 @@ export function mut<T extends Primitive>(val: T, name?: string): Mutable<T>;
 export function mut(val: number, name?: string): Mutable<PrimitiveFloat>;
 
 /**
- * makes a primitive value mutable
+ * makes a primitive value mutable. wrapping a [[PrimitiveVec]] or
+ * [[PrimitiveFloat]] in [[mut]] before passing it into an expression will
+ * allow you to use the setters on that expression to change those values at
+ * runtime
  * @param val the primitive float or primitive vec to make mutable
  * @param name the optional name for the uniform
  */

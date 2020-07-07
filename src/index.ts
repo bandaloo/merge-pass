@@ -26,7 +26,7 @@ export * from "./exprs/timeexpr";
 export * from "./exprs/arity1";
 export * from "./exprs/arity2";
 export * from "./exprs/fxaaexpr";
-export * from "./exprs/buffersampleexpr";
+export * from "./exprs/channelsampleexpr";
 export * from "./exprs/dofloop";
 export * from "./exprs/truedepthexpr";
 export * from "./exprs/godraysexpr";

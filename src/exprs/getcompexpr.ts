@@ -25,8 +25,9 @@ function genCompSource(vec: Vec, components: string): SourceLists {
 }
 
 /**
- * checks if components accessing a vector are legal (duplicate components like
- * `xyx` are allowed in GLSL when they are not being assigned to)
+ * checks if components accessing a vector are legal. components can be illegal
+ * if they mix sets (e.g. `v.rgzw`) or contain characters outside of any set
+ * (e.g. `v.lmno`)
  * @param comps components string
  * @param vec vector being accessed
  */
@@ -50,8 +51,9 @@ export function checkLegalComponents(comps: string, vec: Vec) {
 }
 
 /**
- * checks if components are legal and the number of accessed components does
- * not exceed the size of the vector being assigned to
+ * performs all validity checks of [[checkLegalComponents]] and checks if the
+ * number of accessed components does not exceed the size of the vector being
+ * assigned to
  * @param comps components string
  * @param outLen length of the resultant vector
  * @param vec vector being accessed

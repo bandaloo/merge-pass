@@ -19,7 +19,7 @@ export class TrueDepthExpr extends ExprFloat {
   }
 }
 
-/** calculates the linear depth from hyperbolic depth value `1 / distance` */
+/** calculates the linear depth from inverse depth value `1 / distance` */
 export function truedepth(depth: Float | number) {
   return new TrueDepthExpr(n2e(depth));
 }

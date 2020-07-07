@@ -10,6 +10,10 @@ export interface LoopInfo {
   func?: (arg0: number) => void;
 }
 
+/**
+ * classes that implement this can return how many times they sample the
+ * original scene
+ */
 export interface EffectLike {
   /**
    * gets the amount of times an effect will need to sample the original scene
@@ -122,6 +126,11 @@ export function loop(effects: EffectElement[], rep: number) {
  */
 type EffectElement = ExprVec4 | EffectLoop;
 
+// TODO don't really want to export this
+/**
+ * map of names to uniform locations with a counter for how many times they have
+ * been updated in the current loop
+ */
 export interface UniformLocs {
   [name: string]: { locs: WebGLUniformLocation[]; counter: number };
 }
@@ -298,7 +307,9 @@ export class Merger {
   }
 
   /**
-   * use the source and channels to draw effect to target context
+   * use the source and channels to draw effect to target context; mouse
+   * position (as with all positions) are stored from the bottom left corner as
+   * this is how texture data is stored
    * @param timeVal number to set the time uniform to (supply this if you plan to
    * use [[time]])
    * @param mouseX the x position of the mouse (supply this if you plan to use

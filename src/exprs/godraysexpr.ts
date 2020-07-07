@@ -146,7 +146,8 @@ interface GodraysOptions {
 
 // sane godray defaults from https://github.com/Erkaman/glsl-godrays/blob/master/example/index.js
 /**
- * create a godrays expression which requires an occlusion map
+ * create a godrays expression which requires an occlusion map; all values are
+ * mutable by default
  * @param options object that defines godrays properties (has sane defaults)
  */
 export function godrays(options: GodraysOptions = {}) {

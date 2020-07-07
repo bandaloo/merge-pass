@@ -19,17 +19,22 @@ function getChangeFunc(
 }
 
 /**
- * throws a runtime error if component access is not valid
- * @param comps string of components
+ * throws a runtime error if component access is not valid, and disallows
+ * duplicate components because duplicate components can not be in a left
+ * expression. (for example `v.xyx = vec3(1., 2., 3.)` is illegal, but `v1.xyz
+ * = v2.xyx` is legal.) also checks for type errors such as `v1.xy = vec3(1.,
+ * 2., 3.)`; the right hand side can only be a `vec2` if only two components
+ * are supplied
+ * @param comps component string
  * @param setter how the components are being changed
  * @param vec the vector where components are being accessed
  */
-function checkGetComponents(comps: string, setter: AllVals, vec: Vec) {
+function checkChangeComponents(comps: string, setter: AllVals, vec: Vec) {
   // setter has different length than components
   if (comps.length !== typeStringToLength(setter.typeString())) {
     throw new Error("components length must be equal to the target float/vec");
   }
-  // duplicate components/se
+  // duplicate components
   if (duplicateComponents(comps)) {
     throw new Error("duplicate components not allowed on left side");
   }
@@ -48,7 +53,7 @@ export class ChangeCompExpr<T extends Vec, U extends AllVals> extends Op<T> {
   newVal: U;
 
   constructor(vec: T, setter: U, comps: string, op?: ArithOp) {
-    checkGetComponents(comps, setter, vec);
+    checkChangeComponents(comps, setter, vec);
     // part of name of custom function
     const suffix = `${vec.typeString()}_${setter.typeString()}_${comps}`;
     super(
@@ -98,8 +103,8 @@ export function changecomp<T extends Vec, U extends AllVals>(
  * how to change the components
  * @param comps string representing the components to change (e.g. `"xy"` or
  * `"r"` or `"stpq"`.)
- * @param op optionally do an operation (`"+"`, `"-"`, `"/"`, `"*"`) instead of
- * setting the component directly
+ * @param op optionally perform an operation on the original component
+ * (defaults to no operation, just assigning that component to a new value)
  */
 export function changecomp(vec: any, setter: any, comps: string, op?: ArithOp) {
   return new ChangeCompExpr(vec, wrapInValue(setter), comps, op);

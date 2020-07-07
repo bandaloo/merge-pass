@@ -1,5 +1,5 @@
 import { Float, Vec4 } from "../exprtypes";
-import { channel } from "./buffersampleexpr";
+import { channel } from "./channelsampleexpr";
 import { ExprVec4, mut, n2e, pfloat, tag } from "./expr";
 import { pvec4 } from "./vecexprs";
 
@@ -41,9 +41,10 @@ export class DepthToOcclusionExpr extends ExprVec4 {
 }
 
 /**
- * converts a `1 / distance` depth buffer to an occlusion buffer
- * @param depthCol values below this are not occluded (set to something low,
- * like 0.1)
+ * converts a `1 / distance` depth texture to an occlusion texture, with all
+ * occluded geometry being rendered as black
+ * @param depthCol the color representing the inverse depth (defaults to
+ * sampling from channel 0)
  * @param newCol the color to replace unoccluded areas by (defaults to white
  * and is mutable by default)
  * @param threshold values below this are not occluded (set to something low,

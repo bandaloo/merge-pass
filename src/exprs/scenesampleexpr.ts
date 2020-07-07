@@ -21,8 +21,9 @@ export class SceneSampleExpr extends ExprVec4 {
 
 /**
  * creates an expression that samples the original scene
- * @param vec where to sample the original scene texture (defaults to the normalized frag
- * coord, but change this if you want to deform the original image)
+ * @param vec where to sample the original scene texture (defaults to the
+ * normalized frag coord, but change this if you want to transform the
+ * coordinate space of the original image)
  */
 export function input(vec?: Vec2) {
   return new SceneSampleExpr(vec);

@@ -17,8 +17,11 @@ export function updateNeeds(acc: Needs, curr: Needs): Needs {
 
 /** values to set the default uniforms `uTime` and `uMouse` to */
 interface DefaultUniforms {
+  /** `uTime` value */
   timeVal: number;
+  /** x component of `uMouse` */
   mouseX: number;
+  /** y component of `uMouse` */
   mouseY: number;
 }
 
@@ -92,7 +95,7 @@ export class WebGLProgramLoop {
   /**
    * recursively uses all programs in the loop, binding the appropriate
    * textures and setting the appropriate uniforms; the user should only have
-   * to call [[draw]] on [[Merger]]
+   * to call [[draw]] on [[Merger]] and never this function directly
    */
   run(
     gl: WebGL2RenderingContext,

@@ -1,7 +1,7 @@
 import { Float } from "../exprtypes";
 import { EffectLoop } from "../mergepass";
 import { gauss } from "./blurexpr";
-import { channel } from "./buffersampleexpr";
+import { channel } from "./channelsampleexpr";
 import { pfloat, n2e, mut } from "./expr";
 import { gaussian, GaussianExpr } from "./gaussianexpr";
 import { getcomp } from "./getcompexpr";
@@ -38,7 +38,7 @@ export class DoFLoop extends EffectLoop {
 }
 
 /**
- * depth of field effect
+ * creates depth of field expression; all values are mutable by default
  * @param depth float for what inverse depth to focus on (1 on top of the
  * camera; 0 is infinity)
  * @param rad float for how deep the band of in-focus geometry is (a value
