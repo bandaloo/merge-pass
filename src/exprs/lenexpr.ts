@@ -6,7 +6,7 @@ export class LenExpr<T extends Vec> extends ExprFloat {
   vec: T;
 
   constructor(vec: T) {
-    super(tag`(length(${vec}))`, ["uVec"]);
+    super(tag`length(${vec})`, ["uVec"]);
     this.vec = vec;
   }
 

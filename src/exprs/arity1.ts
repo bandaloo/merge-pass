@@ -5,6 +5,7 @@ import { Operator, PrimitiveFloat, SourceLists, wrapInValue } from "./expr";
 // strings (genTypeX is term from Khronos documentation)
 /** valid function names for [[a1]] */
 type Arity1HomogenousName =
+  // trig
   | "sin"
   | "cos"
   | "tan"
@@ -17,9 +18,15 @@ type Arity1HomogenousName =
   | "asinh"
   | "acosh"
   | "atanh"
+  // other
   | "floor"
   | "ceil"
-  | "abs";
+  | "abs"
+  | "sign"
+  | "fract"
+  | "mod"
+  | "min"
+  | "max";
 
 /** @ignore */
 function genArity1SourceList(

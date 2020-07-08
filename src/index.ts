@@ -10,6 +10,7 @@ export * from "./exprs/opexpr";
 export * from "./exprs/powerblur";
 export * from "./exprs/blur2dloop";
 export * from "./exprs/lenexpr";
+export * from "./exprs/normexpr";
 export * from "./exprs/fragcoordexpr";
 export * from "./exprs/normfragcoordexpr";
 export * from "./exprs/normcenterfragcoordexpr";

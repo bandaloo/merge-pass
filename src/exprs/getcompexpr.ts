@@ -1,4 +1,4 @@
-import { Vec, Vec3, Vec2, Vec4, TypeString } from "../exprtypes";
+import { TypeString, Vec } from "../exprtypes";
 import { ExprFloat, ExprVec2, ExprVec3, ExprVec4, SourceLists } from "./expr";
 
 // TODO this should probably be somewhere else
