@@ -568,6 +568,22 @@ const demos: Demos = {
       change: () => {},
     };
   },
+
+  fractalperlin: () => {
+    const merger = new MP.Merger(
+      [
+        MP.brightness(
+          MP.op(MP.fractalperlin(MP.op(MP.nfcoord(), "*", 3), 6), "/", 2)
+        ),
+      ],
+      sourceCanvas,
+      gl
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
 };
 
 interface Draws {
@@ -798,6 +814,7 @@ const draws: Draws = {
   mitosis: [uncommonCheckerboard],
   swirl: [stripes],
   perlin: [stripes],
+  fractalperlin: [stripes],
 };
 
 interface Notes {
@@ -894,6 +911,10 @@ const notes: Notes = {
     "you can use <code>perlin</code> to create a variety of different effects. " +
     "<code>resolution</code> is used to scale the noise based on the aspect ratio " +
     "so it doesn't appear stretched",
+  fractalperlin:
+    "the <code>fractalperlin</code> function will nest perlin noise expressions at " +
+    "frequencies double that and amplitudes half that of the last. this creates " +
+    "a fractal effect",
 };
 
 const canvases = [sourceCanvas];
