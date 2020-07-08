@@ -3,6 +3,7 @@ import { glslFuncs } from "../glslfunctions";
 import { ExprFloat, pfloat, tag } from "./expr";
 import { op } from "./opexpr";
 
+/** Perlin noise expression */
 export class PerlinExpr extends ExprFloat {
   pos: Vec2;
 
@@ -18,16 +19,33 @@ export class PerlinExpr extends ExprFloat {
   }
 }
 
+/**
+ * creates a perlin noise expression; values range from -1 to 1 but they tend
+ * to be grayer than the [[simplex]] implementation
+ * @param pos position
+ */
 export function perlin(pos: Vec2) {
   return new PerlinExpr(pos);
 }
 
-export function fractalperlin(pos: Vec2, octaves: number) {
+/**
+ * take any function from a position to a float, and repeatedly sum calls to it
+ * with doubling frequency and halving amplitude (works well with [[simplex]]
+ * and [[perlin]])
+ * @param pos position
+ * @param octaves how many layers deep to make the fractal
+ * @param func the function to fractalize
+ */
+export function fractalize(
+  pos: Vec2,
+  octaves: number,
+  func: (pos: Vec2) => ExprFloat
+) {
   if (octaves < 0) throw new Error("octaves can't be < 0");
   const recurse = (pos: Vec2, size: number, level: number): Float => {
     if (level <= 0) return pfloat(0);
     return op(
-      perlin(op(pos, "/", size * 2)),
+      func(op(pos, "/", size * 2)),
       "+",
       recurse(pos, size / 2, level - 1)
     );

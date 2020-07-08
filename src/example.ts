@@ -569,11 +569,20 @@ const demos: Demos = {
     };
   },
 
-  fractalperlin: () => {
+  fractalize: () => {
+    const offset = MP.vec2(3, 3);
     const merger = new MP.Merger(
       [
         MP.brightness(
-          MP.op(MP.fractalperlin(MP.op(MP.nfcoord(), "*", 3), 6), "/", 2)
+          MP.op(
+            MP.fractalize(
+              MP.op(MP.op(offset, "+", MP.nfcoord()), "*", 3),
+              6,
+              MP.simplex
+            ),
+            "/",
+            6
+          )
         ),
       ],
       sourceCanvas,
@@ -814,7 +823,7 @@ const draws: Draws = {
   mitosis: [uncommonCheckerboard],
   swirl: [stripes],
   perlin: [stripes],
-  fractalperlin: [stripes],
+  fractalize: [stripes],
 };
 
 interface Notes {
@@ -911,10 +920,11 @@ const notes: Notes = {
     "you can use <code>perlin</code> to create a variety of different effects. " +
     "<code>resolution</code> is used to scale the noise based on the aspect ratio " +
     "so it doesn't appear stretched",
-  fractalperlin:
-    "the <code>fractalperlin</code> function will nest perlin noise expressions at " +
-    "frequencies double that and amplitudes half that of the last. this creates " +
-    "a fractal effect",
+  fractalize:
+    "<code>fractalize</code> will take a function that takes a position and a float, " +
+    "and will repeatedly sum calls to it with doubling frequency and halving amplitude. " +
+    "it works well with <code>perlin</code> and <code>simplex</code>. adding an offset " +
+    "prevents it from looking like the noise is scaling from the corner",
 };
 
 const canvases = [sourceCanvas];
