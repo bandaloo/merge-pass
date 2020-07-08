@@ -1,6 +1,6 @@
 import { CodeBuilder } from "./codebuilder";
 import { ExprVec4 } from "./exprs/expr";
-import { WebGLProgramLoop } from "./webglprogramloop";
+import { WebGLProgramLoop, updateNeeds } from "./webglprogramloop";
 
 /** repetitions and callback for loop */
 export interface LoopInfo {
@@ -34,6 +34,74 @@ export interface Generable {
     uniformLocs: UniformLocs,
     shaders: WebGLShader[]
   ): WebGLProgramLoop;
+}
+
+interface ProgramMap {
+  [name: string]: WebGLProgramLoop;
+}
+
+interface EffectMap {
+  [name: string]: (ExprVec4 | EffectLoop)[] | EffectLoop;
+}
+
+export class EffectDictionary {
+  effectMap: EffectMap;
+
+  constructor(effectMap: EffectMap) {
+    this.effectMap = effectMap;
+  }
+
+  toProgramMap(
+    gl: WebGL2RenderingContext,
+    vShader: WebGLShader,
+    uniformLocs: UniformLocs,
+    fShaders: WebGLShader[]
+  ) {
+    const programMap: ProgramMap = {};
+    let needs = {
+      neighborSample: false,
+      centerSample: false,
+      sceneBuffer: false,
+      timeUniform: false,
+      mouseUniform: false,
+      extraBuffers: new Set<number>(),
+    };
+    for (const name in this.effectMap) {
+      const effects = this.effectMap[name];
+      // wrap the given list of effects as a loop if need be
+      const effectLoop = !(effects instanceof EffectLoop)
+        ? new EffectLoop(effects, { num: 1 })
+        : effects;
+      if (effectLoop.effects.length === 0) {
+        throw new Error("list of effects was empty");
+      }
+      const programLoop = effectLoop.genPrograms(
+        gl,
+        vShader,
+        uniformLocs,
+        fShaders
+      );
+      // walk the tree to the final program
+      let atBottom = false;
+      let currProgramLoop = programLoop;
+      while (!atBottom) {
+        if (currProgramLoop.programElement instanceof WebGLProgram) {
+          // we traveled right and hit a program, so it must be the last
+          currProgramLoop.last = true;
+          atBottom = true;
+        } else {
+          // set the current program loop to the last in the list
+          currProgramLoop =
+            currProgramLoop.programElement[
+              currProgramLoop.programElement.length - 1
+            ];
+        }
+      }
+      needs = updateNeeds(needs, programLoop.getTotalNeeds());
+      programMap[name] = programLoop;
+    }
+    return { programMap, needs };
+  }
 }
 
 /** effect loop, which can loop over other effects or effect loops */
@@ -182,7 +250,8 @@ export class Merger {
   private tex: TexInfo;
   private framebuffer: WebGLFramebuffer;
   private uniformLocs: UniformLocs = {};
-  private effectLoop: EffectLoop;
+  //private effectLoop: EffectLoop;
+  private programMap: ProgramMap;
   private programLoop: WebGLProgramLoop;
   /** additional channels */
   private channels: (TexImageSource | WebGLTexture)[] = [];
@@ -199,22 +268,17 @@ export class Merger {
    * @param options additional options for the texture
    */
   constructor(
-    effects: (ExprVec4 | EffectLoop)[] | EffectLoop,
+    effects: (ExprVec4 | EffectLoop)[] | EffectLoop | EffectDictionary,
     source: TexImageSource | WebGLTexture,
     gl: WebGL2RenderingContext,
     options?: MergerOptions
   ) {
     // set channels if provided with channels
     if (options?.channels !== undefined) this.channels = options?.channels;
-    // wrap the given list of effects as a loop if need be
-    if (!(effects instanceof EffectLoop)) {
-      this.effectLoop = new EffectLoop(effects, { num: 1 });
-    } else {
-      this.effectLoop = effects;
+    if (!(effects instanceof EffectDictionary)) {
+      effects = new EffectDictionary({ default: effects });
     }
-    if (this.effectLoop.effects.length === 0) {
-      throw new Error("list of effects was empty");
-    }
+
     this.source = source;
     this.gl = gl;
     this.options = options;
@@ -270,44 +334,26 @@ export class Merger {
     }
     this.framebuffer = framebuffer;
 
-    // generate the fragment shaders and programs
-    this.programLoop = this.effectLoop.genPrograms(
+    const { programMap, needs } = effects.toProgramMap(
       this.gl,
-      vShader,
+      this.vShader,
       this.uniformLocs,
       this.fShaders
     );
-    // side effect: `fShaders` is populated after the call to `genPrograms`
-
-    // find the final program
-    let atBottom = false;
-
-    let currProgramLoop = this.programLoop;
-    while (!atBottom) {
-      if (currProgramLoop.programElement instanceof WebGLProgram) {
-        // we traveled right and hit a program, so it must be the last
-        currProgramLoop.last = true;
-        atBottom = true;
-      } else {
-        // set the current program loop to the last in the list
-        currProgramLoop =
-          currProgramLoop.programElement[
-            currProgramLoop.programElement.length - 1
-          ];
-      }
-    }
-    if (this.programLoop.getTotalNeeds().sceneBuffer) {
+    this.programMap = programMap;
+    if (needs.sceneBuffer) {
       this.tex.scene = makeTexture(this.gl, this.options);
     }
-    console.log(this.programLoop);
+    if (programMap["default"] === undefined) {
+      throw new Error("no default program");
+    }
+    this.programLoop = programMap["default"];
+    // TODO get rid of this log
+    console.log(programMap);
 
     // create x amount of empty textures based on buffers needed
-    let channelsNeeded = 0;
-    if (this.programLoop.totalNeeds?.extraBuffers !== undefined) {
-      channelsNeeded =
-        Math.max(...this.programLoop.totalNeeds.extraBuffers) + 1;
-    }
-    let channelsSupplied = this.channels.length;
+    const channelsNeeded = Math.max(...needs.extraBuffers) + 1;
+    const channelsSupplied = this.channels.length;
     if (channelsNeeded > channelsSupplied) {
       throw new Error("not enough channels supplied for this effect");
     }
@@ -365,6 +411,7 @@ export class Merger {
       counter++;
     }
 
+    // TODO following comment no longer relevant?
     // swap textures before beginning draw
     this.programLoop.run(
       this.gl,
@@ -415,6 +462,17 @@ export class Merger {
     for (const f of this.fShaders) {
       this.gl.deleteShader(f);
     }
+  }
+
+  /**
+   * changes the current program loop
+   * @param str key in the program map
+   */
+  changeProgram(str: string) {
+    if (this.programMap[str] === undefined) {
+      throw new Error(`program "${str}" doesn't exist on this merger`);
+    }
+    this.programLoop = this.programMap[str];
   }
 }
 

@@ -36,7 +36,7 @@ export interface DefaultNameMap {
 export interface Needs {
   neighborSample: boolean;
   centerSample: boolean;
-  sceneBuffer: boolean; // texture 1
+  sceneBuffer: boolean;
   timeUniform: boolean;
   mouseUniform: boolean;
   extraBuffers: Set<number>;

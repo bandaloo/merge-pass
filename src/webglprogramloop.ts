@@ -1,6 +1,5 @@
 import { Expr, Needs } from "./exprs/expr";
 import { LoopInfo, TexInfo, UniformLocs } from "./mergepass";
-import { glslFuncs } from "./glslfunctions";
 
 export type WebGLProgramElement = WebGLProgram | WebGLProgramLoop[];
 

@@ -591,6 +591,36 @@ const demos: Demos = {
       change: () => {},
     };
   },
+
+  dictionary: () => {
+    const merger = new MP.Merger(
+      new MP.EffectDictionary({
+        default: [MP.brightness(0.3)],
+        darken: [MP.brightness(-0.3)],
+      }),
+      sourceCanvas,
+      gl
+    );
+
+    class ChangeControls {
+      brighten = () => {
+        merger.changeProgram("default");
+      };
+      darken = () => {
+        merger.changeProgram("darken");
+      };
+    }
+
+    const controls = new ChangeControls();
+    const gui = new dat.GUI();
+    gui.add(controls, "brighten");
+    gui.add(controls, "darken");
+
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
 };
 
 interface Draws {
@@ -822,6 +852,7 @@ const draws: Draws = {
   swirl: [stripes],
   perlin: [stripes],
   fractalize: [stripes],
+  dictionary: [movingGrid],
 };
 
 interface Notes {
@@ -923,6 +954,11 @@ const notes: Notes = {
     "and will repeatedly sum calls to it with doubling frequency and halving amplitude. " +
     "it works well with <code>perlin</code> and <code>simplex</code>. adding an offset " +
     "prevents it from looking like the noise is scaling from the corner",
+  dictionary:
+    "you can pass in an <code>EffectDictionary</code> to create multiple compiled program loops " +
+    'which you can switch between with <code>merger.changeProgram("effectName")</code>. ' +
+    'you must have one with the name <code>"default"</code>, which will be the currently enabled' +
+    "program loop",
 };
 
 const canvases = [sourceCanvas];
@@ -981,12 +1017,13 @@ window.addEventListener("load", () => {
     .split("\n")
     .map((l) => l.substr(4))
     .join("\n")
-    .replace(/ /g, "&nbsp;");
+    .replace(/ /g, "&nbsp");
 
   const codeElem = document.getElementById("mergercode") as HTMLElement;
 
-  const reg = /Merger\(\[[\s\S]+\]/g;
+  const reg = /Merger([\s\S]*?);/g;
   const matches = codeStr.match(reg);
+  console.log(matches);
 
   if (matches === null) throw new Error("matches was null");
   codeElem.innerHTML = codeStr.replace(reg, "<em>" + matches[0] + "</em>");
