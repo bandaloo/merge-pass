@@ -16,12 +16,12 @@ export class DoFLoop extends EffectLoop {
     depth: Float = mut(pfloat(0.3)),
     rad: Float = mut(pfloat(0.01)),
     depthInfo: Float = getcomp(channel(0), "r"),
-    reps = 2
+    reps = 2,
+    taps: 5 | 9 | 13 = 13
   ) {
     let guassianExpr = gaussian(depthInfo, depth, rad);
-    // TODO optional taps number
-    const side = gauss(vec2(a2("pow", op(1, "-", guassianExpr), 4), 0), 13);
-    const up = gauss(vec2(0, a2("pow", op(1, "-", guassianExpr), 4)), 13);
+    const side = gauss(vec2(a2("pow", op(1, "-", guassianExpr), 4), 0), taps);
+    const up = gauss(vec2(0, a2("pow", op(1, "-", guassianExpr), 4)), taps);
     super([side, up], { num: reps });
     this.gaussian = guassianExpr;
   }

@@ -44,7 +44,6 @@ export class Arity1HomogenousExpr<T extends AllVals> extends Operator<T> {
   /** set the value being passed into the arity 1 homogenous function */
   setVal(val: T | number) {
     this.setUniform("uVal" + this.id, val);
-    // TODO way to get rid of this cast?
     this.val = wrapInValue(val) as T;
   }
 }

@@ -278,8 +278,6 @@ export class Merger {
       this.fShaders
     );
     // side effect: `fShaders` is populated after the call to `genPrograms`
-    // TODO get rid of this
-    console.log(this.fShaders);
 
     // find the final program
     let atBottom = false;
@@ -360,7 +358,7 @@ export class Merger {
     // bind the additional buffers
     let counter = 0;
     for (const b of this.channels) {
-      // TODO what's the limit on amount of textures?
+      // TODO check for texture limit
       this.gl.activeTexture(this.gl.TEXTURE2 + counter);
       this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.bufTextures[counter]);
       sendTexture(this.gl, b);

@@ -63,6 +63,8 @@ export class GodRaysExpr extends ExprVec4 {
     );
     if (convertDepth !== undefined) {
       // uncomment the line that does the conversion
+      // TODO replace this with a more generic #ifdef and #ifndef kind of
+      // like the C preprocessor
       customGodRayFunc = customGodRayFunc.replace(/\/\/uncomment\s/g, "");
       this.externalFuncs.push(glslFuncs.depth2occlusion);
     }

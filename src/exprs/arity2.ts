@@ -33,14 +33,12 @@ export class Arity2HomogenousExpr<
   /** set the first value being passed into the arity 2 homogenous function */
   setFirstVal(val1: T | number) {
     this.setUniform("uVal1" + this.id, val1);
-    // TODO get rid of this cast
     this.val1 = wrapInValue(val1) as T;
   }
 
   /** set the second value being passed into the arity 2 homogenous function */
   setSecondVal(val2: U | number) {
     this.setUniform("uVal2" + this.id, val2);
-    // TODO get rid of this cast
     this.val2 = wrapInValue(val2) as U;
   }
 }

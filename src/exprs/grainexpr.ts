@@ -7,14 +7,12 @@ export class GrainExpr extends ExprVec4 {
   grain: Float;
 
   constructor(grain: Float) {
-    // TODO compose with other expressions rather than write full glsl?
     super(
       tag`vec4((1.0 - ${grain} * random(gl_FragCoord.xy)) * gl_FragColor.rgb, gl_FragColor.a);`,
       ["uGrain"]
     );
     this.grain = grain;
     this.externalFuncs = [glslFuncs.random];
-    // TODO get rid of this if we choose to use fcolor instead later
     this.needs.centerSample = true;
   }
 

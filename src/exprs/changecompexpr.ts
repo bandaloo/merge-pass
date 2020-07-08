@@ -77,7 +77,6 @@ export class ChangeCompExpr<T extends Vec, U extends AllVals> extends Op<T> {
   /** set the neww vector */
   setNew(newVal: U | number) {
     this.setUniform("uNew" + this.id, newVal);
-    // TODO way to get rid of this cast?
     this.newVal = wrapInValue(newVal) as U;
   }
 }

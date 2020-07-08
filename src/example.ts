@@ -296,8 +296,6 @@ const demos: Demos = {
   },
 
   channelblur: (channels: TexImageSource[] = []) => {
-    // TODO get rid of this
-    const a = MP.a1("sin", 1);
     const merger = new MP.Merger(
       [
         MP.hsv2rgb(

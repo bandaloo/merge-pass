@@ -35,7 +35,6 @@ export const glslFuncs = {
               d / (q.x + e),
               q.x, co.a);
 }`,
-  // TODO code-gen gaussian blur of arbitrary taps by calculating the curve?
   // all gaussian blurs adapted from:
   // https://github.com/Jam3/glsl-fast-gaussian-blur/blob/master/5.glsl
   gauss5: `vec4 gauss5(vec2 dir) {

@@ -3,7 +3,7 @@ import { channel } from "./channelsampleexpr";
 import { ExprVec4, mut, n2e, pfloat, tag } from "./expr";
 import { pvec4 } from "./vecexprs";
 
-// TODO reconsider whether we need this
+/** depth info to occlussion info expression */
 export class DepthToOcclusionExpr extends ExprVec4 {
   depthCol: Vec4;
   newCol: Vec4;

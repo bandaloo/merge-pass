@@ -14,7 +14,6 @@ export interface BuildInfo {
   needs: Needs;
 }
 
-// TODO check for Infinity and NaN
 /**
  * adds a `.` after a number if needed (e.g converts `1` to `"1."` but leaves
  * `1.2` as `"1.2"`)
@@ -251,8 +250,7 @@ export abstract class Primitive implements Parseable, Applicable {
     loc: WebGLUniformLocation
   ): void;
 
-  // TODO get rid of these arguments (should still work with interface)
-  parse(buildInfo: BuildInfo, defaultName: string, enc: Expr | undefined) {
+  parse() {
     return this.toString();
   }
 }
@@ -331,7 +329,7 @@ export abstract class BasicVec extends Expr {
   constructor(sourceLists: SourceLists, defaultNames: string[]) {
     super(sourceLists, defaultNames);
     // this cast is fine as long as you only instantiate these with the
-    // shorthand version
+    // shorthand version and not the constructor
     const values = sourceLists.values as Float[];
     this.values = values;
     this.defaultNames = defaultNames;
