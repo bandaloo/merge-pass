@@ -4,7 +4,6 @@
  */
 import * as dat from "dat.gui";
 import * as MP from "./index";
-import { Merger } from "./mergepass";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -547,6 +546,28 @@ const demos: Demos = {
       change: () => {},
     };
   },
+
+  perlin: () => {
+    const merger = new MP.Merger(
+      [
+        MP.brightness(
+          MP.perlin(
+            MP.op(
+              MP.op(MP.nfcoord(), "+", MP.op(MP.time(), "/", 9)),
+              "*",
+              MP.op(MP.resolution(), "/", 99)
+            )
+          )
+        ),
+      ],
+      sourceCanvas,
+      gl
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
 };
 
 interface Draws {
@@ -776,6 +797,7 @@ const draws: Draws = {
   mousegodrays: [higherOrderDonuts(true), higherOrderDonuts(false)],
   mitosis: [uncommonCheckerboard],
   swirl: [stripes],
+  perlin: [stripes],
 };
 
 interface Notes {
@@ -866,8 +888,12 @@ const notes: Notes = {
     "if you sample the original scene at some offset of the pixel coordinate, you can distort " +
     "the original scene. (fxaa is used here just because we can)",
   swirl:
-    "this distortion is done with rotatiosn and translations based on the distance " +
+    "this distortion is done with rotations and translations based on the distance " +
     "from the mouse position",
+  perlin:
+    "you can use <code>perlin</code> to create a variety of different effects. " +
+    "<code>resolution</code> is used to scale the noise based on the aspect ratio " +
+    "so it doesn't appear stretched",
 };
 
 const canvases = [sourceCanvas];
@@ -976,15 +1002,6 @@ window.addEventListener("load", () => {
   step(0);
 });
 
-// used to test destruction and creation of merger
-function destroyAndCreate(str: string) {
-  demo.merger.delete();
-  console.log("deleted old merger");
-  demo = demos[str](canvases.slice(1));
-  if (demo === undefined) throw new Error("merger not found");
-  console.log("created another merger");
-}
-
 glCanvas.addEventListener("click", () => glCanvas.requestFullscreen());
 glCanvas.addEventListener("mousemove", (e) => {
   const rect = glCanvas.getBoundingClientRect();
@@ -993,5 +1010,16 @@ glCanvas.addEventListener("mousemove", (e) => {
 });
 sourceCanvas.addEventListener("click", () => sourceCanvas.requestFullscreen());
 
+// used to test destruction and creation of merger
 // uncomment to test destruction and creation of merger
-//setTimeout(() => destroyAndCreate("redgreenswap"), 2000);
+/*
+function destroyAndCreate(str: string) {
+  demo.merger.delete();
+  console.log("deleted old merger");
+  demo = demos[str](canvases.slice(1));
+  if (demo === undefined) throw new Error("merger not found");
+  console.log("created another merger");
+}
+
+setTimeout(() => destroyAndCreate("redgreenswap"), 2000);
+*/

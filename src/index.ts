@@ -35,7 +35,8 @@ export * from "./exprs/resolutionexpr";
 export * from "./exprs/mouseexpr";
 export * from "./exprs/rotateexpr";
 export * from "./exprs/translateexpr";
-export * from "./exprs/normmouseepxr";
+export * from "./exprs/normmouseexpr";
+export * from "./exprs/perlinexpr";
 
 // TODO move this out of expressions
 export * from "./exprs/expr";

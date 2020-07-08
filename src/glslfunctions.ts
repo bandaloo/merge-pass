@@ -2,12 +2,19 @@
 /** glsl source code for external functions */
 export const glslFuncs = {
   // TODO replace with a better one
+  // adapted from The Book of Shaders
   random: `float random(vec2 st) {
   return fract(sin(dot(st.xy / 99., vec2(12.9898, 78.233))) * 43758.5453123);
+}`,
+  // adapted from The Book of Shaders
+  random2: `vec2 random2(vec2 st) {
+  st = vec2(dot(st,vec2(127.1,311.7)), dot(st,vec2(269.5,183.3)));
+  return -1.0 + 2.0*fract(sin(st)*43758.5453123);
 }`,
   rotate2d: `vec2 rotate2d(vec2 v, float angle) {
   return mat2(cos(angle), -sin(angle), sin(angle), cos(angle)) * v;
 }`,
+  // adapted from The Book of Shaders
   hsv2rgb: `vec4 hsv2rgb(vec4 co){
   vec3 c = co.xyz;
   vec3 rgb = clamp(abs(mod(
@@ -16,15 +23,12 @@ export const glslFuncs = {
   vec3 hsv = c.z * mix(vec3(1.0), rgb, c.y);
   return vec4(hsv.x, hsv.y, hsv.z, co.a);
 }`,
+  // adapted from The Book of Shaders
   rgb2hsv: `vec4 rgb2hsv(vec4 co){
   vec3 c = co.rgb;
   vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
-  vec4 p = mix(vec4(c.bg, K.wz),
-               vec4(c.gb, K.xy),
-               step(c.b, c.g));
-  vec4 q = mix(vec4(p.xyw, c.r),
-               vec4(c.r, p.yzx),
-               step(p.x, c.r));
+  vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+  vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
   float d = q.x - min(q.w, q.y);
   float e = 1.0e-10;
   return vec4(abs(q.z + (q.w - q.y) / (6.0 * d + e)),
@@ -32,7 +36,8 @@ export const glslFuncs = {
               q.x, co.a);
 }`,
   // TODO code-gen gaussian blur of arbitrary taps by calculating the curve?
-  // adapted from https://github.com/Jam3/glsl-fast-gaussian-blur/blob/master/5.glsl
+  // all gaussian blurs adapted from:
+  // https://github.com/Jam3/glsl-fast-gaussian-blur/blob/master/5.glsl
   gauss5: `vec4 gauss5(vec2 dir) {
   vec2 uv = gl_FragCoord.xy / uResolution;
   vec4 col = vec4(0.0);
@@ -83,7 +88,7 @@ export const glslFuncs = {
 }`,
   // adapted from https://www.shadertoy.com/view/ls3GWS which was adapted from
   // http://www.geeks3d.com/20110405/fxaa-fast-approximate-anti-aliasing-demo-glsl-opengl-test-radeon-geforce/3/
-  // pass in normalized coordinates to rcpFrame
+  // original algorithm created by Timothy Lottes
   fxaa: `vec4 fxaa() {
   float FXAA_SPAN_MAX = 8.0;
   float FXAA_REDUCE_MUL = 1.0 / FXAA_SPAN_MAX;
@@ -145,6 +150,7 @@ export const glslFuncs = {
   return pow(e, -pow(x - a, 2.) / b);
 }`,
   // for calculating the true distance from 0 to 1 depth buffer
+  // the small delta is to prevent division by zero, which is undefined behavior
   truedepth: `float truedepth(float i) {
   i = max(i, 0.00000001);
   return (1. - i) / i;
@@ -180,6 +186,19 @@ export const glslFuncs = {
   depth2occlusion: `vec4 depth2occlusion(vec4 depthCol, vec4 newCol, float threshold) {
   float red = 1. - ceil(depthCol.r - threshold);
   return vec4(newCol.rgb * red, 1.0);
+}`,
+  // adapted from The Book of Shaders, which was adapted from Inigo Quilez
+  // from this example: https://www.shadertoy.com/view/XdXGW8
+  gradientnoise: `float gradientnoise(vec2 st) {
+  vec2 i = floor(st);
+  vec2 f = fract(st);
+
+  vec2 u = f * f * (3.0 - 2.0 * f);
+
+  return mix(mix(dot(random2(i + vec2(0.0,0.0)), f - vec2(0.0, 0.0)),
+                     dot(random2(i + vec2(1.0,0.0)), f - vec2(1.0, 0.0)), u.x),
+             mix(dot(random2(i + vec2(0.0,1.0)), f - vec2(0.0, 1.0)),
+                 dot(random2(i + vec2(1.0,1.0)), f - vec2(1.0, 1.0)), u.x), u.y);
 }`,
 };
 
