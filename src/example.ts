@@ -621,6 +621,49 @@ const demos: Demos = {
       change: () => {},
     };
   },
+
+  noisegodrays: (channels: TexImageSource[] = []) => {
+    const fog = MP.op(
+      MP.op(
+        MP.simplex(
+          MP.op(
+            MP.op(MP.nfcoord(), "+", MP.op(MP.time(), "/", 100)),
+            "*",
+            MP.op(MP.resolution(), "/", 200)
+          )
+        ),
+        "*",
+        MP.simplex(
+          MP.op(
+            MP.op(MP.nfcoord(), "+", MP.op(MP.time(), "/", -200)),
+            "*",
+            MP.op(MP.resolution(), "/", 400)
+          )
+        )
+      ),
+      "*",
+      0.5
+    );
+    const merger = new MP.Merger(
+      [
+        MP.godrays({
+          lightPos: MP.op(MP.mouse(), "/", MP.resolution()),
+          //color: MP.brightness(fog, MP.fcolor()),
+          weight: 0.009,
+          density: MP.op(0.2, "+", MP.op(fog, "*", 0.5)),
+        }),
+      ],
+      sourceCanvas,
+      gl,
+      {
+        channels: channels,
+      }
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
 };
 
 interface Draws {
@@ -797,7 +840,7 @@ const higherOrderPerspective = (color: boolean, normalized = true) => {
   };
 };
 
-const higherOrderDonuts = (color = true) => {
+const higherOrderDonuts = (color = true, extra = 0) => {
   const rFunc = (i: number, j: number) =>
     255 * ~~((1 + 3 * C(i / (99 + 20 * C(j / 5))) * S(j / 2)) % 2);
   const fillFunc = !color
@@ -807,7 +850,9 @@ const higherOrderDonuts = (color = true) => {
       }
     : (i: number, j: number) => {
         let r = rFunc(i, j);
-        return r > 0 ? R(r / 4) : R(0, 0, 99 * C(i / 10) * S(j / 2) + 30);
+        return r > 0
+          ? R(r / 4, extra)
+          : R(extra, 0, 99 * C(i / 10) * S(j / 2) + 30);
       };
 
   return (t: number, frames: number) => {
@@ -853,6 +898,7 @@ const draws: Draws = {
   perlin: [stripes],
   fractalize: [stripes],
   dictionary: [movingGrid],
+  noisegodrays: [higherOrderDonuts(true, 150), higherOrderDonuts(false, 10)],
 };
 
 interface Notes {

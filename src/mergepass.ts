@@ -411,8 +411,6 @@ export class Merger {
       counter++;
     }
 
-    // TODO following comment no longer relevant?
-    // swap textures before beginning draw
     this.programLoop.run(
       this.gl,
       this.tex,

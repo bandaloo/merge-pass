@@ -124,6 +124,7 @@ export class GodRaysExpr extends ExprVec4 {
 
 /** options that define how the godrays will look */
 interface GodraysOptions {
+  /** color of the light */
   color?: Vec4;
   /** multiplies final output */
   exposure?: Float | number;
