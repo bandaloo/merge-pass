@@ -1,7 +1,7 @@
 import { Expr, Needs } from "./exprs/expr";
 import { LoopInfo, TexInfo, UniformLocs } from "./mergepass";
 
-export type WebGLProgramElement = WebGLProgram | WebGLProgramLoop[];
+export type WebGLProgramElement = WebGLProgramLeaf | WebGLProgramLoop[];
 
 // update me on change to needs
 export function updateNeeds(acc: Needs, curr: Needs): Needs {
@@ -25,28 +25,36 @@ interface DefaultUniforms {
   mouseY: number;
 }
 
+export class WebGLProgramLeaf {
+  program: WebGLProgram;
+  totalNeeds: Needs;
+  effects: Expr[];
+
+  constructor(program: WebGLProgram, totalNeeds: Needs, effects: Expr[]) {
+    this.program = program;
+    this.totalNeeds = totalNeeds;
+    this.effects = effects;
+  }
+}
+
 /** recursive data structure of compiled programs */
 export class WebGLProgramLoop {
   programElement: WebGLProgramElement;
   repeat: LoopInfo;
-  effects: Expr[];
+  //effects: Expr[];
   last = false;
-  totalNeeds: Needs | undefined;
+  //totalNeeds: Needs | undefined;
   timeLoc?: WebGLUniformLocation;
   mouseLoc?: WebGLUniformLocation;
 
   constructor(
     programElement: WebGLProgramElement,
     repeat: LoopInfo,
-    gl: WebGL2RenderingContext,
-    totalNeeds?: Needs, // only defined when leaf
-    effects: Expr[] = [] // only populated when leaf
+    gl: WebGL2RenderingContext
   ) {
     this.programElement = programElement;
     this.repeat = repeat;
-    this.totalNeeds = totalNeeds;
-    this.effects = effects;
-    if (programElement instanceof WebGLProgram) {
+    if (this.programElement instanceof WebGLProgramLeaf) {
       if (gl === undefined) {
         throw new Error(
           "program element is a program but context is undefined"
@@ -54,9 +62,12 @@ export class WebGLProgramLoop {
       }
 
       // get the time uniform location
-      if (this.totalNeeds?.timeUniform) {
-        gl.useProgram(programElement);
-        const timeLoc = gl.getUniformLocation(programElement, "uTime");
+      if (this.programElement.totalNeeds.timeUniform) {
+        gl.useProgram(this.programElement.program);
+        const timeLoc = gl.getUniformLocation(
+          this.programElement.program,
+          "uTime"
+        );
         if (timeLoc === null) {
           throw new Error("could not get the time uniform location");
         }
@@ -64,9 +75,12 @@ export class WebGLProgramLoop {
       }
 
       // get the mouse uniform location
-      if (this.totalNeeds?.mouseUniform) {
-        gl.useProgram(programElement);
-        const mouseLoc = gl.getUniformLocation(programElement, "uMouse");
+      if (this.programElement.totalNeeds.mouseUniform) {
+        gl.useProgram(this.programElement.program);
+        const mouseLoc = gl.getUniformLocation(
+          this.programElement.program,
+          "uMouse"
+        );
         if (mouseLoc === null) {
           throw new Error("could not get the mouse uniform location");
         }
@@ -78,18 +92,14 @@ export class WebGLProgramLoop {
   /** get all needs from all programs */
   getTotalNeeds(): Needs {
     // go through needs of program loop
-    if (!(this.programElement instanceof WebGLProgram)) {
+    if (!(this.programElement instanceof WebGLProgramLeaf)) {
       const allNeeds: Needs[] = [];
       for (const p of this.programElement) {
         allNeeds.push(p.getTotalNeeds());
       }
-      // update me on change to needs
       return allNeeds.reduce(updateNeeds);
     }
-    if (this.totalNeeds === undefined) {
-      throw new Error("total needs of webgl program was somehow undefined");
-    }
-    return this.totalNeeds;
+    return this.programElement.totalNeeds;
   }
 
   /**
@@ -107,11 +117,11 @@ export class WebGLProgramLoop {
   ) {
     for (let i = 0; i < this.repeat.num; i++) {
       const newLast = i === this.repeat.num - 1;
-      if (this.programElement instanceof WebGLProgram) {
+      if (this.programElement instanceof WebGLProgramLeaf) {
         // effects list is populated
         if (i === 0) {
-          gl.useProgram(this.programElement);
-          if (this.totalNeeds?.sceneBuffer) {
+          gl.useProgram(this.programElement.program);
+          if (this.programElement.totalNeeds?.sceneBuffer) {
             if (tex.scene === undefined) {
               throw new Error(
                 "needs scene buffer, but scene texture is somehow undefined"
@@ -120,12 +130,12 @@ export class WebGLProgramLoop {
             gl.activeTexture(gl.TEXTURE1);
             gl.bindTexture(gl.TEXTURE_2D, tex.scene);
           }
-          for (const effect of this.effects) {
+          for (const effect of this.programElement.effects) {
             effect.applyUniforms(gl, uniformLocs);
           }
 
           // set time uniform if needed
-          if (this.totalNeeds?.timeUniform) {
+          if (this.programElement.totalNeeds?.timeUniform) {
             if (
               this.timeLoc === undefined ||
               defaultUniforms.timeVal === undefined
@@ -136,7 +146,7 @@ export class WebGLProgramLoop {
           }
 
           // set mouse uniforms if needed
-          if (this.totalNeeds?.mouseUniform) {
+          if (this.programElement.totalNeeds?.mouseUniform) {
             if (
               this.mouseLoc === undefined ||
               defaultUniforms.mouseX === undefined ||
@@ -186,7 +196,7 @@ export class WebGLProgramLoop {
   }
 
   delete(gl: WebGL2RenderingContext) {
-    if (this.programElement instanceof WebGLProgram) {
+    if (this.programElement instanceof WebGLProgramLeaf) {
       gl.deleteProgram(this.programElement);
     } else {
       for (const p of this.programElement) {

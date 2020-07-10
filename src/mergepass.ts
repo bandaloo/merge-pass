@@ -1,6 +1,10 @@
 import { CodeBuilder } from "./codebuilder";
 import { ExprVec4 } from "./exprs/expr";
-import { WebGLProgramLoop, updateNeeds } from "./webglprogramloop";
+import {
+  WebGLProgramLoop,
+  updateNeeds,
+  WebGLProgramLeaf,
+} from "./webglprogramloop";
 
 /** repetitions and callback for loop */
 export interface LoopInfo {
@@ -85,7 +89,7 @@ export class EffectDictionary {
       let atBottom = false;
       let currProgramLoop = programLoop;
       while (!atBottom) {
-        if (currProgramLoop.programElement instanceof WebGLProgram) {
+        if (currProgramLoop.programElement instanceof WebGLProgramLeaf) {
           // we traveled right and hit a program, so it must be the last
           currProgramLoop.last = true;
           atBottom = true;

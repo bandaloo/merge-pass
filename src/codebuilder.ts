@@ -1,6 +1,6 @@
 import { BuildInfo, Expr, Needs } from "./exprs/expr";
 import { EffectLoop, UniformLocs } from "./mergepass";
-import { WebGLProgramLoop } from "./webglprogramloop";
+import { WebGLProgramLoop, WebGLProgramLeaf } from "./webglprogramloop";
 
 /** @ignore */
 const FRAG_SET = `  gl_FragColor = texture2D(uSampler, gl_FragCoord.xy / uResolution);\n`;
@@ -200,11 +200,11 @@ export class CodeBuilder {
     gl.vertexAttribPointer(position, 2, gl.FLOAT, false, 0, 0);
 
     return new WebGLProgramLoop(
-      program,
+      new WebGLProgramLeaf(program, this.totalNeeds, this.exprs),
       this.baseLoop.repeat,
-      gl,
-      this.totalNeeds,
-      this.exprs
+      gl
+      //this.totalNeeds,
+      //this.exprs
     );
   }
 }
