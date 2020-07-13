@@ -4,6 +4,7 @@
  */
 import * as dat from "dat.gui";
 import * as MP from "./index";
+import { buffer } from "./buffertarget";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -336,9 +337,33 @@ const demos: Demos = {
       ],
       sourceCanvas,
       gl,
-      {
-        channels: channels,
-      }
+      { channels: channels }
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
+
+  buffereyesore: (channels: TexImageSource[] = []) => {
+    const merger = new MP.Merger(
+      [
+        MP.hsv2rgb(
+          MP.changecomp(
+            MP.rgb2hsv(MP.fcolor()),
+            MP.vec2(
+              MP.getcomp(MP.channel(0), "x"),
+              MP.getcomp(MP.channel(1), "x")
+            ),
+            "xy",
+            "+"
+          )
+        ),
+        MP.fxaa(),
+      ],
+      sourceCanvas,
+      gl,
+      { channels: [channels[0], buffer(channels[1])] }
     );
     return {
       merger: merger,
@@ -881,6 +906,11 @@ const draws: Draws = {
   fxaa: [higherOrderGoo(true)],
   channelblur: [higherOrderGoo(true), higherOrderGoo(false)],
   channeleyesore: [
+    higherOrderWaves(true),
+    higherOrderWaves(false),
+    bitwiseGrid(),
+  ],
+  buffereyesore: [
     higherOrderWaves(true),
     higherOrderWaves(false),
     bitwiseGrid(),
