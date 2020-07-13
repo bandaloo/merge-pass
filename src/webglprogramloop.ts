@@ -211,6 +211,7 @@ export class WebGLProgramLoop {
       //[tex.front, savedTexture] = [savedTexture, tex.front];
       const tempTexture = tex.front;
       tex.front = savedTexture;
+      // target can't be undefined if texture was saved so cast is ok
       tex.bufTextures[this.loopInfo.target as number] = tempTexture;
     }
   }

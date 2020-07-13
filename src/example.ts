@@ -348,11 +348,11 @@ const demos: Demos = {
   buffereyesore: (channels: TexImageSource[] = []) => {
     const merger = new MP.Merger(
       [
-        MP.blur2d(3, 3).target(1),
-        /*
+        MP.blur2d(1, 1).target(1),
+        //MP.gauss(MP.vec2(0, 100), 5, 0),
         MP.hsv2rgb(
           MP.changecomp(
-            MP.rgb2hsv(MP.fcolor()),
+            MP.rgb2hsv(MP.input()),
             MP.vec2(
               MP.getcomp(MP.channel(0), "x"),
               MP.getcomp(MP.channel(1), "x")
@@ -360,8 +360,7 @@ const demos: Demos = {
             "xy",
             "+"
           )
-        )
-        */
+        ),
         //MP.fxaa(),
       ],
       sourceCanvas,
