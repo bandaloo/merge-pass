@@ -84,13 +84,13 @@ export class CodeBuilder {
     buildInfo: BuildInfo,
     topLevel = true
   ) {
-    const needsLoop = !topLevel && effectLoop.repeat.num > 1;
+    const needsLoop = !topLevel && effectLoop.loopInfo.num > 1;
     if (needsLoop) {
       const iName = "i" + this.counter;
       indentLevel++;
       const forStart =
         "  ".repeat(indentLevel - 1) +
-        `for (int ${iName} = 0; ${iName} < ${effectLoop.repeat.num}; ${iName}++) {`;
+        `for (int ${iName} = 0; ${iName} < ${effectLoop.loopInfo.num}; ${iName}++) {`;
       this.calls.push(forStart);
     }
 
@@ -201,10 +201,8 @@ export class CodeBuilder {
 
     return new WebGLProgramLoop(
       new WebGLProgramLeaf(program, this.totalNeeds, this.exprs),
-      this.baseLoop.repeat,
+      this.baseLoop.loopInfo,
       gl
-      //this.totalNeeds,
-      //this.exprs
     );
   }
 }

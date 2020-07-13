@@ -11,6 +11,8 @@ import { BufferTarget } from "./buffertarget";
 export interface LoopInfo {
   /** amount of times to repeat the loop */
   num: number;
+  /** the channel buffer to target */
+  target?: number;
   /** optional callback for loop */
   func?: (arg0: number) => void;
 }
@@ -112,15 +114,15 @@ export class EffectDictionary {
 /** effect loop, which can loop over other effects or effect loops */
 export class EffectLoop implements EffectLike, Generable {
   effects: EffectElement[];
-  repeat: LoopInfo;
+  loopInfo: LoopInfo;
 
-  constructor(effects: EffectElement[], repeat: LoopInfo) {
+  constructor(effects: EffectElement[], loopInfo: LoopInfo) {
     this.effects = effects;
-    this.repeat = repeat;
+    this.loopInfo = loopInfo;
   }
 
   getSampleNum(mult = 1, sliceStart = 0, sliceEnd = this.effects.length) {
-    mult *= this.repeat.num;
+    mult *= this.loopInfo.num;
     let acc = 0;
     const sliced = this.effects.slice(sliceStart, sliceEnd);
     for (const e of sliced) {
@@ -171,10 +173,16 @@ export class EffectLoop implements EffectLike, Generable {
     shaders: WebGLShader[]
   ): WebGLProgramLoop {
     // validate
-    const fullSampleNum = this.getSampleNum() / this.repeat.num;
-    const firstSampleNum = this.getSampleNum(undefined, 0, 1) / this.repeat.num;
-    const restSampleNum = this.getSampleNum(undefined, 1) / this.repeat.num;
-    if (fullSampleNum === 0 || (firstSampleNum === 1 && restSampleNum === 0)) {
+    const fullSampleNum = this.getSampleNum() / this.loopInfo.num;
+    const firstSampleNum =
+      this.getSampleNum(undefined, 0, 1) / this.loopInfo.num;
+    const restSampleNum = this.getSampleNum(undefined, 1) / this.loopInfo.num;
+    // TODO get rid of this
+    console.log("target switch", this.hasTargetSwitch());
+    if (
+      !this.hasTargetSwitch() &&
+      (fullSampleNum === 0 || (firstSampleNum === 1 && restSampleNum === 0))
+    ) {
       const codeBuilder = new CodeBuilder(this);
       const program = codeBuilder.compileProgram(
         gl,
@@ -186,12 +194,27 @@ export class EffectLoop implements EffectLike, Generable {
     }
     // otherwise, regroup and try again on regrouped loops
     this.effects = this.regroup();
-    // okay to have undefined needs here
     return new WebGLProgramLoop(
       this.effects.map((e) => e.genPrograms(gl, vShader, uniformLocs, shaders)),
-      this.repeat,
+      this.loopInfo,
       gl
     );
+  }
+
+  /** changes the render target of an effect loop */
+  target(num: number) {
+    this.loopInfo.target = num;
+    return this;
+  }
+
+  hasTargetSwitch() {
+    for (const e of this.effects) {
+      if (e instanceof EffectLoop) {
+        if (e.loopInfo.target !== this.loopInfo.target || e.hasTargetSwitch())
+          return true;
+      }
+    }
+    return false;
   }
 }
 

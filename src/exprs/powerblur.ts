@@ -17,7 +17,7 @@ export class PowerBlurLoop extends EffectLoop {
       num: reps + 1,
     });
     this.size = size;
-    this.repeat.func = (i) => {
+    this.loopInfo.func = (i) => {
       const distance = this.size / 2 ** i;
       up.setDirection(pvec2(0, distance));
       side.setDirection(pvec2(distance, 0));
@@ -27,7 +27,7 @@ export class PowerBlurLoop extends EffectLoop {
   /** sets the size of the radius */
   setSize(size: number) {
     this.size = size;
-    this.repeat.num = Math.ceil(baseLog(2, size));
+    this.loopInfo.num = Math.ceil(baseLog(2, size));
   }
 }
 

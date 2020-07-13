@@ -13,10 +13,11 @@ export class Blur2dLoop extends EffectLoop {
     horizontal: Float = float(mut(1)),
     vertical: Float = float(mut(1)),
     reps: number = 2,
-    taps?: 5 | 9 | 13
+    taps?: 5 | 9 | 13,
+    samplerNum?: number
   ) {
-    const side = gauss(vec2(horizontal, 0), taps);
-    const up = gauss(vec2(0, vertical), taps);
+    const side = gauss(vec2(horizontal, 0), taps, samplerNum);
+    const up = gauss(vec2(0, vertical), taps, samplerNum);
     super([side, up], { num: reps });
     this.horizontal = horizontal;
     this.vertical = vertical;
@@ -51,12 +52,21 @@ export class Blur2dLoop extends EffectLoop {
  * @param verticalExpr float for the vertical blur (1 pixel default)
  * @param reps how many passes (defaults to 2)
  * @param taps how many taps (5, 9, or 13, defaults to 5)
+ * @param samplerNum change if you want to sample from a different channel and
+ * the outer loop has a different target
  */
 export function blur2d(
   horizontalExpr?: Float | number,
   verticalExpr?: Float | number,
   reps?: number,
-  taps?: 5 | 9 | 13
+  taps?: 5 | 9 | 13,
+  samplerNum?: number
 ) {
-  return new Blur2dLoop(n2e(horizontalExpr), n2e(verticalExpr), reps, taps);
+  return new Blur2dLoop(
+    n2e(horizontalExpr),
+    n2e(verticalExpr),
+    reps,
+    taps,
+    samplerNum
+  );
 }

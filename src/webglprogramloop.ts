@@ -40,7 +40,7 @@ export class WebGLProgramLeaf {
 /** recursive data structure of compiled programs */
 export class WebGLProgramLoop {
   programElement: WebGLProgramElement;
-  repeat: LoopInfo;
+  loopInfo: LoopInfo;
   //effects: Expr[];
   last = false;
   //totalNeeds: Needs | undefined;
@@ -49,11 +49,11 @@ export class WebGLProgramLoop {
 
   constructor(
     programElement: WebGLProgramElement,
-    repeat: LoopInfo,
+    loopInfo: LoopInfo,
     gl: WebGL2RenderingContext
   ) {
     this.programElement = programElement;
-    this.repeat = repeat;
+    this.loopInfo = loopInfo;
     if (this.programElement instanceof WebGLProgramLeaf) {
       if (gl === undefined) {
         throw new Error(
@@ -115,8 +115,8 @@ export class WebGLProgramLoop {
     last: boolean,
     defaultUniforms: DefaultUniforms
   ) {
-    for (let i = 0; i < this.repeat.num; i++) {
-      const newLast = i === this.repeat.num - 1;
+    for (let i = 0; i < this.loopInfo.num; i++) {
+      const newLast = i === this.loopInfo.num - 1;
       if (this.programElement instanceof WebGLProgramLeaf) {
         // effects list is populated
         if (i === 0) {
@@ -185,8 +185,8 @@ export class WebGLProgramLoop {
         // use our last program as the draw program
         gl.drawArrays(gl.TRIANGLES, 0, 6);
       } else {
-        if (this.repeat.func !== undefined) {
-          this.repeat.func(i);
+        if (this.loopInfo.func !== undefined) {
+          this.loopInfo.func(i);
         }
         for (const p of this.programElement) {
           p.run(gl, tex, framebuffer, uniformLocs, newLast, defaultUniforms);
