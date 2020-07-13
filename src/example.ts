@@ -371,6 +371,29 @@ const demos: Demos = {
     };
   },
 
+  bufferblend: (channels: TexImageSource[] = []) => {
+    const merger = new MP.Merger(
+      [
+        MP.loop(
+          [MP.setcolor(MP.op(MP.op(MP.input(), "+", MP.channel(0)), "/", 2))],
+          2
+        ).target(0),
+        //MP.loop([MP.setcolor(MP.vec4(0, 1, 0, 1))], 1).target(0),
+        //MP.blur2d(3, 3).target(0),
+        MP.channel(0),
+      ],
+      sourceCanvas,
+      gl,
+      {
+        channels: [null],
+      }
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
+
   basicdof: (channels: TexImageSource[] = []) => {
     //const dof = MP.dof(MP.mut(0.3), MP.mut(0.01));
     const dof = MP.dof();
@@ -450,9 +473,7 @@ const demos: Demos = {
       ],
       sourceCanvas,
       gl,
-      {
-        channels: channels,
-      }
+      { channels: channels }
     );
     return {
       merger: merger,
@@ -915,6 +936,7 @@ const draws: Draws = {
     higherOrderWaves(false),
     bitwiseGrid(),
   ],
+  bufferblend: [vectorSpiral],
   basicdof: [higherOrderPerspective(true), higherOrderPerspective(false)],
   lineardof: [
     higherOrderPerspective(true),

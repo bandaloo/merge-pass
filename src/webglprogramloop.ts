@@ -121,6 +121,8 @@ export class WebGLProgramLoop {
       if (i === 0 && this.loopInfo.target !== undefined) {
         // swap out the back texture for the channel texture if this loop has
         // an alternate render target
+        // TODO get rid of this log
+        //console.log("must swap");
         savedTexture = tex.back;
         tex.back = tex.bufTextures[this.loopInfo.target];
       }
@@ -190,7 +192,10 @@ export class WebGLProgramLoop {
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, tex.back);
         // TODO do we want to swap if a channel target was used?
-        [tex.back, tex.front] = [tex.front, tex.back];
+        // only swap back if channel target was not used
+        if (savedTexture === undefined) {
+          [tex.back, tex.front] = [tex.front, tex.back];
+        }
         // use our last program as the draw program
         gl.drawArrays(gl.TRIANGLES, 0, 6);
       } else {

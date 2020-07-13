@@ -140,13 +140,20 @@ export class EffectLoop implements EffectLike, Generable {
     let prevSampleCount = 0;
     let prevEffects: EffectElement[] = [];
     const regroupedEffects: EffectElement[] = [];
+    let prevTarget: undefined | number;
+    let currTarget: undefined | number;
     const breakOff = () => {
       if (prevEffects.length > 0) {
         // break off all previous effects into their own loop
         if (prevEffects.length === 1) {
           // this is to prevent wrapping in another effect loop
+          // TODO this could be the problem
+          // TODO get rid of this log
+          console.log("one");
           regroupedEffects.push(prevEffects[0]);
         } else {
+          // TODO get rid of this log
+          console.log("multiple");
           regroupedEffects.push(new EffectLoop(prevEffects, { num: 1 }));
         }
         sampleCount -= prevSampleCount;
@@ -157,8 +164,21 @@ export class EffectLoop implements EffectLike, Generable {
       const sampleNum = e.getSampleNum();
       prevSampleCount = sampleCount;
       sampleCount += sampleNum;
-      if (sampleCount > 0) breakOff();
+      if (e instanceof EffectLoop) {
+        // TODO get rid of this
+        console.log("this target", this.loopInfo.target);
+        console.log("other target", e.loopInfo.target);
+
+        currTarget = e.loopInfo.target;
+      } else {
+        // if it's not a loop it's assumed the target is that of outer loop
+        currTarget = this.loopInfo.target;
+      }
+      if (sampleCount > 0 || currTarget !== prevTarget) {
+        breakOff();
+      }
       prevEffects.push(e);
+      prevTarget = currTarget;
     }
     // push on all the straggling effects after the grouping is done
     breakOff();
@@ -177,6 +197,7 @@ export class EffectLoop implements EffectLike, Generable {
       this.getSampleNum(undefined, 0, 1) / this.loopInfo.num;
     const restSampleNum = this.getSampleNum(undefined, 1) / this.loopInfo.num;
     // TODO get rid of this
+    console.log("loop", this);
     console.log("target switch", this.hasTargetSwitch());
     if (
       !this.hasTargetSwitch() &&
@@ -259,7 +280,7 @@ interface MergerOptions {
   /** how the edges of the texture should be handled */
   edgeMode?: ClampMode;
   /** textures or images to use as extra channels */
-  channels?: (TexImageSource | WebGLTexture)[];
+  channels?: (TexImageSource | WebGLTexture | null)[];
 }
 
 /** @ignore */
@@ -283,7 +304,7 @@ export class Merger {
   private programMap: ProgramMap;
   private programLoop: WebGLProgramLoop;
   /** additional channels */
-  private channels: (TexImageSource | WebGLTexture)[] = [];
+  private channels: (TexImageSource | WebGLTexture | null)[] = [];
   private options: MergerOptions | undefined;
   private vertexBuffer: WebGLBuffer;
   private vShader: WebGLShader;
@@ -557,10 +578,10 @@ export function makeTexture(
 /** copies onto texture */
 export function sendTexture(
   gl: WebGL2RenderingContext,
-  src: TexImageSource | WebGLTexture
+  src: TexImageSource | WebGLTexture | null
 ) {
   // if you are using textures instead of images, the user is responsible for
   // updating that texture, so just return
-  if (src instanceof WebGLTexture) return;
+  if (src instanceof WebGLTexture || src === null) return;
   gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, src);
 }
