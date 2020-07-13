@@ -1,3 +1,4 @@
+// TODO this might not be necessary!
 export class BufferTarget {
   image?: TexImageSource | WebGLTexture;
 

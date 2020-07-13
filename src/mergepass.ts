@@ -194,6 +194,8 @@ export class EffectLoop implements EffectLike, Generable {
     }
     // otherwise, regroup and try again on regrouped loops
     this.effects = this.regroup();
+    // TODO get rid of this
+    console.log("creating new webgl program loop");
     return new WebGLProgramLoop(
       this.effects.map((e) => e.genPrograms(gl, vShader, uniformLocs, shaders)),
       this.loopInfo,
@@ -412,8 +414,8 @@ export class Merger {
    */
   draw(timeVal = 0, mouseX = 0, mouseY = 0) {
     // TODO double check if this is neccessary
-    const originalFront = this.tex.front;
-    const originalBack = this.tex.back;
+    //const originalFront = this.tex.front;
+    //const originalBack = this.tex.back;
 
     this.gl.activeTexture(this.gl.TEXTURE0);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.back);
@@ -450,12 +452,13 @@ export class Merger {
       this.framebuffer,
       this.uniformLocs,
       this.programLoop.last,
-      { timeVal: timeVal, mouseX: mouseX, mouseY: mouseY }
+      { timeVal: timeVal, mouseX: mouseX, mouseY: mouseY },
+      this.channels
     );
 
     // make sure front and back are in same order
-    this.tex.front = originalFront;
-    this.tex.back = originalBack;
+    //this.tex.front = originalFront;
+    //this.tex.back = originalBack;
   }
 
   /**

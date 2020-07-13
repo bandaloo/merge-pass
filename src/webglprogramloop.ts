@@ -1,5 +1,7 @@
 import { Expr, Needs } from "./exprs/expr";
 import { LoopInfo, TexInfo, UniformLocs } from "./mergepass";
+import { BufferTarget } from "./buffertarget";
+import { channel } from "./exprs/channelsampleexpr";
 
 export type WebGLProgramElement = WebGLProgramLeaf | WebGLProgramLoop[];
 
@@ -115,8 +117,15 @@ export class WebGLProgramLoop {
     last: boolean,
     defaultUniforms: DefaultUniforms
   ) {
+    let savedTexture: WebGLTexture | undefined;
     for (let i = 0; i < this.loopInfo.num; i++) {
       const newLast = i === this.loopInfo.num - 1;
+      if (i === 0 && this.loopInfo.target !== undefined) {
+        // swap out the back texture for the channel texture if this loop has
+        // an alternate render target
+        savedTexture = tex.back;
+        tex.back = tex.bufTextures[this.loopInfo.target];
+      }
       if (this.programElement instanceof WebGLProgramLeaf) {
         // effects list is populated
         if (i === 0) {
@@ -179,8 +188,10 @@ export class WebGLProgramLoop {
         }
         // allows us to read from `texBack`
         // default sampler is 0, so `uSampler` uniform will always sample from texture 0
+        // TODO bind to the channel texture instead, if the loop has a target
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, tex.back);
+        // TODO do we want to swap if a channel target was used?
         [tex.back, tex.front] = [tex.front, tex.back];
         // use our last program as the draw program
         gl.drawArrays(gl.TRIANGLES, 0, 6);
@@ -192,6 +203,15 @@ export class WebGLProgramLoop {
           p.run(gl, tex, framebuffer, uniformLocs, newLast, defaultUniforms);
         }
       }
+    }
+    // swap the textures back if we were temporarily using a channel texture
+    if (savedTexture !== undefined) {
+      // TODO get rid of this log
+      //console.log("swapping back");
+      //[tex.front, savedTexture] = [savedTexture, tex.front];
+      const tempTexture = tex.front;
+      tex.front = savedTexture;
+      tex.bufTextures[this.loopInfo.target as number] = tempTexture;
     }
   }
 
