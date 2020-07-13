@@ -43,8 +43,6 @@ export class BlurExpr extends ExprVec4 {
       this.externalFuncs = [tapsToFuncSource(taps)];
     } else {
       this.needs.extraBuffers = new Set([samplerNum]);
-      console.log("taps", taps);
-      console.log("samplerNum", samplerNum);
       this.externalFuncs = [
         replaceSampler(
           tapsToFuncSource(taps),

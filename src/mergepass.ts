@@ -147,13 +147,8 @@ export class EffectLoop implements EffectLike, Generable {
         // break off all previous effects into their own loop
         if (prevEffects.length === 1) {
           // this is to prevent wrapping in another effect loop
-          // TODO this could be the problem
-          // TODO get rid of this log
-          console.log("one");
           regroupedEffects.push(prevEffects[0]);
         } else {
-          // TODO get rid of this log
-          console.log("multiple");
           regroupedEffects.push(new EffectLoop(prevEffects, { num: 1 }));
         }
         sampleCount -= prevSampleCount;
@@ -165,10 +160,6 @@ export class EffectLoop implements EffectLike, Generable {
       prevSampleCount = sampleCount;
       sampleCount += sampleNum;
       if (e instanceof EffectLoop) {
-        // TODO get rid of this
-        console.log("this target", this.loopInfo.target);
-        console.log("other target", e.loopInfo.target);
-
         currTarget = e.loopInfo.target;
       } else {
         // if it's not a loop it's assumed the target is that of outer loop
@@ -196,9 +187,6 @@ export class EffectLoop implements EffectLike, Generable {
     const firstSampleNum =
       this.getSampleNum(undefined, 0, 1) / this.loopInfo.num;
     const restSampleNum = this.getSampleNum(undefined, 1) / this.loopInfo.num;
-    // TODO get rid of this
-    console.log("loop", this);
-    console.log("target switch", this.hasTargetSwitch());
     if (
       !this.hasTargetSwitch() &&
       (fullSampleNum === 0 || (firstSampleNum === 1 && restSampleNum === 0))
@@ -214,8 +202,6 @@ export class EffectLoop implements EffectLike, Generable {
     }
     // otherwise, regroup and try again on regrouped loops
     this.effects = this.regroup();
-    // TODO get rid of this
-    console.log("creating new webgl program loop");
     return new WebGLProgramLoop(
       this.effects.map((e) => e.genPrograms(gl, vShader, uniformLocs, shaders)),
       this.loopInfo,
@@ -398,8 +384,6 @@ export class Merger {
       throw new Error("no default program");
     }
     this.programLoop = programMap["default"];
-    // TODO get rid of this log
-    console.log(programMap);
 
     // create x amount of empty textures based on buffers needed
     const channelsNeeded = Math.max(...needs.extraBuffers) + 1;

@@ -159,7 +159,6 @@ export class CodeBuilder {
     gl.linkProgram(program);
     // we need to use the program here so we can get uniform locations
     gl.useProgram(program);
-    console.log(fullCode);
     // find all uniform locations and add them to the dictionary
     for (const expr of this.exprs) {
       for (const name in expr.uniformValChangeMap) {

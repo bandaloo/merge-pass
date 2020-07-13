@@ -121,8 +121,6 @@ export class WebGLProgramLoop {
       if (i === 0 && this.loopInfo.target !== undefined) {
         // swap out the back texture for the channel texture if this loop has
         // an alternate render target
-        // TODO get rid of this log
-        //console.log("must swap");
         savedTexture = tex.back;
         tex.back = tex.bufTextures[this.loopInfo.target];
       }
@@ -209,8 +207,6 @@ export class WebGLProgramLoop {
     }
     // swap the textures back if we were temporarily using a channel texture
     if (savedTexture !== undefined) {
-      // TODO get rid of this log
-      //console.log("swapping back");
       //[tex.front, savedTexture] = [savedTexture, tex.front];
       const tempTexture = tex.front;
       tex.front = savedTexture;

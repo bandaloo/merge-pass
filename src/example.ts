@@ -936,7 +936,7 @@ const draws: Draws = {
     higherOrderWaves(false),
     bitwiseGrid(),
   ],
-  bufferblend: [vectorSpiral],
+  bufferblend: [redSpiral],
   basicdof: [higherOrderPerspective(true), higherOrderPerspective(false)],
   lineardof: [
     higherOrderPerspective(true),
@@ -974,6 +974,11 @@ const notes: Notes = {
     "despite this demo offering very little in the way of aesthetic value, it " +
     "demonstrates how you can optionally pass a list of images (which can " +
     "be canvases or videos) into the merger constructor and sample from them",
+  buffereyesore:
+    "you can use <code>target</code> to do effect loops on specific channels",
+  bufferblend:
+    "if you want to use one of the channels as an empty buffer you can <code>target</code>, then " +
+    "make that element in the <code>channels</code> array <code>null</code>",
   fxaa:
     "fxaa stands for fast approximate anti-aliasing. amazingly, it only needs " +
     "the scene buffer info. it's not perfect, but it does the job in many cases. you " +
@@ -1121,7 +1126,6 @@ window.addEventListener("load", () => {
 
   const reg = /Merger([\s\S]*?);/g;
   const matches = codeStr.match(reg);
-  console.log(matches);
 
   if (matches === null) throw new Error("matches was null");
   codeElem.innerHTML = codeStr.replace(reg, "<em>" + matches[0] + "</em>");
