@@ -1,7 +1,5 @@
 import { Expr, Needs } from "./exprs/expr";
 import { LoopInfo, TexInfo, UniformLocs } from "./mergepass";
-import { BufferTarget } from "./buffertarget";
-import { channel } from "./exprs/channelsampleexpr";
 
 export type WebGLProgramElement = WebGLProgramLeaf | WebGLProgramLoop[];
 

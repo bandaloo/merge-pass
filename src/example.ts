@@ -4,7 +4,6 @@
  */
 import * as dat from "dat.gui";
 import * as MP from "./index";
-import { buffer } from "./buffertarget";
 
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
@@ -349,7 +348,7 @@ const demos: Demos = {
     const merger = new MP.Merger(
       [
         MP.blur2d(1, 1).target(1),
-        //MP.gauss(MP.vec2(0, 100), 5, 0),
+        MP.blur2d(16, 16).target(0),
         MP.hsv2rgb(
           MP.changecomp(
             MP.rgb2hsv(MP.input()),
@@ -361,11 +360,10 @@ const demos: Demos = {
             "+"
           )
         ),
-        //MP.fxaa(),
       ],
       sourceCanvas,
       gl,
-      { channels: [channels[0], buffer(channels[1])] }
+      { channels: channels }
     );
     return {
       merger: merger,

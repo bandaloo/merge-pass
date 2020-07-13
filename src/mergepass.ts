@@ -5,7 +5,6 @@ import {
   updateNeeds,
   WebGLProgramLeaf,
 } from "./webglprogramloop";
-import { BufferTarget } from "./buffertarget";
 
 /** repetitions and callback for loop */
 export interface LoopInfo {
@@ -260,7 +259,7 @@ interface MergerOptions {
   /** how the edges of the texture should be handled */
   edgeMode?: ClampMode;
   /** textures or images to use as extra channels */
-  channels?: (TexImageSource | WebGLTexture | BufferTarget)[];
+  channels?: (TexImageSource | WebGLTexture)[];
 }
 
 /** @ignore */
@@ -284,7 +283,7 @@ export class Merger {
   private programMap: ProgramMap;
   private programLoop: WebGLProgramLoop;
   /** additional channels */
-  private channels: (TexImageSource | WebGLTexture | BufferTarget)[] = [];
+  private channels: (TexImageSource | WebGLTexture)[] = [];
   private options: MergerOptions | undefined;
   private vertexBuffer: WebGLBuffer;
   private vShader: WebGLShader;
@@ -437,12 +436,7 @@ export class Merger {
       // TODO check for texture limit
       this.gl.activeTexture(this.gl.TEXTURE2 + counter);
       this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.bufTextures[counter]);
-      // send over the image data from render target
-      if (b instanceof BufferTarget && b.image !== undefined) {
-        sendTexture(this.gl, b.image);
-      } else {
-        sendTexture(this.gl, b);
-      }
+      sendTexture(this.gl, b);
       counter++;
     }
 
@@ -452,8 +446,7 @@ export class Merger {
       this.framebuffer,
       this.uniformLocs,
       this.programLoop.last,
-      { timeVal: timeVal, mouseX: mouseX, mouseY: mouseY },
-      this.channels
+      { timeVal: timeVal, mouseX: mouseX, mouseY: mouseY }
     );
 
     // make sure front and back are in same order
