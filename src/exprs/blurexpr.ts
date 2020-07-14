@@ -62,10 +62,10 @@ export class BlurExpr extends ExprVec4 {
 
 /**
  * creates expression that performs one pass of a gaussian blur
- * @param direction direction to blur (keep magnitude no greater than 1 for
- * best effect)
+ * @param direction direction to blur (keep magnitude less than or equal to 1
+ * for best effect)
  * @param taps number of taps (defaults to 5)
- * @param samplerNum which channel to sample from (defaut 0)
+ * @param samplerNum which channel to sample from (default 0)
  */
 export function gauss(
   direction: Vec2,

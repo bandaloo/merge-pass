@@ -1,7 +1,7 @@
 import { channelSamplerName } from "../codebuilder";
 import { Vec2 } from "../exprtypes";
 import { ExprVec4, SourceLists } from "./expr";
-import { nfcoord } from "./normfragcoordexpr";
+import { pos } from "./normfragcoordexpr";
 
 /** @ignore */
 function genChannelSampleSource(buf: number, coord: Vec2): SourceLists {
@@ -15,7 +15,7 @@ function genChannelSampleSource(buf: number, coord: Vec2): SourceLists {
 export class ChannelSampleExpr extends ExprVec4 {
   coord: Vec2;
 
-  constructor(buf: number, coord: Vec2 = nfcoord()) {
+  constructor(buf: number, coord: Vec2 = pos()) {
     super(genChannelSampleSource(buf, coord), ["uVec"]);
     this.coord = coord;
     this.needs.extraBuffers = new Set([buf]);

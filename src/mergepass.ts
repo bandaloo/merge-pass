@@ -297,7 +297,7 @@ export class Merger {
   private fShaders: WebGLShader[] = [];
 
   /**
-   *
+   * constructs the object that runs the effects
    * @param effects list of effects that define the final effect
    * @param source the source image or texture
    * @param gl the target rendering context
@@ -403,6 +403,8 @@ export class Merger {
         this.tex.bufTextures.push(texOrImage);
       }
     }
+
+    console.log(this.programMap);
   }
 
   /**

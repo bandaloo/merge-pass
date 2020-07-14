@@ -52,7 +52,7 @@ interface Demos {
 
 const demos: Demos = {
   edgeblur: () => {
-    const lenExpr = MP.op(MP.len(MP.ncfcoord()), "*", 3);
+    const lenExpr = MP.op(MP.len(MP.center()), "*", 3);
     const merger = new MP.Merger(
       [MP.blur2d(lenExpr, lenExpr, 3)],
       sourceCanvas,
@@ -139,7 +139,7 @@ const demos: Demos = {
         MP.gauss(MP.vec2(0, 1), 13),
         MP.grain(
           (m = MP.op(
-            MP.len(MP.op(MP.ncfcoord(), "+", (vec = MP.vec2(MP.mut(0), 0)))),
+            MP.len(MP.op(MP.center(), "+", (vec = MP.vec2(MP.mut(0), 0)))),
             "*",
             MP.mut(0.3)
           ))
@@ -260,7 +260,7 @@ const demos: Demos = {
                 "pow",
                 MP.a1(
                   "cos",
-                  MP.op(MP.getcomp(MP.nfcoord(), "y"), "*", (260 / 2) * Math.PI)
+                  MP.op(MP.getcomp(MP.pos(), "y"), "*", (260 / 2) * Math.PI)
                 ),
                 6
               )
@@ -270,9 +270,9 @@ const demos: Demos = {
               1,
               "*",
               MP.op(
-                MP.a2("pow", MP.getcomp(MP.op(MP.ncfcoord(), "*", 2), "x"), 4),
+                MP.a2("pow", MP.getcomp(MP.op(MP.center(), "*", 2), "x"), 4),
                 "+",
-                MP.a2("pow", MP.getcomp(MP.op(MP.ncfcoord(), "*", 2), "y"), 4)
+                MP.a2("pow", MP.getcomp(MP.op(MP.center(), "*", 2), "y"), 4)
               )
             )
           )
@@ -549,7 +549,7 @@ const demos: Demos = {
       [
         MP.input(
           MP.changecomp(
-            MP.nfcoord(),
+            MP.pos(),
             MP.op(
               MP.op(
                 MP.op(0.5, "+", MP.op(0.5, "*", MP.a1("cos", MP.time()))),
@@ -557,10 +557,7 @@ const demos: Demos = {
                 0.3
               ),
               "*",
-              MP.a1(
-                "cos",
-                MP.op(MP.getcomp(MP.nfcoord(), "x"), "*", 3 * Math.PI)
-              )
+              MP.a1("cos", MP.op(MP.getcomp(MP.pos(), "x"), "*", 3 * Math.PI))
             ),
             "x",
             "+"
@@ -579,9 +576,9 @@ const demos: Demos = {
 
   swirl: () => {
     const vec = MP.nmouse();
-    const dist = MP.op(MP.len(MP.op(MP.nfcoord(), "-", vec)), "*", 99);
+    const dist = MP.op(MP.len(MP.op(MP.pos(), "-", vec)), "*", 99);
     const angle = MP.op(MP.op(1, "/", MP.op(1, "+", dist)), "*", 20);
-    const centered = MP.translate(MP.nfcoord(), MP.op(vec, "*", -1));
+    const centered = MP.translate(MP.pos(), MP.op(vec, "*", -1));
     const rot = MP.rotate(centered, angle);
     const reverted = MP.translate(rot, vec);
     const merger = new MP.Merger([MP.input(reverted)], sourceCanvas, gl);
@@ -597,7 +594,7 @@ const demos: Demos = {
         MP.brightness(
           MP.perlin(
             MP.op(
-              MP.op(MP.nfcoord(), "+", MP.op(MP.time(), "/", 9)),
+              MP.op(MP.pos(), "+", MP.op(MP.time(), "/", 9)),
               "*",
               MP.op(MP.resolution(), "/", 99)
             )
@@ -620,7 +617,7 @@ const demos: Demos = {
         MP.brightness(
           MP.op(
             MP.fractalize(
-              MP.op(MP.op(offset, "+", MP.nfcoord()), "*", 3),
+              MP.op(MP.op(offset, "+", MP.pos()), "*", 3),
               6,
               MP.simplex
             ),
@@ -673,7 +670,7 @@ const demos: Demos = {
       MP.op(
         MP.simplex(
           MP.op(
-            MP.op(MP.nfcoord(), "+", MP.op(MP.time(), "/", 100)),
+            MP.op(MP.pos(), "+", MP.op(MP.time(), "/", 100)),
             "*",
             MP.op(MP.resolution(), "/", 200)
           )
@@ -681,7 +678,7 @@ const demos: Demos = {
         "*",
         MP.simplex(
           MP.op(
-            MP.op(MP.nfcoord(), "+", MP.op(MP.time(), "/", -200)),
+            MP.op(MP.pos(), "+", MP.op(MP.time(), "/", -200)),
             "*",
             MP.op(MP.resolution(), "/", 400)
           )

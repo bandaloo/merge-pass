@@ -11,6 +11,6 @@ export class NormFragCoordExpr extends ExprVec2 {
  * creates an expression that calculates the normalized frag coord (coordinates
  * range from 0.0 to 1.0)
  */
-export function nfcoord() {
+export function pos() {
   return new NormFragCoordExpr();
 }

@@ -11,6 +11,6 @@ export class NormCenterFragCoordExpr extends ExprVec2 {
  * creates an expression that calculates the normalized centered coord
  * (coordinates range from -0.5 to 0.5)
  */
-export function ncfcoord() {
+export function center() {
   return new NormCenterFragCoordExpr();
 }

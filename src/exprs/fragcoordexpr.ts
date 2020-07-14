@@ -11,6 +11,6 @@ export class FragCoordExpr extends ExprVec2 {
  * creates an expression that evaluates to the frag coord in pixels (samplers
  * take normalized coordinates, so you might want [[nfcoord]] instead)
  */
-export function fcoord() {
+export function pixel() {
   return new FragCoordExpr();
 }

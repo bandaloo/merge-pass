@@ -1,12 +1,12 @@
 import { glslFuncs } from "../glslfunctions";
 import { ExprVec4, tag } from "./expr";
 import { Vec2 } from "../exprtypes";
-import { nfcoord } from "./normfragcoordexpr";
+import { pos } from "./normfragcoordexpr";
 
 export class RandomExpr extends ExprVec4 {
   seed: Vec2;
 
-  constructor(seed: Vec2 = nfcoord()) {
+  constructor(seed: Vec2 = pos()) {
     super(tag`random(${seed})`, ["uSeed"]);
     this.seed = seed;
     this.externalFuncs = [glslFuncs.random];

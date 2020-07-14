@@ -27,7 +27,7 @@ export class Blur2dLoop extends EffectLoop {
    * set the horizontal stretch of the blur effect (no greater than 1 for best
    * effect)
    */
-  setHorizontal(float: PrimitiveFloat) {
+  setHorizontal(float: PrimitiveFloat | number) {
     if (!(this.horizontal instanceof BasicFloat))
       throw new Error("horizontal expression not primitive float");
     this.horizontal.setVal(float);
@@ -37,7 +37,7 @@ export class Blur2dLoop extends EffectLoop {
    * set the vertical stretch of the blur effect (no greater than 1 for best
    * effect)
    */
-  setVertical(float: PrimitiveFloat) {
+  setVertical(float: PrimitiveFloat | number) {
     if (!(this.vertical instanceof BasicFloat))
       throw new Error("vertical expression not primitive float");
     this.vertical.setVal(float);
@@ -51,7 +51,7 @@ export class Blur2dLoop extends EffectLoop {
  * @param horizontalExpr float for the horizontal blur (1 pixel default)
  * @param verticalExpr float for the vertical blur (1 pixel default)
  * @param reps how many passes (defaults to 2)
- * @param taps how many taps (5, 9, or 13, defaults to 5)
+ * @param taps how many taps (defaults to 5)
  * @param samplerNum change if you want to sample from a different channel and
  * the outer loop has a different target
  */
