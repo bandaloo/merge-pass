@@ -227,7 +227,7 @@ export class EffectLoop implements EffectLike, Generable {
 }
 
 /** creates an effect loop */
-export function loop(effects: EffectElement[], rep: number) {
+export function loop(effects: EffectElement[], rep = 1) {
   return new EffectLoop(effects, { num: rep });
 }
 
@@ -271,10 +271,16 @@ interface MergerOptions {
 
 /** @ignore */
 export interface TexInfo {
-  front: WebGLTexture;
-  back: WebGLTexture;
-  scene: WebGLTexture | undefined;
-  bufTextures: WebGLTexture[];
+  front: TexWrapper;
+  back: TexWrapper;
+  scene: TexWrapper | undefined;
+  bufTextures: TexWrapper[];
+}
+
+/** useful for debugging */
+export interface TexWrapper {
+  name: string;
+  tex: WebGLTexture;
 }
 
 /** class that can merge effects */
@@ -354,11 +360,14 @@ export class Merger {
     this.tex = {
       // make the front texture the source if we're given a texture instead of
       // an image
-      back:
-        source instanceof WebGLTexture
-          ? source
-          : makeTexture(this.gl, this.options),
-      front: makeTexture(this.gl, this.options),
+      back: {
+        name: "orig_back",
+        tex:
+          source instanceof WebGLTexture
+            ? source
+            : makeTexture(this.gl, this.options),
+      },
+      front: { name: "orig_front", tex: makeTexture(this.gl, this.options) },
       scene: undefined,
       bufTextures: [],
     };
@@ -378,7 +387,10 @@ export class Merger {
     );
     this.programMap = programMap;
     if (needs.sceneBuffer) {
-      this.tex.scene = makeTexture(this.gl, this.options);
+      this.tex.scene = {
+        name: "scene",
+        tex: makeTexture(this.gl, this.options),
+      };
     }
     if (programMap["default"] === undefined) {
       throw new Error("no default program");
@@ -397,10 +409,13 @@ export class Merger {
       if (!(texOrImage instanceof WebGLTexture)) {
         // create a new texture; we will update this with the image source every draw
         const texture = makeTexture(this.gl, this.options);
-        this.tex.bufTextures.push(texture);
+        this.tex.bufTextures.push({ name: "tex_channel_" + i, tex: texture });
       } else {
         // this is already a texture; the user will handle updating this
-        this.tex.bufTextures.push(texOrImage);
+        this.tex.bufTextures.push({
+          name: "img_channel_" + i,
+          tex: texOrImage,
+        });
       }
     }
 
@@ -423,8 +438,12 @@ export class Merger {
     //const originalFront = this.tex.front;
     //const originalBack = this.tex.back;
 
+    // TODO this is potentially the cause of the same source and destination
+    // problem
+    // TODO get rid of this
+    //console.log("this.tex.back.name", this.tex.back.name);
     this.gl.activeTexture(this.gl.TEXTURE0);
-    this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.back);
+    this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.back.tex);
     sendTexture(this.gl, this.source);
 
     // bind the scene buffer
@@ -433,7 +452,7 @@ export class Merger {
       this.tex.scene !== undefined
     ) {
       this.gl.activeTexture(this.gl.TEXTURE1);
-      this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.scene);
+      this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.scene.tex);
       sendTexture(this.gl, this.source);
     }
 
@@ -442,11 +461,16 @@ export class Merger {
     for (const b of this.channels) {
       // TODO check for texture limit
       this.gl.activeTexture(this.gl.TEXTURE2 + counter);
-      this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.bufTextures[counter]);
+      this.gl.bindTexture(
+        this.gl.TEXTURE_2D,
+        this.tex.bufTextures[counter].tex
+      );
       sendTexture(this.gl, b);
       counter++;
     }
 
+    // TODO get rid of this
+    //console.log("running");
     this.programLoop.run(
       this.gl,
       this.tex,

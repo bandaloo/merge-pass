@@ -108,20 +108,49 @@ const demos: Demos = {
   vectordisplay: () => {
     const merger = new MP.Merger(
       [
+        //MP.loop([MP.input()]).target(0),
+        MP.loop([
+          MP.input(),
+          MP.loop(
+            [
+              MP.gauss(MP.vec2(1, 0)),
+              MP.gauss(MP.vec2(0, 1)),
+              MP.brightness(0.15),
+              MP.contrast(1.2),
+            ],
+            4
+          ).target(0),
+          //MP.setcolor(MP.vec4(1, 1, 0, 1)), // turn it all yellow
+          MP.brightness(-0.3),
+          MP.setcolor(MP.op(MP.fcolor(), "+", MP.input())),
+        ]).target(0),
         MP.loop(
           [
-            MP.gauss(MP.vec2(1, 0)),
-            MP.gauss(MP.vec2(0, 1)),
-            MP.brightness(0.15),
-            MP.contrast(1.2),
+            MP.setcolor(
+              MP.op(MP.op(MP.channel(0), "+", MP.channel(1)), "/", 2)
+            ),
           ],
-          5
-        ),
-        MP.brightness(-0.5),
-        MP.setcolor(MP.op(MP.fcolor(), "+", MP.input())),
+          2
+        ).target(1),
+        //MP.loop([MP.brightness(-0.5)]).target(0),
+        //MP.setcolor(MP.op(MP.fcolor(), "+", MP.input())),
+        //MP.loop([MP.setcolor(MP.vec4(1, 1, 0, 1))]).target(0),
+        /*
+        MP.loop(
+          [
+            MP.setcolor(
+              MP.op(MP.op(MP.channel(1), "+", MP.channel(0)), "/", 2)
+            ),
+          ],
+          1
+        ).target(0),
+        */
+        MP.channel(1),
+        //MP.channel(1),
       ],
       sourceCanvas,
-      gl
+      gl,
+      { channels: [null, null] }
     );
 
     return {
@@ -374,12 +403,9 @@ const demos: Demos = {
   bufferblend: (channels: TexImageSource[] = []) => {
     const merger = new MP.Merger(
       [
-        MP.loop(
-          [MP.setcolor(MP.op(MP.op(MP.input(), "+", MP.channel(0)), "/", 2))],
-          2
-        ).target(0),
-        //MP.loop([MP.setcolor(MP.vec4(0, 1, 0, 1))], 1).target(0),
-        //MP.blur2d(3, 3).target(0),
+        MP.loop([
+          MP.setcolor(MP.op(MP.op(MP.input(), "+", MP.channel(0)), "/", 2)),
+        ]).target(0),
         MP.channel(0),
       ],
       sourceCanvas,

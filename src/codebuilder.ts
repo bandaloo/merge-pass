@@ -139,6 +139,7 @@ export class CodeBuilder {
       (this.totalNeeds.centerSample ? FRAG_SET : "") +
       this.calls.join("\n") +
       "\n}";
+    console.log(fullCode);
     gl.shaderSource(fShader, fullCode);
     gl.compileShader(fShader);
     // set up the program
