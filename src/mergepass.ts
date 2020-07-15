@@ -527,7 +527,7 @@ export class Merger {
     this.gl.deleteTexture(this.tex.front.tex);
     this.gl.deleteTexture(this.tex.back.tex);
     for (const c of this.tex.bufTextures) {
-      this.gl.deleteTexture(c);
+      this.gl.deleteTexture(c.tex);
     }
     // delete all vertex buffers (just 1)
     this.gl.deleteBuffer(this.vertexBuffer);
