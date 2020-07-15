@@ -295,7 +295,7 @@ export class WebGLProgramLoop {
 
   delete(gl: WebGL2RenderingContext) {
     if (this.programElement instanceof WebGLProgramLeaf) {
-      gl.deleteProgram(this.programElement);
+      gl.deleteProgram(this.programElement.program);
     } else {
       for (const p of this.programElement) {
         p.delete(gl);

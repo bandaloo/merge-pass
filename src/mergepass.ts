@@ -524,8 +524,8 @@ export class Merger {
     // delete all programs
     this.programLoop.delete(this.gl);
     // delete all textures
-    this.gl.deleteTexture(this.tex.front);
-    this.gl.deleteTexture(this.tex.back);
+    this.gl.deleteTexture(this.tex.front.tex);
+    this.gl.deleteTexture(this.tex.back.tex);
     for (const c of this.tex.bufTextures) {
       this.gl.deleteTexture(c);
     }
