@@ -445,6 +445,8 @@ export class Merger {
     this.gl.activeTexture(this.gl.TEXTURE0);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.back.tex);
     sendTexture(this.gl, this.source);
+    // TODO see if we need to unbind
+    this.gl.bindTexture(this.gl.TEXTURE_2D, null);
 
     // bind the scene buffer
     if (
@@ -454,6 +456,8 @@ export class Merger {
       this.gl.activeTexture(this.gl.TEXTURE1);
       this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.scene.tex);
       sendTexture(this.gl, this.source);
+      // TODO see if we need to unbind
+      this.gl.bindTexture(this.gl.TEXTURE_2D, null);
     }
 
     // bind the additional buffers
@@ -466,11 +470,13 @@ export class Merger {
         this.tex.bufTextures[counter].tex
       );
       sendTexture(this.gl, b);
+      // TODO see if we need to unbind (this gets rid of the error)
+      this.gl.bindTexture(this.gl.TEXTURE_2D, null);
       counter++;
     }
 
     // TODO get rid of this
-    //console.log("running");
+    console.log("running");
     this.programLoop.run(
       this.gl,
       this.tex,
@@ -494,7 +500,7 @@ export class Merger {
     // call bind with null on all textures
     for (let i = 0; i < 2 + this.tex.bufTextures.length; i++) {
       // this gets rid of final texture, scene texture and channels
-      this.gl.activeTexture(this.gl.TEXTURE0);
+      this.gl.activeTexture(this.gl.TEXTURE0 + i);
       this.gl.bindTexture(this.gl.TEXTURE_2D, null);
     }
     // call bind with null on all vertex buffers (just 1)

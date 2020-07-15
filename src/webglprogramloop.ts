@@ -150,55 +150,69 @@ export class WebGLProgramLoop {
     ) {
       //console.log("has target but not switching");
     }
+    // activate and bind all the channel textures needed
+
+    if (this.programElement instanceof WebGLProgramLeaf) {
+      // TODO move this up
+      gl.useProgram(this.programElement.program);
+      if (this.programElement.totalNeeds.sceneBuffer) {
+        if (tex.scene === undefined) {
+          throw new Error(
+            "needs scene buffer, but scene texture is somehow undefined"
+          );
+        }
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, tex.scene.tex);
+      }
+
+      for (const effect of this.programElement.effects) {
+        effect.applyUniforms(gl, uniformLocs);
+      }
+
+      // set time uniform if needed
+      if (this.programElement.totalNeeds?.timeUniform) {
+        if (
+          this.timeLoc === undefined ||
+          defaultUniforms.timeVal === undefined
+        ) {
+          throw new Error("time or location is undefined");
+        }
+        gl.uniform1f(this.timeLoc, defaultUniforms.timeVal);
+      }
+
+      // set mouse uniforms if needed
+      if (this.programElement.totalNeeds?.mouseUniform) {
+        if (
+          this.mouseLoc === undefined ||
+          defaultUniforms.mouseX === undefined ||
+          defaultUniforms.mouseY === undefined
+        ) {
+          throw new Error("mouse uniform or location is undefined");
+        }
+        gl.uniform2f(
+          this.mouseLoc,
+          defaultUniforms.mouseX,
+          defaultUniforms.mouseY
+        );
+      }
+      for (const n of this.programElement.totalNeeds.extraBuffers) {
+        gl.activeTexture(gl.TEXTURE2 + n);
+        gl.bindTexture(gl.TEXTURE_2D, tex.bufTextures[n].tex);
+      }
+    }
+
     for (let i = 0; i < this.loopInfo.num; i++) {
       const newLast = i === this.loopInfo.num - 1;
       if (this.programElement instanceof WebGLProgramLeaf) {
         if (i === 0) {
-          gl.useProgram(this.programElement.program);
-          if (this.programElement.totalNeeds?.sceneBuffer) {
-            if (tex.scene === undefined) {
-              throw new Error(
-                "needs scene buffer, but scene texture is somehow undefined"
-              );
-            }
-            gl.activeTexture(gl.TEXTURE1);
-            gl.bindTexture(gl.TEXTURE_2D, tex.scene.tex);
-          }
-          for (const effect of this.programElement.effects) {
-            effect.applyUniforms(gl, uniformLocs);
-          }
-
-          // set time uniform if needed
-          if (this.programElement.totalNeeds?.timeUniform) {
-            if (
-              this.timeLoc === undefined ||
-              defaultUniforms.timeVal === undefined
-            ) {
-              throw new Error("time or location is undefined");
-            }
-            gl.uniform1f(this.timeLoc, defaultUniforms.timeVal);
-          }
-
-          // set mouse uniforms if needed
-          if (this.programElement.totalNeeds?.mouseUniform) {
-            if (
-              this.mouseLoc === undefined ||
-              defaultUniforms.mouseX === undefined ||
-              defaultUniforms.mouseY === undefined
-            ) {
-              throw new Error("mouse uniform or location is undefined");
-            }
-            gl.uniform2f(
-              this.mouseLoc,
-              defaultUniforms.mouseX,
-              defaultUniforms.mouseY
-            );
-          }
+          // TODO get rid of this
         }
         if (newLast && last && this.last) {
           // we are on the final pass of the final loop, so draw screen by
           // setting to the default framebuffer
           gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+          // TODO get rid of this
+          //console.log("rendering to the screen");
         } else {
           // we have to bounce between two textures
           gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
@@ -224,7 +238,15 @@ export class WebGLProgramLoop {
           console.log("intermediate back", tex.back.name);
           console.log("intermediate front", tex.front.name);
         }
+        // swap back and front
         [tex.back, tex.front] = [tex.front, tex.back];
+
+        // deactivate and bind all the channel textures needed
+        for (const n of this.programElement.totalNeeds.extraBuffers) {
+          //console.log(n);
+          gl.activeTexture(gl.TEXTURE2 + n);
+          gl.bindTexture(gl.TEXTURE_2D, null);
+        }
       } else {
         if (this.loopInfo.func !== undefined) {
           this.loopInfo.func(i);
