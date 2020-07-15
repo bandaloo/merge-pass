@@ -127,7 +127,20 @@ export class WebGLProgramLoop {
       // swap out the back texture for the channel texture if this loop has
       // an alternate render target
       savedTexture = tex.back;
-      tex.back = tex.bufTextures[this.loopInfo.target];
+      if (this.loopInfo.target !== -1) {
+        tex.back = tex.bufTextures[this.loopInfo.target];
+      } else {
+        if (tex.scene === undefined) {
+          throw new Error("tried to target -1 but scene texture was undefined");
+        }
+        tex.back = tex.scene;
+        // TODO get rid of this
+        /*
+        console.log("render target is -1");
+        console.log("tex.back", tex.back);
+        console.log("saved texture", savedTexture);
+        */
+      }
       tex.bufTextures[this.loopInfo.target] = savedTexture;
       if (textureDebug) console.log("saved texture: " + savedTexture.name);
     }
@@ -142,7 +155,12 @@ export class WebGLProgramLoop {
           );
         }
         gl.activeTexture(gl.TEXTURE1);
-        gl.bindTexture(gl.TEXTURE_2D, tex.scene.tex);
+        if (this.loopInfo.target === -1) {
+          //console.log("binding scene to the saved texture", savedTexture);
+          gl.bindTexture(gl.TEXTURE_2D, (savedTexture as TexWrapper).tex);
+        } else {
+          gl.bindTexture(gl.TEXTURE_2D, tex.scene.tex);
+        }
       }
 
       // bind all extra channel textures if needed
@@ -255,7 +273,16 @@ export class WebGLProgramLoop {
       }
 
       // back texture is really the front texture because it was just swapped
-      tex.bufTextures[target] = tex.back;
+      if (this.loopInfo.target !== -1) {
+        tex.bufTextures[target] = tex.back;
+      } else {
+        if (tex.scene === undefined) {
+          throw new Error(
+            "tried to replace -1 but scene texture was undefined"
+          );
+        }
+        tex.scene = tex.back;
+      }
       tex.back = savedTexture;
 
       if (textureDebug) {

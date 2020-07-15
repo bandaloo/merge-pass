@@ -5,6 +5,8 @@ import {
   updateNeeds,
   WebGLProgramLeaf,
 } from "./webglprogramloop";
+import { input } from ".";
+import { fcolor } from "./exprs/fragcolorexpr";
 
 /** repetitions and callback for loop */
 export interface LoopInfo {
@@ -47,7 +49,7 @@ interface ProgramMap {
 }
 
 interface EffectMap {
-  [name: string]: (ExprVec4 | EffectLoop)[] | EffectLoop;
+  [name: string]: (ExprVec4 | EffectLoop)[];
 }
 
 export class EffectDictionary {
@@ -75,9 +77,7 @@ export class EffectDictionary {
     for (const name in this.effectMap) {
       const effects = this.effectMap[name];
       // wrap the given list of effects as a loop if need be
-      const effectLoop = !(effects instanceof EffectLoop)
-        ? new EffectLoop(effects, { num: 1 })
-        : effects;
+      const effectLoop = new EffectLoop(effects, { num: 1 });
       if (effectLoop.effects.length === 0) {
         throw new Error("list of effects was empty");
       }
@@ -210,7 +210,10 @@ export class EffectLoop implements EffectLike, Generable {
     );
   }
 
-  /** changes the render target of an effect loop */
+  /**
+   * changes the render target of an effect loop (-1 targest the scene texture;
+   * this is used internally)
+   */
   target(num: number) {
     this.loopInfo.target = num;
     return this;
@@ -290,7 +293,7 @@ export class Merger {
   readonly gl: WebGL2RenderingContext;
   /** the context to apply post-processing to */
   private source: TexImageSource | WebGLTexture;
-  private tex: TexInfo;
+  tex: TexInfo;
   private framebuffer: WebGLFramebuffer;
   private uniformLocs: UniformLocs = {};
   //private effectLoop: EffectLoop;
@@ -302,6 +305,7 @@ export class Merger {
   private vertexBuffer: WebGLBuffer;
   private vShader: WebGLShader;
   private fShaders: WebGLShader[] = [];
+  textureMode: boolean;
 
   /**
    * constructs the object that runs the effects
@@ -311,15 +315,28 @@ export class Merger {
    * @param options additional options for the texture
    */
   constructor(
-    effects: (ExprVec4 | EffectLoop)[] | EffectLoop | EffectDictionary,
+    effects: (ExprVec4 | EffectLoop)[] | EffectDictionary,
     source: TexImageSource | WebGLTexture,
     gl: WebGL2RenderingContext,
     options?: MergerOptions
   ) {
+    this.textureMode = source instanceof WebGLTexture;
     // set channels if provided with channels
     if (options?.channels !== undefined) this.channels = options?.channels;
     if (!(effects instanceof EffectDictionary)) {
       effects = new EffectDictionary({ default: effects });
+    }
+
+    // add the copy to scene texture if in texture mode
+    if (this.textureMode) {
+      // TODO get rid of this
+      console.log("we are in texture mode!");
+      // TODO see if it needs scene texture before doing this
+      // can we even do this? maybe just always make the scene texture
+      for (const name in effects.effectMap) {
+        const list = effects.effectMap[name];
+        list.unshift(loop([input()]).target(-1));
+      }
     }
 
     this.source = source;
@@ -387,7 +404,8 @@ export class Merger {
       this.fShaders
     );
     this.programMap = programMap;
-    if (needs.sceneBuffer) {
+    if (needs.sceneBuffer || this.textureMode) {
+      // we always create a scene texture if we're in texture mode
       this.tex.scene = {
         name: "scene",
         tex: makeTexture(this.gl, this.options),
