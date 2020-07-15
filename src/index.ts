@@ -39,6 +39,7 @@ export * from "./exprs/translateexpr";
 export * from "./exprs/normmouseexpr";
 export * from "./exprs/perlinexpr";
 export * from "./exprs/simplexexpr";
+export * from "./exprs/motionblurloop";
 
 // TODO move this out of expressions
 export * from "./exprs/expr";

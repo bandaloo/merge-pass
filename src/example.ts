@@ -384,17 +384,10 @@ const demos: Demos = {
 
   bufferblend: (channels: TexImageSource[] = []) => {
     const merger = new MP.Merger(
-      [
-        MP.loop([
-          MP.setcolor(MP.op(MP.op(MP.input(), "+", MP.fcolor()), "/", 2)),
-        ]).target(0),
-        MP.channel(0),
-      ],
+      [MP.blur2d(1, 1), MP.motionblur(0)],
       sourceCanvas,
       gl,
-      {
-        channels: [null],
-      }
+      { channels: [null] }
     );
     return {
       merger: merger,
