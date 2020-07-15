@@ -8,7 +8,7 @@ export class Brightness extends ExprVec4 {
   brightness: Float;
 
   constructor(brightness: Float, col: Vec4 = fcolor()) {
-    super(tag`(brightness(${brightness}, ${col}))`, ["uBrightness", "uColor"]);
+    super(tag`brightness(${brightness}, ${col})`, ["uBrightness", "uColor"]);
     this.brightness = brightness;
     this.externalFuncs = [glslFuncs.brightness];
   }

@@ -139,22 +139,16 @@ export class WebGLProgramLoop {
       // swap out the back texture for the channel texture if this loop has
       // an alternate render target
       savedTexture = tex.back;
+      // TODO!! this means the texture reference is in two places! and gets
+      // activated twice! reading from and writing to
       tex.back = tex.bufTextures[this.loopInfo.target];
+      tex.bufTextures[this.loopInfo.target] = savedTexture;
       if (textureDebug) console.log("saved texture: " + savedTexture.name);
     }
-    // TODO get rid of this
-    if (
-      this.loopInfo.target !== undefined &&
-      // if there is not a target switch:
-      outerLoop?.loopInfo.target === this.loopInfo.target
-    ) {
-      //console.log("has target but not switching");
-    }
-    // activate and bind all the channel textures needed
 
+    // setup for program leaf
     if (this.programElement instanceof WebGLProgramLeaf) {
-      // TODO move this up
-      gl.useProgram(this.programElement.program);
+      // bind the scene texture if needed
       if (this.programElement.totalNeeds.sceneBuffer) {
         if (tex.scene === undefined) {
           throw new Error(
@@ -165,11 +159,25 @@ export class WebGLProgramLoop {
         gl.bindTexture(gl.TEXTURE_2D, tex.scene.tex);
       }
 
+      // bind all extra channel textures if needed
+      for (const n of this.programElement.totalNeeds.extraBuffers) {
+        // TODO get rid of this logging
+        //console.log("binding " + (2 + n));
+        //console.log(tex.bufTextures[n]);
+        gl.activeTexture(gl.TEXTURE2 + n);
+        gl.bindTexture(gl.TEXTURE_2D, tex.bufTextures[n].tex);
+      }
+
+      // use the current program
+      gl.useProgram(this.programElement.program);
+
+      // apply all uniforms
       for (const effect of this.programElement.effects) {
         effect.applyUniforms(gl, uniformLocs);
       }
 
       // set time uniform if needed
+      // TODO get rid of nullish?
       if (this.programElement.totalNeeds?.timeUniform) {
         if (
           this.timeLoc === undefined ||
@@ -181,6 +189,7 @@ export class WebGLProgramLoop {
       }
 
       // set mouse uniforms if needed
+      // TODO get rid of nullish?
       if (this.programElement.totalNeeds?.mouseUniform) {
         if (
           this.mouseLoc === undefined ||
@@ -195,18 +204,11 @@ export class WebGLProgramLoop {
           defaultUniforms.mouseY
         );
       }
-      for (const n of this.programElement.totalNeeds.extraBuffers) {
-        gl.activeTexture(gl.TEXTURE2 + n);
-        gl.bindTexture(gl.TEXTURE_2D, tex.bufTextures[n].tex);
-      }
     }
 
     for (let i = 0; i < this.loopInfo.num; i++) {
       const newLast = i === this.loopInfo.num - 1;
       if (this.programElement instanceof WebGLProgramLeaf) {
-        if (i === 0) {
-          // TODO get rid of this
-        }
         if (newLast && last && this.last) {
           // we are on the final pass of the final loop, so draw screen by
           // setting to the default framebuffer
@@ -227,26 +229,26 @@ export class WebGLProgramLoop {
         }
         // allows us to read from `texBack`
         // default sampler is 0, so `uSampler` uniform will always sample from texture 0
-        // TODO bind to the channel texture instead, if the loop has a target
         gl.activeTexture(gl.TEXTURE0);
         gl.bindTexture(gl.TEXTURE_2D, tex.back.tex);
         // use our last program as the draw program
         gl.drawArrays(gl.TRIANGLES, 0, 6);
-        // TODO do we want to swap if a channel target was used?
-        // TODO get rid of this
         if (textureDebug) {
           console.log("intermediate back", tex.back.name);
           console.log("intermediate front", tex.front.name);
         }
+
         // swap back and front
         [tex.back, tex.front] = [tex.front, tex.back];
 
-        // deactivate and bind all the channel textures needed
+        // deactivate and unbind all the channel textures needed
         for (const n of this.programElement.totalNeeds.extraBuffers) {
-          //console.log(n);
           gl.activeTexture(gl.TEXTURE2 + n);
           gl.bindTexture(gl.TEXTURE_2D, null);
         }
+
+        gl.activeTexture(gl.TEXTURE1);
+        gl.bindTexture(gl.TEXTURE_2D, null);
       } else {
         if (this.loopInfo.func !== undefined) {
           this.loopInfo.func(i);
@@ -293,8 +295,9 @@ export class WebGLProgramLoop {
         console.log("pre final back", tex.back.name);
         console.log("pre final front", tex.front.name);
       }
-      tex.bufTextures[target] = tex.front;
-      tex.front = savedTexture;
+      // back texture is really the front texture because it was just swapped
+      tex.bufTextures[target] = tex.back;
+      tex.back = savedTexture;
       //[tex.back, tex.front] = [tex.front, tex.back];
       if (textureDebug) {
         console.log("post final back", tex.back.name);

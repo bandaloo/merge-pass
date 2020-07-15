@@ -5,6 +5,8 @@
 import * as dat from "dat.gui";
 import * as MP from "./index";
 
+const slow = false;
+
 const glCanvas = document.getElementById("gl") as HTMLCanvasElement;
 const gl = glCanvas.getContext("webgl2");
 
@@ -124,14 +126,9 @@ const demos: Demos = {
           MP.brightness(-0.3),
           MP.setcolor(MP.op(MP.fcolor(), "+", MP.input())),
         ]).target(0),
-        MP.loop(
-          [
-            MP.setcolor(
-              MP.op(MP.op(MP.channel(0), "+", MP.channel(1)), "/", 2)
-            ),
-          ],
-          2
-        ).target(1),
+        MP.loop([
+          MP.setcolor(MP.op(MP.op(MP.channel(0), "+", MP.fcolor()), "/", 2)),
+        ]).target(1),
         //MP.loop([MP.brightness(-0.5)]).target(0),
         //MP.setcolor(MP.op(MP.fcolor(), "+", MP.input())),
         //MP.loop([MP.setcolor(MP.vec4(1, 1, 0, 1))]).target(0),
@@ -404,7 +401,7 @@ const demos: Demos = {
     const merger = new MP.Merger(
       [
         MP.loop([
-          MP.setcolor(MP.op(MP.op(MP.input(), "+", MP.channel(0)), "/", 2)),
+          MP.setcolor(MP.op(MP.op(MP.input(), "+", MP.fcolor()), "/", 2)),
         ]).target(0),
         MP.channel(0),
       ],
@@ -1186,7 +1183,7 @@ window.addEventListener("load", () => {
     }
     demo.change(demo.merger, t, frame);
     demo.merger.draw(t / 1000, mousePos.x, mousePos.y);
-    requestAnimationFrame(step);
+    !slow ? requestAnimationFrame(step) : setTimeout(step, 1000);
     frame++;
   };
 
