@@ -108,9 +108,9 @@ const demos: Demos = {
   },
 
   vectordisplay: () => {
+    // note: we're using two channels here even though we don't need to
     const merger = new MP.Merger(
       [
-        //MP.loop([MP.input()]).target(0),
         MP.loop([
           MP.input(),
           MP.loop(
@@ -122,28 +122,13 @@ const demos: Demos = {
             ],
             4
           ).target(0),
-          //MP.setcolor(MP.vec4(1, 1, 0, 1)), // turn it all yellow
           MP.brightness(-0.3),
           MP.setcolor(MP.op(MP.fcolor(), "+", MP.input())),
         ]).target(0),
         MP.loop([
           MP.setcolor(MP.op(MP.op(MP.channel(0), "+", MP.fcolor()), "/", 2)),
         ]).target(1),
-        //MP.loop([MP.brightness(-0.5)]).target(0),
-        //MP.setcolor(MP.op(MP.fcolor(), "+", MP.input())),
-        //MP.loop([MP.setcolor(MP.vec4(1, 1, 0, 1))]).target(0),
-        /*
-        MP.loop(
-          [
-            MP.setcolor(
-              MP.op(MP.op(MP.channel(1), "+", MP.channel(0)), "/", 2)
-            ),
-          ],
-          1
-        ).target(0),
-        */
         MP.channel(1),
-        //MP.channel(1),
       ],
       sourceCanvas,
       gl,

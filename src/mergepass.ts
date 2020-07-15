@@ -120,6 +120,7 @@ export class EffectLoop implements EffectLike, Generable {
     this.loopInfo = loopInfo;
   }
 
+  /** @ignore */
   getSampleNum(mult = 1, sliceStart = 0, sliceEnd = this.effects.length) {
     mult *= this.loopInfo.num;
     let acc = 0;
@@ -215,6 +216,7 @@ export class EffectLoop implements EffectLike, Generable {
     return this;
   }
 
+  /** @ignore */
   hasTargetSwitch() {
     for (const e of this.effects) {
       if (e instanceof EffectLoop) {
@@ -237,7 +239,6 @@ export function loop(effects: EffectElement[], rep = 1) {
  */
 type EffectElement = ExprVec4 | EffectLoop;
 
-// TODO don't really want to export this
 /**
  * map of names to uniform locations with a counter for how many times they have
  * been updated in the current loop
@@ -438,10 +439,6 @@ export class Merger {
     //const originalFront = this.tex.front;
     //const originalBack = this.tex.back;
 
-    // TODO this is potentially the cause of the same source and destination
-    // problem
-    // TODO get rid of this
-    //console.log("this.tex.back.name", this.tex.back.name);
     this.gl.activeTexture(this.gl.TEXTURE0);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.back.tex);
     sendTexture(this.gl, this.source);
@@ -475,8 +472,6 @@ export class Merger {
       counter++;
     }
 
-    // TODO get rid of this
-    console.log("running");
     this.programLoop.run(
       this.gl,
       this.tex,

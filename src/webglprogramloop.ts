@@ -19,11 +19,11 @@ export function updateNeeds(acc: Needs, curr: Needs): Needs {
 
 /** values to set the default uniforms `uTime` and `uMouse` to */
 interface DefaultUniforms {
-  /** `uTime` value */
+  /** `uTime` uniform value */
   timeVal: number;
-  /** x component of `uMouse` */
+  /** x component of `uMouse` uniform */
   mouseX: number;
-  /** y component of `uMouse` */
+  /** y component of `uMouse` uniform */
   mouseY: number;
 }
 
@@ -119,28 +119,14 @@ export class WebGLProgramLoop {
     outerLoop?: WebGLProgramLoop
   ) {
     let savedTexture: TexWrapper | undefined;
-    // TODO get rid of this
-    //console.log(outerLoop);
-    //console.log(this.loopInfo.target === outerLoop?.loopInfo.target);
-    /*
-    console.log(
-      "outer",
-      outerLoop?.loopInfo.target,
-      "inner",
-      this.loopInfo.target
-    );
-    */
     if (
       this.loopInfo.target !== undefined &&
       // if there is a target switch:
       outerLoop?.loopInfo.target !== this.loopInfo.target
-      //true
     ) {
       // swap out the back texture for the channel texture if this loop has
       // an alternate render target
       savedTexture = tex.back;
-      // TODO!! this means the texture reference is in two places! and gets
-      // activated twice! reading from and writing to
       tex.back = tex.bufTextures[this.loopInfo.target];
       tex.bufTextures[this.loopInfo.target] = savedTexture;
       if (textureDebug) console.log("saved texture: " + savedTexture.name);
@@ -161,9 +147,6 @@ export class WebGLProgramLoop {
 
       // bind all extra channel textures if needed
       for (const n of this.programElement.totalNeeds.extraBuffers) {
-        // TODO get rid of this logging
-        //console.log("binding " + (2 + n));
-        //console.log(tex.bufTextures[n]);
         gl.activeTexture(gl.TEXTURE2 + n);
         gl.bindTexture(gl.TEXTURE_2D, tex.bufTextures[n].tex);
       }
@@ -177,8 +160,7 @@ export class WebGLProgramLoop {
       }
 
       // set time uniform if needed
-      // TODO get rid of nullish?
-      if (this.programElement.totalNeeds?.timeUniform) {
+      if (this.programElement.totalNeeds.timeUniform) {
         if (
           this.timeLoc === undefined ||
           defaultUniforms.timeVal === undefined
@@ -189,8 +171,7 @@ export class WebGLProgramLoop {
       }
 
       // set mouse uniforms if needed
-      // TODO get rid of nullish?
-      if (this.programElement.totalNeeds?.mouseUniform) {
+      if (this.programElement.totalNeeds.mouseUniform) {
         if (
           this.mouseLoc === undefined ||
           defaultUniforms.mouseX === undefined ||
@@ -213,8 +194,6 @@ export class WebGLProgramLoop {
           // we are on the final pass of the final loop, so draw screen by
           // setting to the default framebuffer
           gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-          // TODO get rid of this
-          //console.log("rendering to the screen");
         } else {
           // we have to bounce between two textures
           gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
@@ -268,37 +247,17 @@ export class WebGLProgramLoop {
     }
     // swap the textures back if we were temporarily using a channel texture
     if (savedTexture !== undefined) {
-      //console.log('test')
-      //[tex.front, savedTexture] = [savedTexture, tex.front];
-      //const tempTexture = tex.back;
-      //tex.back = savedTexture;
-      // target can't be undefined if texture was saved so cast is ok
-      //tex.bufTextures[this.loopInfo.target as number] = tempTexture;
-
-      // swap back
-      //console.log("rotating");
       const target = this.loopInfo.target as number;
 
-      /*
-      // rotate textures
-      const tempFront = tex.front;
-      // move back to front
-      tex.front = tex.back;
-      // move front to channel buffer
-      tex.bufTextures[target] = tempFront;
-      // make the back the saved texture
-      tex.back = savedTexture;
-      //[tex.back, tex.front] = [tex.front, tex.back];
-      */
-      // TODO get rid of this
       if (textureDebug) {
         console.log("pre final back", tex.back.name);
         console.log("pre final front", tex.front.name);
       }
+
       // back texture is really the front texture because it was just swapped
       tex.bufTextures[target] = tex.back;
       tex.back = savedTexture;
-      //[tex.back, tex.front] = [tex.front, tex.back];
+
       if (textureDebug) {
         console.log("post final back", tex.back.name);
         console.log("post final front", tex.front.name);

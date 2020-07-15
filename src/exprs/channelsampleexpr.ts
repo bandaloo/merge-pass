@@ -28,7 +28,9 @@ export class ChannelSampleExpr extends ExprVec4 {
 }
 
 /**
- * creates an expression that samples from one of the user-defined channels
+ * creates an expression that samples from one of the user-defined channels.
+ * don't sample from the same channel that you are using [[target]] on in a
+ * loop, just use [[fcolor]]
  * @param channel which channel to sample from
  * @param vec where to sample the channel texture (defaults to the normalized
  * frag coord)
