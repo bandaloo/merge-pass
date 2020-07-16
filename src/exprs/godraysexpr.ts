@@ -43,6 +43,7 @@ export class GodRaysExpr extends ExprVec4 {
     }, ${
       convertDepth !== undefined ? convertDepth.newColor : vec4(0, 0, 0, 0)
     })`;
+    // TODO make this more generic
     // append the _<num> onto the function name
     // also add _depth if this is a version of the function that uses depth buffer
     sourceLists.sections[0] += `godrays_${samplerNum}${

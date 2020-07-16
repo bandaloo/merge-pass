@@ -36,6 +36,7 @@ export class BlurExpr extends ExprVec4 {
     if (![5, 9, 13].includes(taps)) {
       throw new Error("taps for gauss blur can only be 5, 9 or 13");
     }
+    // TODO make this more generic
     super(genBlurSource(direction, taps, samplerNum), ["uDirection"]);
     this.direction = direction;
     if (samplerNum === undefined) {

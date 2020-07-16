@@ -40,6 +40,7 @@ export * from "./exprs/perlinexpr";
 export * from "./exprs/simplexexpr";
 export * from "./exprs/motionblurloop";
 export * from "./exprs/randomexpr";
+export * from "./exprs/sobelexpr";
 
 // TODO move this out of expressions
 export * from "./exprs/expr";

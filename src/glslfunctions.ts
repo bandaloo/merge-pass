@@ -265,6 +265,30 @@ export const glslFuncs = {
   simplexhelpers: `vec3 mod289_3(vec3 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 vec2 mod289_2(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 vec3 permute(vec3 x) { return mod289_3(((x*34.0)+1.0)*x); }`,
+  // sobel adapted from https://gist.github.com/Hebali/6ebfc66106459aacee6a9fac029d0115
+  sobel: `vec4 sobel() {
+  vec2 uv = gl_FragCoord.xy / uResolution;
+  vec4 k[8];
+
+  float w = 1. / uResolution.x;
+  float h = 1. / uResolution.y;
+
+  k[0] = texture2D(uSampler, uv + vec2(-w, -h));
+  k[1] = texture2D(uSampler, uv + vec2(0., -h));
+  k[2] = texture2D(uSampler, uv + vec2(w, -h));
+  k[3] = texture2D(uSampler, uv + vec2(-w, 0.));
+
+  k[4] = texture2D(uSampler, uv + vec2(w, 0.));
+  k[5] = texture2D(uSampler, uv + vec2(-w, h));
+  k[6] = texture2D(uSampler, uv + vec2(0., h));
+  k[7] = texture2D(uSampler, uv + vec2(w, h));
+
+  vec4 edge_h = k[2] + (2. * k[4]) + k[7] - (k[0] + (2. * k[3]) + k[5]);
+  vec4 edge_v = k[0] + (2. * k[1]) + k[2] - (k[5] + (2. * k[6]) + k[7]);
+  vec4 sobel = sqrt(edge_h * edge_h + edge_v * edge_v);
+
+  return vec4(1. - sobel.rgb, 1.);
+}`,
 };
 
 /** @ignore */

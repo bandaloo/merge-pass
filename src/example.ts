@@ -784,6 +784,14 @@ const demos: Demos = {
       change: () => {},
     };
   },
+
+  sobel: (channels: TexImageSource[] = []) => {
+    const merger = new MP.Merger([MP.sobel()], sourceCanvas, gl);
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
 };
 
 interface Draws {
@@ -1046,6 +1054,7 @@ const draws: Draws = {
   noisegodrays: [higherOrderDonuts(true, 150), higherOrderDonuts(false, 10)],
   custom: [higherOrderWaves(true), higherOrderWaves(false), bitwiseGrid()],
   bloom: [bloomTest],
+  sobel: [redSpiral],
 };
 
 interface Notes {
