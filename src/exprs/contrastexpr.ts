@@ -1,6 +1,6 @@
 import { Float, Vec4 } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
-import { ExprVec4, n2e, tag } from "./expr";
+import { ExprVec4, n2e, tag, PrimitiveFloat, n2p } from "./expr";
 import { fcolor } from "./fragcolorexpr";
 
 export class ContrastExpr extends ExprVec4 {
@@ -13,9 +13,9 @@ export class ContrastExpr extends ExprVec4 {
   }
 
   /** sets the contrast */
-  setContrast(contrast: Float) {
+  setContrast(contrast: PrimitiveFloat | number) {
     this.setUniform("uContrast" + this.id, contrast);
-    this.contrast = contrast;
+    this.contrast = n2p(contrast);
   }
 }
 

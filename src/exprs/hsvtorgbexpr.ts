@@ -1,4 +1,4 @@
-import { ExprVec4, tag } from "./expr";
+import { ExprVec4, tag, PrimitiveVec4 } from "./expr";
 import { Vec4 } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
 
@@ -12,7 +12,8 @@ export class HSVToRGBExpr extends ExprVec4 {
     this.externalFuncs = [glslFuncs.hsv2rgb];
   }
 
-  setColor(color: Vec4) {
+  /** sets the color to convert */
+  setColor(color: PrimitiveVec4) {
     this.setUniform("uHSVCol", color);
     this.color = color;
   }

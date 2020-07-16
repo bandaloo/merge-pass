@@ -1,5 +1,5 @@
 import { Vec2 } from "../exprtypes";
-import { tag, ExprVec2 } from "./expr";
+import { tag, ExprVec2, PrimitiveVec2 } from "./expr";
 
 // really just adding two vecs together, but it might be confusing that there's
 // rotate but no translate, so this is included. also it could make some
@@ -16,13 +16,13 @@ export class TranslateExpr extends ExprVec2 {
   }
 
   /** sets the starting position */
-  setVec(vec: Vec2) {
+  setVec(vec: PrimitiveVec2) {
     this.setUniform("uVec" + this.id, vec);
     this.vec = vec;
   }
 
   /** sets how far the vector will be translated */
-  setPos(pos: Vec2) {
+  setPos(pos: PrimitiveVec2) {
     this.setUniform("uPos" + this.id, pos);
     this.pos = pos;
   }

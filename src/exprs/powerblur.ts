@@ -5,6 +5,7 @@ import { mut } from "./expr";
 
 const baseLog = (x: number, y: number) => Math.log(y) / Math.log(x);
 
+// TODO consider getting rid of this, as it pretty much never looks good
 /** power blur loop */
 export class PowerBlurLoop extends EffectLoop {
   private size: number;

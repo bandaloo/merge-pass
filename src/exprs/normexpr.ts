@@ -1,5 +1,5 @@
 import { Vec } from "../exprtypes";
-import { ExprFloat, tag, ExprVec, Operator } from "./expr";
+import { Operator, tag } from "./expr";
 
 /** normalize expression */
 export class NormExpr<T extends Vec> extends Operator<T> {
@@ -10,6 +10,7 @@ export class NormExpr<T extends Vec> extends Operator<T> {
     this.vec = vec;
   }
 
+  /** sets the vec to normalize */
   setVec(vec: T) {
     this.setUniform("uVec" + this.id, vec);
     this.vec = vec;

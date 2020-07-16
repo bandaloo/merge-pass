@@ -1,5 +1,5 @@
 import { Vec2 } from "../exprtypes";
-import { ExprVec4, tag } from "./expr";
+import { ExprVec4, tag, PrimitiveVec2 } from "./expr";
 import { pos } from "./normfragcoordexpr";
 
 /** scene sample expression */
@@ -13,7 +13,7 @@ export class SceneSampleExpr extends ExprVec4 {
   }
 
   /** sets coordinate where scene is being sampled from */
-  setCoord(coord: Vec2) {
+  setCoord(coord: PrimitiveVec2) {
     this.setUniform("uCoord", coord);
     this.coord = coord;
   }

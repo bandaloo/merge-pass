@@ -1,6 +1,6 @@
 import { Vec2 } from "../exprtypes";
 import { glslFuncs, replaceSampler } from "../glslfunctions";
-import { ExprVec4, SourceLists } from "./expr";
+import { ExprVec4, PrimitiveVec2, SourceLists } from "./expr";
 
 /** @ignore */
 function genBlurSource(
@@ -54,7 +54,7 @@ export class BlurExpr extends ExprVec4 {
   }
 
   /** set the blur direction (keep magnitude no greater than 1 for best effect) */
-  setDirection(direction: Vec2) {
+  setDirection(direction: PrimitiveVec2) {
     this.setUniform("uDirection" + this.id, direction);
     this.direction = direction;
   }

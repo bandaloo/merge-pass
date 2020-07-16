@@ -1,6 +1,6 @@
 import { channelSamplerName } from "../codebuilder";
 import { Vec2 } from "../exprtypes";
-import { ExprVec4, SourceLists } from "./expr";
+import { ExprVec4, SourceLists, PrimitiveVec2 } from "./expr";
 import { pos } from "./normfragcoordexpr";
 
 /** @ignore */
@@ -21,7 +21,7 @@ export class ChannelSampleExpr extends ExprVec4 {
     this.needs.extraBuffers = new Set([buf]);
   }
 
-  setCoord(coord: Vec2) {
+  setCoord(coord: PrimitiveVec2) {
     this.setUniform("uVec", coord);
     this.coord = coord;
   }

@@ -1,4 +1,4 @@
-import { ExprVec2, tag, n2e } from "./expr";
+import { ExprVec2, tag, n2e, PrimitiveFloat, PrimitiveVec2 } from "./expr";
 import { glslFuncs } from "../glslfunctions";
 import { Vec2, Float } from "../exprtypes";
 
@@ -14,12 +14,14 @@ export class RotateExpr extends ExprVec2 {
     this.externalFuncs = [glslFuncs.rotate2d];
   }
 
-  setVec(vec: Vec2) {
+  /** set the vector to rotate */
+  setVec(vec: PrimitiveVec2) {
     this.setUniform("uVec" + this.id, vec);
     this.vec = vec;
   }
 
-  setAngle(angle: Float | number) {
+  /** set the angle to rotate by */
+  setAngle(angle: PrimitiveFloat | number) {
     this.setUniform("uAngle" + this.id, n2e(angle));
     this.angle = n2e(angle);
   }

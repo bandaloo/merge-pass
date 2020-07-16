@@ -4,7 +4,6 @@
  */
 import * as dat from "dat.gui";
 import * as MP from "./index";
-import { MotionBlurLoop } from "./exprs/motionblurloop";
 
 const slow = false;
 
@@ -396,7 +395,7 @@ const demos: Demos = {
     const gui = new dat.GUI();
     gui.add(controls, "persistence", 0.1, 0.9, 0.01);
 
-    let m: MotionBlurLoop;
+    let m: MP.MotionBlurLoop;
 
     const merger = new MP.Merger(
       [MP.blur2d(1, 1), (m = MP.motionblur(0)), grainy],

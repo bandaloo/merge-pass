@@ -1,6 +1,15 @@
 import { Float, Vec4 } from "../exprtypes";
 import { channel } from "./channelsampleexpr";
-import { ExprVec4, mut, n2e, pfloat, tag } from "./expr";
+import {
+  ExprVec4,
+  mut,
+  n2e,
+  pfloat,
+  tag,
+  PrimitiveFloat,
+  n2p,
+  PrimitiveVec4,
+} from "./expr";
 import { pvec4 } from "./vecexprs";
 
 /** depth info to occlussion info expression */
@@ -24,19 +33,19 @@ export class DepthToOcclusionExpr extends ExprVec4 {
     this.threshold = threshold;
   }
 
-  setDepthColor(depthCol: Vec4) {
+  setDepthColor(depthCol: PrimitiveVec4) {
     this.setUniform("uDepth" + this.id, depthCol);
     this.depthCol = depthCol;
   }
 
-  setNewColor(newCol: Vec4) {
+  setNewColor(newCol: PrimitiveVec4) {
     this.setUniform("uNewCol" + this.id, newCol);
     this.newCol = newCol;
   }
 
-  setThreshold(threshold: Float) {
+  setThreshold(threshold: PrimitiveFloat | number) {
     this.setUniform("uThreshold" + this.id, threshold);
-    this.threshold = threshold;
+    this.threshold = n2p(threshold);
   }
 }
 

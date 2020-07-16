@@ -1,4 +1,4 @@
-import { ExprVec4, tag } from "./expr";
+import { ExprVec4, tag, PrimitiveVec4 } from "./expr";
 import { Vec4 } from "../exprtypes";
 
 // TODO the only reason this class exists is because `Operator<ExprVec4>` is not
@@ -13,7 +13,7 @@ export class SetColorExpr extends ExprVec4 {
   }
 
   /** sets the value which will be set to the color */
-  setVal(vec: Vec4) {
+  setVal(vec: PrimitiveVec4) {
     this.setUniform("uVal", vec);
     this.vec = vec;
   }

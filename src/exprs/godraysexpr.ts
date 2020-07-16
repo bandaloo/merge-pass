@@ -1,6 +1,16 @@
 import { Float, Vec2, Vec4 } from "../exprtypes";
 import { glslFuncs, replaceSampler } from "../glslfunctions";
-import { ExprVec4, float, mut, n2e, tag } from "./expr";
+import {
+  ExprVec4,
+  float,
+  mut,
+  n2e,
+  n2p,
+  PrimitiveFloat,
+  PrimitiveVec2,
+  PrimitiveVec4,
+  tag,
+} from "./expr";
 import { fcolor } from "./fragcolorexpr";
 import { pvec2, vec4 } from "./vecexprs";
 
@@ -15,6 +25,7 @@ export class GodRaysExpr extends ExprVec4 {
   threshold?: Float;
   newColor?: Vec4;
 
+  // sane godray defaults from https://github.com/Erkaman/glsl-godrays/blob/master/example/index.js
   constructor(
     col: Vec4 = fcolor(),
     exposure: Float = mut(1.0),
@@ -73,37 +84,37 @@ export class GodRaysExpr extends ExprVec4 {
   }
 
   /** sets the light color */
-  setColor(color: Vec4) {
+  setColor(color: PrimitiveVec4) {
     this.setUniform("uCol" + this.id, color);
     this.col = color;
   }
 
   /** sets the exposure */
-  setExposure(exposure: Float | number) {
+  setExposure(exposure: PrimitiveFloat | number) {
     this.setUniform("uExposure" + this.id, exposure);
-    this.exposure = n2e(exposure);
+    this.exposure = n2p(exposure);
   }
 
   /** sets the decay */
-  setDecay(decay: Float | number) {
+  setDecay(decay: PrimitiveFloat | number) {
     this.setUniform("uDecay" + this.id, decay);
-    this.decay = n2e(decay);
+    this.decay = n2p(decay);
   }
 
   /** sets the density */
-  setDensity(density: Float | number) {
+  setDensity(density: PrimitiveFloat | number) {
     this.setUniform("uDensity" + this.id, density);
-    this.density = n2e(density);
+    this.density = n2p(density);
   }
 
   /** sets the weight */
-  setWeight(weight: Float | number) {
+  setWeight(weight: PrimitiveFloat | number) {
     this.setUniform("uWeight" + this.id, weight);
-    this.weight = n2e(weight);
+    this.weight = n2p(weight);
   }
 
   /** sets the light position */
-  setLightPos(lightPos: Vec2) {
+  setLightPos(lightPos: PrimitiveVec2) {
     this.setUniform("uLightPos" + this.id, lightPos);
     this.lightPos = lightPos;
   }
@@ -111,12 +122,12 @@ export class GodRaysExpr extends ExprVec4 {
   // these only matter when you're using a depth buffer and not an occlusion
   // buffer (although right now, you'll still be able to set them)
 
-  setThreshold(threshold: Float | number) {
+  setThreshold(threshold: PrimitiveFloat | number) {
     this.setUniform("uThreshold" + this.id, threshold);
-    this.threshold = n2e(threshold);
+    this.threshold = n2p(threshold);
   }
 
-  setNewcolor(newColor: Vec4) {
+  setNewcolor(newColor: PrimitiveVec4) {
     this.setUniform("uNewColor" + this.id, newColor);
     this.newColor = newColor;
   }
@@ -147,7 +158,6 @@ interface GodraysOptions {
   };
 }
 
-// sane godray defaults from https://github.com/Erkaman/glsl-godrays/blob/master/example/index.js
 /**
  * create a godrays expression which requires an occlusion map; all values are
  * mutable by default

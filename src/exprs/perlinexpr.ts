@@ -1,19 +1,21 @@
 import { Float, Vec2 } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
-import { ExprFloat, pfloat, tag } from "./expr";
+import { ExprFloat, pfloat, tag, PrimitiveVec2 } from "./expr";
 import { op } from "./opexpr";
 
 /** Perlin noise expression */
 export class PerlinExpr extends ExprFloat {
   pos: Vec2;
 
+  // TODO include a default
   constructor(pos: Vec2) {
     super(tag`gradientnoise(${pos})`, ["uPos"]);
     this.pos = pos;
     this.externalFuncs = [glslFuncs.random2, glslFuncs.gradientnoise];
   }
 
-  setPos(pos: Vec2) {
+  /** sets the position to calculate noise value of */
+  setPos(pos: PrimitiveVec2) {
     this.setUniform("uPos", pos);
     this.pos = pos;
   }

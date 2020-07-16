@@ -1,6 +1,6 @@
 import { Float, Vec4 } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
-import { ExprVec4, n2e, tag } from "./expr";
+import { ExprVec4, n2e, tag, PrimitiveFloat } from "./expr";
 import { fcolor } from "./fragcolorexpr";
 
 /** brightness expression */
@@ -14,7 +14,7 @@ export class Brightness extends ExprVec4 {
   }
 
   /** set the brightness (should probably be between -1 and 1) */
-  setBrightness(brightness: Float | number) {
+  setBrightness(brightness: PrimitiveFloat | number) {
     this.setUniform("uBrightness" + this.id, brightness);
     this.brightness = n2e(brightness);
   }

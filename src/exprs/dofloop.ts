@@ -2,7 +2,7 @@ import { Float } from "../exprtypes";
 import { EffectLoop } from "../mergepass";
 import { gauss } from "./blurexpr";
 import { channel } from "./channelsampleexpr";
-import { pfloat, n2e, mut } from "./expr";
+import { pfloat, n2e, mut, PrimitiveFloat } from "./expr";
 import { gaussian, GaussianExpr } from "./gaussianexpr";
 import { getcomp } from "./getcompexpr";
 import { op } from "./opexpr";
@@ -26,12 +26,12 @@ export class DoFLoop extends EffectLoop {
     this.gaussian = guassianExpr;
   }
 
-  setDepth(depth: Float | number) {
+  setDepth(depth: PrimitiveFloat | number) {
     // this translates the gaussian curve to the side
     this.gaussian.setA(depth);
   }
 
-  setRadius(radius: Float | number) {
+  setRadius(radius: PrimitiveFloat | number) {
     // this scales the gaussian curve to focus on a larger band of depth
     this.gaussian.setB(radius);
   }

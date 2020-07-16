@@ -1,6 +1,6 @@
 import { Vec2 } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
-import { ExprFloat, tag } from "./expr";
+import { ExprFloat, tag, PrimitiveVec2 } from "./expr";
 
 /** simplex noise expression */
 export class SimplexNoise extends ExprFloat {
@@ -12,7 +12,7 @@ export class SimplexNoise extends ExprFloat {
     this.externalFuncs = [glslFuncs.simplexhelpers, glslFuncs.simplexnoise];
   }
 
-  setPos(pos: Vec2) {
+  setPos(pos: PrimitiveVec2) {
     this.setUniform("uPos", pos);
     this.pos = pos;
   }
