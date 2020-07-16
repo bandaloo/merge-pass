@@ -1,8 +1,8 @@
 # merge-pass
 
 This library allows you to easily run a combination of post-processing
-effects on an image or canvas. It does so by generating shaders to apply the
-effect in as few passes as possible.
+effects on an image, canvas or existing texture. It does so by generating
+shaders to apply the effect in as few passes as possible.
 
 Right now, this package is in pre-alpha. If you have tried using this library
 and have an idea of how to improve it, let me know!
@@ -32,3 +32,9 @@ Run `npm run build` and `npm run bundle` to create the compiled
 `npm run bundlewatch` in separate sessions to get live updates. To build the
 docs, run `npm run docs` and run a local server that serves everything in the
 `docs` folder.
+
+## Acknowledgements
+
+Special thanks to Charlie Roberts for offering feedback on the design of
+this API and by helping bug test by integrating this library into the
+[marching.js](https://github.com/charlieroberts/marching) online playground.

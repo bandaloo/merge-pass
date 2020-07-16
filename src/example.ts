@@ -4,6 +4,7 @@
  */
 import * as dat from "dat.gui";
 import * as MP from "./index";
+import { MotionBlurLoop } from "./exprs/motionblurloop";
 
 const slow = false;
 
@@ -382,19 +383,32 @@ const demos: Demos = {
     };
   },
 
-  bufferblend: (channels: TexImageSource[] = []) => {
+  motionblur: (channels: TexImageSource[] = []) => {
     const grainy = MP.brightness(
-      MP.op(MP.random(MP.op(MP.pixel(), "*", MP.time())), "/", 4)
+      MP.op(MP.random(MP.op(MP.pixel(), "+", MP.time())), "/", 4)
     );
+
+    class MotionControls {
+      persistence: number = 0.3;
+    }
+
+    const controls = new MotionControls();
+    const gui = new dat.GUI();
+    gui.add(controls, "persistence", 0.1, 0.9, 0.01);
+
+    let m: MotionBlurLoop;
+
     const merger = new MP.Merger(
-      [MP.blur2d(1, 1), MP.motionblur(0), grainy],
+      [MP.blur2d(1, 1), (m = MP.motionblur(0)), grainy],
       sourceCanvas,
       gl,
       { channels: [null] }
     );
     return {
       merger: merger,
-      change: () => {},
+      change: () => {
+        m.setPersistence(controls.persistence);
+      },
     };
   },
 
@@ -937,7 +951,7 @@ const draws: Draws = {
     higherOrderWaves(false),
     bitwiseGrid(),
   ],
-  bufferblend: [redSpiral],
+  motionblur: [redSpiral],
   basicdof: [higherOrderPerspective(true), higherOrderPerspective(false)],
   lineardof: [
     higherOrderPerspective(true),
@@ -977,9 +991,12 @@ const notes: Notes = {
     "be canvases or videos) into the merger constructor and sample from them",
   buffereyesore:
     "you can use <code>target</code> to do effect loops on specific channels",
-  bufferblend:
-    "if you want to use one of the channels as an empty buffer you can <code>target</code>, then " +
-    "make that element in the <code>channels</code> array <code>null</code>",
+  motionblur:
+    "if you want to use one of the channels as an acccumulation buffer you can <code>target</code>, " +
+    "then make that element in the <code>channels</code> array <code>null</code>. " +
+    "the <code>motionblur</code> effect will blend the current frame with the previous frames " +
+    "to create a simple motion blur effect. effects placed after <code>motionblur</code> will " +
+    "will not be copied over to the accumulation buffer",
   fxaa:
     "fxaa stands for fast approximate anti-aliasing. amazingly, it only needs " +
     "the scene buffer info. it's not perfect, but it does the job in many cases. you " +

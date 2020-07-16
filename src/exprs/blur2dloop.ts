@@ -29,7 +29,7 @@ export class Blur2dLoop extends EffectLoop {
    */
   setHorizontal(float: PrimitiveFloat | number) {
     if (!(this.horizontal instanceof BasicFloat))
-      throw new Error("horizontal expression not primitive float");
+      throw new Error("horizontal expression not basic float");
     this.horizontal.setVal(float);
   }
 
@@ -39,7 +39,7 @@ export class Blur2dLoop extends EffectLoop {
    */
   setVertical(float: PrimitiveFloat | number) {
     if (!(this.vertical instanceof BasicFloat))
-      throw new Error("vertical expression not primitive float");
+      throw new Error("vertical expression not basic float");
     this.vertical.setVal(float);
   }
 }
