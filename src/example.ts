@@ -383,8 +383,11 @@ const demos: Demos = {
   },
 
   bufferblend: (channels: TexImageSource[] = []) => {
+    const grainy = MP.brightness(
+      MP.op(MP.random(MP.op(MP.pixel(), "*", MP.time())), "/", 4)
+    );
     const merger = new MP.Merger(
-      [MP.blur2d(1, 1), MP.motionblur(0), MP.brightness(0.1)],
+      [MP.blur2d(1, 1), MP.motionblur(0), grainy],
       sourceCanvas,
       gl,
       { channels: [null] }

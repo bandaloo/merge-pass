@@ -1,9 +1,9 @@
-import { glslFuncs } from "../glslfunctions";
-import { ExprVec4, tag } from "./expr";
 import { Vec2 } from "../exprtypes";
+import { glslFuncs } from "../glslfunctions";
+import { tag, ExprFloat } from "./expr";
 import { pos } from "./normfragcoordexpr";
 
-export class RandomExpr extends ExprVec4 {
+export class RandomExpr extends ExprFloat {
   seed: Vec2;
 
   constructor(seed: Vec2 = pos()) {

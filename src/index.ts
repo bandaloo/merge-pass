@@ -3,7 +3,6 @@ export * from "./exprtypes";
 export * from "./glslfunctions";
 
 export * from "./exprs/blurexpr";
-export * from "./exprs/randomexpr";
 export * from "./exprs/fragcolorexpr";
 export * from "./exprs/vecexprs";
 export * from "./exprs/opexpr";
@@ -40,6 +39,7 @@ export * from "./exprs/normmouseexpr";
 export * from "./exprs/perlinexpr";
 export * from "./exprs/simplexexpr";
 export * from "./exprs/motionblurloop";
+export * from "./exprs/randomexpr";
 
 // TODO move this out of expressions
 export * from "./exprs/expr";
