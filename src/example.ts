@@ -708,7 +708,6 @@ const demos: Demos = {
       [
         MP.godrays({
           lightPos: MP.op(MP.mouse(), "/", MP.resolution()),
-          //color: MP.brightness(fog, MP.fcolor()),
           weight: 0.009,
           density: MP.op(0.2, "+", MP.op(fog, "*", 0.5)),
         }),
@@ -752,36 +751,34 @@ const demos: Demos = {
   },
 
   bloom: (channels: TexImageSource[] = []) => {
-    console.log("test");
-    const threshold = 0.4;
-    const brightness = MP.getcomp(MP.rgb2hsv(MP.fcolor()), "z");
-    const step = MP.a2("step", brightness, threshold);
-    const col = MP.cvec4(MP.tag`vec4(${MP.fcolor()}.rgb * (1. - ${step}), 1.)`);
-    const merger = new MP.Merger(
-      [
-        MP.setcolor(col),
-        MP.loop(
-          [
-            MP.gauss(MP.vec2(1, 0), 13),
-            MP.gauss(MP.vec2(0, 1), 13),
-            MP.brightness(0.1),
-            MP.contrast(1.3),
-          ],
-          4
-        ),
-        //MP.contrast(2),
-        MP.setcolor(MP.op(MP.fcolor(), "+", MP.input())),
-      ],
-      sourceCanvas,
-      gl,
-      {
-        channels: channels,
-      }
-    );
+    const bloom = MP.bloom();
+    const merger = new MP.Merger([bloom], sourceCanvas, gl, {
+      channels: channels,
+    });
+
+    class BloomControls {
+      threshold = 0.4;
+      boost = 1.3;
+      horizontal = 1;
+      vertical = 1;
+    }
+
+    const controls = new BloomControls();
+    const gui = new dat.GUI();
+
+    gui.add(controls, "threshold", 0, 1.0, 0.01);
+    gui.add(controls, "boost", 1.0, 2.0, 0.01);
+    gui.add(controls, "horizontal", 0, 2, 0.01);
+    gui.add(controls, "vertical", 0, 2, 0.01);
 
     return {
       merger: merger,
-      change: () => {},
+      change: () => {
+        bloom.setThreshold(controls.threshold);
+        bloom.setBoost(controls.boost);
+        bloom.setHorizontal(controls.horizontal);
+        bloom.setVertical(controls.vertical);
+      },
     };
   },
 

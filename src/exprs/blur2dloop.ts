@@ -27,20 +27,20 @@ export class Blur2dLoop extends EffectLoop {
    * set the horizontal stretch of the blur effect (no greater than 1 for best
    * effect)
    */
-  setHorizontal(float: PrimitiveFloat | number) {
+  setHorizontal(num: PrimitiveFloat | number) {
     if (!(this.horizontal instanceof BasicFloat))
       throw new Error("horizontal expression not basic float");
-    this.horizontal.setVal(float);
+    this.horizontal.setVal(num);
   }
 
   /**
    * set the vertical stretch of the blur effect (no greater than 1 for best
    * effect)
    */
-  setVertical(float: PrimitiveFloat | number) {
+  setVertical(num: PrimitiveFloat | number) {
     if (!(this.vertical instanceof BasicFloat))
       throw new Error("vertical expression not basic float");
-    this.vertical.setVal(float);
+    this.vertical.setVal(num);
   }
 }
 
