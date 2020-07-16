@@ -724,6 +724,66 @@ const demos: Demos = {
       change: () => {},
     };
   },
+
+  custom: (channels: TexImageSource[] = []) => {
+    const c = MP.cfloat(
+      MP.tag`${MP.mut(0.2, "uScalar")} * -(${MP.channel(1)}.r * ${MP.channel(
+        0
+      )}.r)`
+    );
+    const merger = new MP.Merger([MP.brightness(c)], sourceCanvas, gl, {
+      channels: channels,
+    });
+
+    class ScalarControls {
+      scalar: number = 0.3;
+    }
+
+    const controls = new ScalarControls();
+    const gui = new dat.GUI();
+    gui.add(controls, "scalar", 0, 1.0, 0.01);
+
+    return {
+      merger: merger,
+      change: () => {
+        c.setUniform("uScalar", controls.scalar);
+      },
+    };
+  },
+
+  bloom: (channels: TexImageSource[] = []) => {
+    console.log("test");
+    const threshold = 0.4;
+    const brightness = MP.getcomp(MP.rgb2hsv(MP.fcolor()), "z");
+    const step = MP.a2("step", brightness, threshold);
+    const col = MP.cvec4(MP.tag`vec4(${MP.fcolor()}.rgb * (1. - ${step}), 1.)`);
+    const merger = new MP.Merger(
+      [
+        MP.setcolor(col),
+        MP.loop(
+          [
+            MP.gauss(MP.vec2(1, 0), 13),
+            MP.gauss(MP.vec2(0, 1), 13),
+            MP.brightness(0.1),
+            MP.contrast(1.3),
+          ],
+          4
+        ),
+        //MP.contrast(2),
+        MP.setcolor(MP.op(MP.fcolor(), "+", MP.input())),
+      ],
+      sourceCanvas,
+      gl,
+      {
+        channels: channels,
+      }
+    );
+
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
 };
 
 interface Draws {
@@ -926,6 +986,25 @@ const higherOrderDonuts = (color = true, extra = 0) => {
   };
 };
 
+const bloomTest = (t: number, frames: number) => {
+  const hsize = 32;
+  const spacing = 100;
+  x.fillStyle = "black";
+  x.fillRect(0, 0, 960, 540);
+  const num = 8;
+  for (let i = 0; i < num; i++) {
+    const c = 255 / (i + 1);
+    const position = spacing * i - (spacing * (num - 1)) / 2;
+    x.fillStyle = R(c, c, c);
+    x.fillRect(
+      960 / 2 - hsize + position,
+      540 / 2 - hsize,
+      hsize * 2,
+      hsize * 2
+    );
+  }
+};
+
 const draws: Draws = {
   edgeblur: [redSpiral],
   bluramount: [movingGrid],
@@ -965,6 +1044,8 @@ const draws: Draws = {
   fractalize: [stripes],
   dictionary: [movingGrid],
   noisegodrays: [higherOrderDonuts(true, 150), higherOrderDonuts(false, 10)],
+  custom: [higherOrderWaves(true), higherOrderWaves(false), bitwiseGrid()],
+  bloom: [bloomTest],
 };
 
 interface Notes {

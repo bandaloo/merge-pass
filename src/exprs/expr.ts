@@ -147,6 +147,8 @@ export abstract class Expr implements Parseable, EffectLike {
     }
     const oldVal = this.uniformValChangeMap[name]?.val;
     if (oldVal === undefined) {
+      // TODO get rid of this
+      console.log(this.defaultNameMap);
       throw new Error(
         "tried to set uniform " +
           name +
@@ -185,6 +187,47 @@ export abstract class Expr implements Parseable, EffectLike {
   }
 
   abstract typeString(): TypeString;
+
+  addFuncs(funcs: string[]) {
+    this.externalFuncs.push(...funcs);
+    return this;
+  }
+}
+
+function genCustomNames(sourceLists: SourceLists) {
+  const names = [];
+  for (let i = 0; i < sourceLists.values.length; i++) {
+    names.push("uCustomName" + i);
+  }
+  return names;
+}
+
+/** create a custom float function (use with [[tag]]) */
+export function cfloat(sourceLists: SourceLists, externalFuncs: string[] = []) {
+  return new ExprFloat(sourceLists, genCustomNames(sourceLists)).addFuncs(
+    externalFuncs
+  );
+}
+
+/** create a custom vec2 function (use with [[tag]]) */
+export function cvec2(sourceLists: SourceLists, externalFuncs: string[] = []) {
+  return new ExprVec2(sourceLists, genCustomNames(sourceLists)).addFuncs(
+    externalFuncs
+  );
+}
+
+/** create a custom vec3 function (use with [[tag]]) */
+export function cvec3(sourceLists: SourceLists, externalFuncs: string[] = []) {
+  return new ExprVec3(sourceLists, genCustomNames(sourceLists)).addFuncs(
+    externalFuncs
+  );
+}
+
+/** create a custom vec4 function (use with [[tag]]) */
+export function cvec4(sourceLists: SourceLists, externalFuncs: string[] = []) {
+  return new ExprVec4(sourceLists, genCustomNames(sourceLists)).addFuncs(
+    externalFuncs
+  );
 }
 
 export class Mutable<T extends Primitive> implements Parseable, Applicable {
@@ -388,7 +431,7 @@ export class BasicFloat extends Expr {
   }
 }
 
-export abstract class ExprFloat extends Expr {
+export class ExprFloat extends Expr {
   private float = undefined; // brand for nominal typing
 
   constructor(sourceLists: SourceLists, defaultNames: string[]) {
@@ -409,7 +452,7 @@ export function float(value: Float | number) {
   return new BasicFloat({ sections: ["", ""], values: [value] }, ["uFloat"]);
 }
 
-export abstract class ExprVec2 extends ExprVec {
+export class ExprVec2 extends ExprVec {
   private vec2 = undefined; // brand for nominal typing
 
   typeString() {
@@ -417,7 +460,7 @@ export abstract class ExprVec2 extends ExprVec {
   }
 }
 
-export abstract class ExprVec3 extends ExprVec {
+export class ExprVec3 extends ExprVec {
   private vec3 = undefined; // brand for nominal typing
 
   typeString() {
@@ -425,7 +468,7 @@ export abstract class ExprVec3 extends ExprVec {
   }
 }
 
-export abstract class ExprVec4 extends ExprVec implements Generable {
+export class ExprVec4 extends ExprVec implements Generable {
   private vec4 = undefined; // brand for nominal typing
 
   repeat(num: number) {

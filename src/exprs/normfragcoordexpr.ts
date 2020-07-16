@@ -3,7 +3,7 @@ import { ExprVec2, tag } from "./expr";
 /** normalized frag coord expression */
 export class NormFragCoordExpr extends ExprVec2 {
   constructor() {
-    super(tag`(gl_FragCoord.xy / uResolution)`, []);
+    super(tag`gl_FragCoord.xy / uResolution`, []);
   }
 }
 
