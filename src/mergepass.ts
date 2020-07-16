@@ -143,7 +143,9 @@ export class EffectLoop implements EffectLike, Generable {
     const regroupedEffects: EffectElement[] = [];
     let prevTarget: undefined | number;
     let currTarget: undefined | number;
+    let mustBreakCounter = 0;
     const breakOff = () => {
+      mustBreakCounter--;
       if (prevEffects.length > 0) {
         // break off all previous effects into their own loop
         if (prevEffects.length === 1) {
@@ -162,11 +164,18 @@ export class EffectLoop implements EffectLike, Generable {
       sampleCount += sampleNum;
       if (e instanceof EffectLoop) {
         currTarget = e.loopInfo.target;
+        if (e.hasTargetSwitch()) {
+          mustBreakCounter = 2;
+        }
       } else {
         // if it's not a loop it's assumed the target is that of outer loop
         currTarget = this.loopInfo.target;
       }
-      if (sampleCount > 0 || currTarget !== prevTarget) {
+      if (
+        sampleCount > 0 ||
+        currTarget !== prevTarget ||
+        mustBreakCounter > 0
+      ) {
         breakOff();
       }
       prevEffects.push(e);
@@ -201,6 +210,16 @@ export class EffectLoop implements EffectLike, Generable {
       );
       return program;
     }
+    // TODO get rid of this
+    /*
+    console.log("!has target switch", !this.hasTargetSwitch());
+    console.log(
+      "samples",
+      fullSampleNum === 0 || (firstSampleNum === 1 && restSampleNum === 0)
+    );
+    console.log("effects", this.effects);
+    */
+    //console.log("not valid");
     // otherwise, regroup and try again on regrouped loops
     this.effects = this.regroup();
     return new WebGLProgramLoop(

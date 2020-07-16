@@ -384,7 +384,7 @@ const demos: Demos = {
 
   bufferblend: (channels: TexImageSource[] = []) => {
     const merger = new MP.Merger(
-      [MP.blur2d(1, 1), MP.motionblur(0)],
+      [MP.blur2d(1, 1), MP.motionblur(0), MP.brightness(0.1)],
       sourceCanvas,
       gl,
       { channels: [null] }
