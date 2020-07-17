@@ -299,7 +299,8 @@ const demos: Demos = {
   },
 
   fxaa: () => {
-    const merger = new MP.Merger([MP.fxaa()], sourceCanvas, gl);
+    console.log("test");
+    const merger = new MP.Merger([MP.loop([MP.fxaa()], 3)], sourceCanvas, gl);
     return {
       merger: merger,
       change: () => {},
@@ -505,9 +506,12 @@ const demos: Demos = {
         (godrays = MP.godrays({
           convertDepth: {
             threshold: 0.1,
+            newColor: MP.mut(MP.pvec4(1, 1, 1, 1)),
+            /*
             newColor: MP.hsv2rgb(
               MP.vec4(MP.op(MP.time(), "/", 4), 0.5, 0.5, 1)
             ),
+            */
           },
         })),
       ],
@@ -524,6 +528,9 @@ const demos: Demos = {
       decay = 1.0;
       density = 1.0;
       weight = 0.01;
+      red = 1;
+      green = 1;
+      blue = 1;
     }
 
     const controls = new LocationControls();
@@ -533,6 +540,9 @@ const demos: Demos = {
     gui.add(controls, "decay", 0.9, 1, 0.001);
     gui.add(controls, "density", 0, 1, 0.01);
     gui.add(controls, "weight", 0, 0.02, 0.001);
+    gui.add(controls, "red", 0, 1, 0.01);
+    gui.add(controls, "green", 0, 1, 0.01);
+    gui.add(controls, "blue", 0, 1, 0.01);
 
     return {
       merger: merger,
@@ -542,6 +552,7 @@ const demos: Demos = {
         godrays.setDecay(controls.decay);
         godrays.setDensity(controls.density);
         godrays.setWeight(controls.weight);
+        godrays.setNewColor(MP.pvec4(controls.red, controls.green, controls.blue, 1));
       },
     };
   },
@@ -785,10 +796,13 @@ const demos: Demos = {
   sobel: (channels: TexImageSource[] = []) => {
     const merger = new MP.Merger(
       [
+        MP.edge("dark"),
+        /*
         MP.brightness(
           MP.op(MP.getcomp(MP.invert(MP.monochrome(MP.sobel())), "r"), "*", -1)
         ),
-        MP.motionblur(),
+        */
+        //MP.motionblur(),
       ],
       sourceCanvas,
       gl,

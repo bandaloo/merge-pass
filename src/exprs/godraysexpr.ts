@@ -128,7 +128,7 @@ export class GodRaysExpr extends ExprVec4 {
     this.threshold = n2p(threshold);
   }
 
-  setNewcolor(newColor: PrimitiveVec4) {
+  setNewColor(newColor: PrimitiveVec4) {
     this.setUniform("uNewColor" + this.id, newColor);
     this.newColor = newColor;
   }

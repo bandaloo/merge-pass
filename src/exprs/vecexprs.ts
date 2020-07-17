@@ -6,6 +6,8 @@ import {
   n2e,
   PrimitiveVec2,
   SourceLists,
+  PrimitiveVec3,
+  PrimitiveVec4,
 } from "./expr";
 
 /** @ignore */
@@ -61,7 +63,7 @@ export function pvec2(comp1: number, comp2: number) {
 
 /** creates a primitive vec3 expression */
 export function pvec3(comp1: number, comp2: number, comp3: number) {
-  return new PrimitiveVec2([comp1, comp2, comp3]);
+  return new PrimitiveVec3([comp1, comp2, comp3]);
 }
 
 /** creates a primitive vec4 expression */
@@ -71,5 +73,5 @@ export function pvec4(
   comp3: number,
   comp4: number
 ) {
-  return new PrimitiveVec2([comp1, comp2, comp3, comp4]);
+  return new PrimitiveVec4([comp1, comp2, comp3, comp4]);
 }

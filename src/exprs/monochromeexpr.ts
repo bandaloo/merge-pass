@@ -12,6 +12,7 @@ export class MonochromeExpr extends ExprVec4 {
     this.color = color;
   }
 
+  /** sets the color */
   setColor(color: PrimitiveVec4) {
     this.setUniform("uColor", color);
     this.color = color;
