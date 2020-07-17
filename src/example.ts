@@ -783,7 +783,7 @@ const demos: Demos = {
   },
 
   sobel: (channels: TexImageSource[] = []) => {
-    const merger = new MP.Merger([MP.sobel()], sourceCanvas, gl);
+    const merger = new MP.Merger([MP.monochrome(MP.sobel())], sourceCanvas, gl);
     return {
       merger: merger,
       change: () => {},
