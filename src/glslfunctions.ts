@@ -294,11 +294,9 @@ vec3 permute(vec3 x) { return mod289_3(((x*34.0)+1.0)*x); }`,
   monochrome: `vec4 monochrome(vec4 col) {
   return vec4(vec3((col.r + col.g + col.b) / 3.), col.a);
 }`,
-  /*
   invert: `vec4 invert(vec4 col) {
   return vec4(vec3(1., 1., 1.) - col.rgb, col.a);
 }`,
-*/
 };
 
 /** @ignore */
