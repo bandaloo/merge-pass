@@ -7,6 +7,8 @@ import { invert } from "./invertexpr";
 import { monochrome } from "./monochromeexpr";
 import { Vec4 } from "../exprtypes";
 import { fcolor } from "./fragcolorexpr";
+import { a2 } from "./arity2";
+import { vec4 } from "./vecexprs";
 
 /** @ignore */
 function genSobelSource(samplerNum?: number): SourceLists {
@@ -16,9 +18,10 @@ function genSobelSource(samplerNum?: number): SourceLists {
   };
 }
 
-/** sobel expression */
+/** Sobel expression */
 export class SobelExpr extends ExprVec4 {
   constructor(samplerNum?: number) {
+    console.log(samplerNum);
     super(genSobelSource(samplerNum), []);
     if (samplerNum === undefined) {
       this.needs.neighborSample = true;
@@ -26,13 +29,15 @@ export class SobelExpr extends ExprVec4 {
     } else {
       this.needs.extraBuffers = new Set([samplerNum]);
       this.externalFuncs = [
-        replaceSampler(glslFuncs.sobel, /vec4\ssobel[0-9]+/g, samplerNum),
+        replaceSampler(glslFuncs.sobel, /vec4\ssobel+/, samplerNum),
       ];
     }
+    this.needs.neighborSample = true;
   }
 }
 
 // TODO test sampler num
+/** creates Sobel edge detection expression */
 export function sobel(samplerNum?: number) {
   return new SobelExpr(samplerNum);
 }
@@ -53,11 +58,13 @@ export function edge(
   );
 }
 
-/*
+/** returns an expression that colors the egde */
 export function edgecolor(color: Vec4, samplerNum?: number) {
   return cvec4(
-    tag`mix(${fcolor()}, ${color}, ${monochrome(sobel(samplerNum))})`
+    tag`mix(${color}, ${fcolor()}, ${monochrome(
+      a2("step", vec4(0.5, 0.5, 0.5, 0.0), sobel(samplerNum))
+    )})`
   );
-  //getcomp(monochrome(sobel(samplerNum)), "r");
+  // use this instead to do without the step
+  //tag`mix(${color}, ${fcolor()}, ${monochrome(sobel(samplerNum))})`
 }
-*/

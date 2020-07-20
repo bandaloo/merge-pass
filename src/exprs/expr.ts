@@ -494,6 +494,22 @@ export class ExprVec4 extends ExprVec implements Generable {
   }
 }
 
+export class WrappedExpr<T extends AllVals> implements Parseable {
+  expr: T;
+
+  constructor(expr: T) {
+    this.expr = expr;
+  }
+
+  typeString(): TypeString {
+    return this.expr.typeString();
+  }
+
+  parse(buildInfo: BuildInfo, defaultName: string, enc?: Expr): string {
+    return this.expr.parse(buildInfo, defaultName, enc);
+  }
+}
+
 export class Operator<T extends AllVals> extends Expr {
   ret: T;
 

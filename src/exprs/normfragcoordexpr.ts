@@ -3,7 +3,9 @@ import { ExprVec2, tag } from "./expr";
 /** normalized frag coord expression */
 export class NormFragCoordExpr extends ExprVec2 {
   constructor() {
-    super(tag`gl_FragCoord.xy / uResolution`, []);
+    // don't remove these parens! even if you think you are being clever about
+    // order of operations
+    super(tag`(gl_FragCoord.xy / uResolution)`, []);
   }
 }
 

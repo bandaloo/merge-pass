@@ -552,7 +552,9 @@ const demos: Demos = {
         godrays.setDecay(controls.decay);
         godrays.setDensity(controls.density);
         godrays.setWeight(controls.weight);
-        godrays.setNewColor(MP.pvec4(controls.red, controls.green, controls.blue, 1));
+        godrays.setNewColor(
+          MP.pvec4(controls.red, controls.green, controls.blue, 1)
+        );
       },
     };
   },
@@ -808,6 +810,44 @@ const demos: Demos = {
       gl,
       { channels: [null] }
     );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
+
+  edgecolor: (channels: TexImageSource[] = []) => {
+    // vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
+
+    const merger = new MP.Merger(
+      [
+        MP.edgecolor(
+          MP.cvec4(
+            // adapted from
+            MP.tag`vec4(0.5 + 0.5 * cos(${MP.time()} + ${MP.pos()}.xyx + vec3(0,2,4)), 1.)`
+          )
+        ),
+        /*
+        MP.brightness(
+          MP.op(MP.getcomp(MP.invert(MP.monochrome(MP.sobel())), "r"), "*", -1)
+        ),
+        */
+        //MP.motionblur(),
+      ],
+      sourceCanvas,
+      gl,
+      { channels: [null] }
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
+
+  depthsobel: (channels: TexImageSource[] = []) => {
+    const merger = new MP.Merger([MP.edge("light", 0)], sourceCanvas, gl, {
+      channels: channels,
+    });
     return {
       merger: merger,
       change: () => {},
@@ -1076,6 +1116,8 @@ const draws: Draws = {
   custom: [higherOrderWaves(true), higherOrderWaves(false), bitwiseGrid()],
   bloom: [bloomTest],
   sobel: [redSpiral],
+  edgecolor: [redSpiral],
+  depthsobel: [higherOrderPerspective(true), higherOrderPerspective(false)],
 };
 
 interface Notes {
