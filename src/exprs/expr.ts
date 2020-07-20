@@ -533,6 +533,7 @@ export function n2e(num: number | Float | undefined) {
     num instanceof ExprFloat ||
     num instanceof Operator ||
     num instanceof Mutable ||
+    num instanceof WrappedExpr ||
     num instanceof BasicFloat
   )
     return num;
@@ -557,7 +558,10 @@ export function wrapInValue(num: number | AllVals) {
   return num;
 }
 
-/** @ignore */
+/**
+ * takes a template strings array and converts it to a source list; very useful
+ * for [[cfloat]], [[cvec2]], [[cvec3]] and [[cvec4]]
+ */
 export function tag(
   strings: TemplateStringsArray,
   ...values: AllVals[]

@@ -9,7 +9,7 @@ function genSobelSource(samplerNum?: number): SourceLists {
   };
 }
 
-/** Sobel expression */
+/** Sobel edge detection expression */
 export class SobelExpr extends ExprVec4 {
   constructor(samplerNum?: number) {
     super(genSobelSource(samplerNum), []);
@@ -26,8 +26,12 @@ export class SobelExpr extends ExprVec4 {
   }
 }
 
-// TODO test sampler num
-/** creates Sobel edge detection expression */
+/**
+ * creates a Sobel edge detection expression that outputs the raw result; for
+ * more highly processed edge detection expressions, see [[edgecolor]] or
+ * [[edge]]
+ * @param samplerNum where to sample from
+ */
 export function sobel(samplerNum?: number) {
   return new SobelExpr(samplerNum);
 }

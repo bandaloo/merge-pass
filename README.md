@@ -2,16 +2,18 @@
 
 This library allows you to easily run a combination of post-processing
 effects on an image, canvas or existing texture. It does so by generating
-shaders to apply the effect in as few passes as possible.
-
-Right now, this package is in pre-alpha. If you have tried using this library
-and have an idea of how to improve it, let me know!
+shaders to apply the effect in as few passes as possible. It is also flexible
+enough to allow you to build your own custom effects and update their
+uniforms at runtime.
 
 ## Live Example
 
-This [live example](https://www.bandaloo.fun/merge-pass/example.html) shows multiple
-demos that with code samples. This shows off the variety of effects you can create
-with this library.
+This [live example](https://www.bandaloo.fun/merge-pass/example.html) shows
+multiple demos with code samples.
+
+## Docs
+
+The docs are available [here](https://www.bandaloo.fun/docs/).
 
 ## Usage Example
 
