@@ -299,7 +299,6 @@ const demos: Demos = {
   },
 
   fxaa: () => {
-    console.log("test");
     const merger = new MP.Merger([MP.loop([MP.fxaa()], 3)], sourceCanvas, gl);
     return {
       merger: merger,
@@ -798,7 +797,7 @@ const demos: Demos = {
   sobel: (channels: TexImageSource[] = []) => {
     const merger = new MP.Merger(
       [
-        MP.edge("dark"),
+        MP.sobel(),
         /*
         MP.brightness(
           MP.op(MP.getcomp(MP.invert(MP.monochrome(MP.sobel())), "r"), "*", -1)
@@ -844,13 +843,31 @@ const demos: Demos = {
     };
   },
 
-  depthsobel: (channels: TexImageSource[] = []) => {
-    const merger = new MP.Merger([MP.edge("light", 0)], sourceCanvas, gl, {
-      channels: channels,
-    });
+  depthedge: (channels: TexImageSource[] = []) => {
+    const edge = MP.edge(MP.mut(1.0), 0);
+    const merger = new MP.Merger(
+      [MP.blur2d(1, 1, 13), MP.setcolor(edge)],
+      sourceCanvas,
+      gl,
+      {
+        channels: channels,
+      }
+    );
+
+    class EdgeControls {
+      color = 1.0;
+    }
+
+    const controls = new EdgeControls();
+    const gui = new dat.GUI();
+
+    gui.add(controls, "color", -1.0, 1.0, 0.01);
+
     return {
       merger: merger,
-      change: () => {},
+      change: () => {
+        edge.setMult(controls.color);
+      },
     };
   },
 };
@@ -1117,7 +1134,7 @@ const draws: Draws = {
   bloom: [bloomTest],
   sobel: [redSpiral],
   edgecolor: [redSpiral],
-  depthsobel: [higherOrderPerspective(true), higherOrderPerspective(false)],
+  depthedge: [higherOrderPerspective(true), higherOrderPerspective(false)],
 };
 
 interface Notes {
@@ -1230,8 +1247,14 @@ const notes: Notes = {
   dictionary:
     "you can pass in an <code>EffectDictionary</code> to create multiple compiled program loops " +
     'which you can switch between with <code>merger.changeProgram("effectName")</code>. ' +
-    'you must have one with the name <code>"default"</code>, which will be the currently enabled' +
+    'you must have one with the name <code>"default"</code>, which will be the currently enabled ' +
     "program loop",
+  depthedge:
+    "you can sample from the depth buffer with <code>edge</code> by " +
+    "passing in a different sampler number. you can create a pretty intereesting " +
+    "effect by blurring the scene buffer and then tracing edges from the depth buffer. " +
+    "with this method, the outlines naturally get thinner in the distance. " +
+    "you can also shift from light edges to dark edges at runtime with <code>setMult</code>",
 };
 
 const canvases = [sourceCanvas];

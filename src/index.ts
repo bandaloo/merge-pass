@@ -44,6 +44,6 @@ export * from "./exprs/sobelexpr";
 export * from "./exprs/bloomloop";
 export * from "./exprs/monochromeexpr";
 export * from "./exprs/invertexpr";
+export * from "./exprs/edgeexpr";
 
-// TODO move this out of expressions
 export * from "./exprs/expr";

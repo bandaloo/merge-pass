@@ -45,9 +45,10 @@ export function sobel(samplerNum?: number) {
 /**
  * returns an expression highlights edges where they appear
  * @param style `"dark"` for dark edges and `"light"` for light edges, or a
- * custom number (between -1 and 1) for a more gray style of edge
+ * custom number or expression (between -1 and 1) for a more gray style of edge
  * @param samplerNum where to sample from
  */
+/*
 export function edge(
   style: "dark" | "light" | number = "dark",
   samplerNum?: number
@@ -57,6 +58,7 @@ export function edge(
     op(getcomp(invert(monochrome(sobel(samplerNum))), "r"), "*", mult)
   );
 }
+*/
 
 /** returns an expression that colors the egde */
 export function edgecolor(color: Vec4, samplerNum?: number) {
