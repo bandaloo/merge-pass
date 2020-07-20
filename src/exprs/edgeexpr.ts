@@ -1,14 +1,13 @@
-import { Float } from "../exprtypes";
+import { Float, Vec4 } from "../exprtypes";
 import { brightness } from "./brightnessexpr";
-import { ExprVec4, n2e, PrimitiveFloat, WrappedExpr } from "./expr";
+import { mut, n2e, PrimitiveFloat, WrappedExpr } from "./expr";
 import { getcomp } from "./getcompexpr";
 import { invert } from "./invertexpr";
 import { monochrome } from "./monochromeexpr";
 import { op, OpExpr } from "./opexpr";
 import { sobel } from "./sobelexpr";
-import { mut } from "..";
 
-export class EdgeExpr extends WrappedExpr<ExprVec4> {
+export class EdgeExpr extends WrappedExpr<Vec4> {
   // TODO make the default mutable
   mult: Float;
   operator: OpExpr<Float, Float>;

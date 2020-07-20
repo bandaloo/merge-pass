@@ -60,7 +60,8 @@ export function edge(
 }
 */
 
-/** returns an expression that colors the egde */
+/** returns an expression that colors the edge */
+/*
 export function edgecolor(color: Vec4, samplerNum?: number) {
   return cvec4(
     tag`mix(${color}, ${fcolor()}, ${monochrome(
@@ -70,3 +71,4 @@ export function edgecolor(color: Vec4, samplerNum?: number) {
   // use this instead to do without the step
   //tag`mix(${color}, ${fcolor()}, ${monochrome(sobel(samplerNum))})`
 }
+*/

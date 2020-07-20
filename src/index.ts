@@ -45,5 +45,6 @@ export * from "./exprs/bloomloop";
 export * from "./exprs/monochromeexpr";
 export * from "./exprs/invertexpr";
 export * from "./exprs/edgeexpr";
+export * from "./exprs/edgecolorexpr";
 
 export * from "./exprs/expr";

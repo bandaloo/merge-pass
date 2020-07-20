@@ -4,6 +4,7 @@
  */
 import * as dat from "dat.gui";
 import * as MP from "./index";
+import { EdgeColorExpr } from "./exprs/edgecolorexpr";
 
 const slow = false;
 
@@ -815,31 +816,39 @@ const demos: Demos = {
     };
   },
 
+  /*
+  MP.cvec4(
+    // adapted from shadertoy default
+    MP.tag`vec4(0.5 + 0.5 * cos(${MP.time()} + ${MP.pos()}.xyx + vec3(0,2,4)), 1.)`
+  )
+  */
   edgecolor: (channels: TexImageSource[] = []) => {
-    // vec3 col = 0.5 + 0.5*cos(iTime+uv.xyx+vec3(0,2,4));
-
+    let a: EdgeColorExpr;
     const merger = new MP.Merger(
-      [
-        MP.edgecolor(
-          MP.cvec4(
-            // adapted from
-            MP.tag`vec4(0.5 + 0.5 * cos(${MP.time()} + ${MP.pos()}.xyx + vec3(0,2,4)), 1.)`
-          )
-        ),
-        /*
-        MP.brightness(
-          MP.op(MP.getcomp(MP.invert(MP.monochrome(MP.sobel())), "r"), "*", -1)
-        ),
-        */
-        //MP.motionblur(),
-      ],
+      [MP.setcolor((a = MP.edgecolor(MP.mut(MP.pvec4(1.0, 1.0, 1.0, 1.0)))))],
       sourceCanvas,
       gl,
       { channels: [null] }
     );
+
+    class EdgeControls {
+      red = 1.0;
+      green = 0.0;
+      blue = 1.0;
+    }
+
+    const controls = new EdgeControls();
+    const gui = new dat.GUI();
+
+    gui.add(controls, "red", 0.0, 1.0, 0.01);
+    gui.add(controls, "green", 0.0, 1.0, 0.01);
+    gui.add(controls, "blue", 0.0, 1.0, 0.01);
+
     return {
       merger: merger,
-      change: () => {},
+      change: () => {
+        a.setColor(MP.pvec4(controls.red, controls.green, controls.blue, 1));
+      },
     };
   },
 
@@ -849,9 +858,7 @@ const demos: Demos = {
       [MP.blur2d(1, 1, 13), MP.setcolor(edge)],
       sourceCanvas,
       gl,
-      {
-        channels: channels,
-      }
+      { channels: channels }
     );
 
     class EdgeControls {

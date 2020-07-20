@@ -20,6 +20,9 @@ import { input } from "./scenesampleexpr";
 import { setcolor } from "./setcolorexpr";
 import { vec2 } from "./vecexprs";
 
+// TODO bloom uses `input` so it has to be the first
+// TODO maybe a way to update the scene buffer?
+
 /** bloom loop */
 export class BloomLoop extends EffectLoop {
   threshold: Float;
@@ -34,13 +37,11 @@ export class BloomLoop extends EffectLoop {
     taps: 5 | 9 | 13 = 9,
     reps = 3
   ) {
-    //const bright = getcomp(rgb2hsv(fcolor()), "z");
     const bright = cfloat(
       tag`((${fcolor()}.r + ${fcolor()}.g + ${fcolor()}.b) / 3.)`
     );
     const step = a2("step", bright, threshold);
     const col = cvec4(tag`vec4(${fcolor()}.rgb * (1. - ${step}), 1.)`);
-    //const contrastBoost = contrast(mut(1.3));
     const list = [
       setcolor(col),
       loop(
