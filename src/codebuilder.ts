@@ -1,6 +1,7 @@
 import { BuildInfo, Expr, Needs } from "./exprs/expr";
 import { EffectLoop, UniformLocs } from "./mergepass";
 import { WebGLProgramLoop, WebGLProgramLeaf } from "./webglprogramloop";
+import { settings } from "./settings";
 
 /** @ignore */
 const FRAG_SET = `  gl_FragColor = texture2D(uSampler, gl_FragCoord.xy / uResolution);\n`;
@@ -139,7 +140,7 @@ export class CodeBuilder {
       (this.totalNeeds.centerSample ? FRAG_SET : "") +
       this.calls.join("\n") +
       "\n}";
-    console.log(fullCode);
+    if (settings.verbosity > 0) console.log(fullCode);
     gl.shaderSource(fShader, fullCode);
     gl.compileShader(fShader);
     // set up the program

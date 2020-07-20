@@ -302,7 +302,6 @@ vec3 permute(vec3 x) { return mod289_3(((x*34.0)+1.0)*x); }`,
 /** @ignore */
 export function captureAndAppend(str: string, reg: RegExp, suffix: string) {
   const matches = str.match(reg);
-  //console.log(str);
   if (matches === null) throw new Error("no match in the given string");
   return str.replace(reg, matches[0] + suffix);
 }

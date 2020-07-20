@@ -1271,6 +1271,7 @@ let demo: Demo;
 let key: string;
 
 window.addEventListener("load", () => {
+  MP.settings.verbosity = 1;
   let mstr = getVariable("m");
   let dstr = getVariable("d");
 

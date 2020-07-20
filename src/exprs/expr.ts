@@ -147,8 +147,6 @@ export abstract class Expr implements Parseable, EffectLike {
     }
     const oldVal = this.uniformValChangeMap[name]?.val;
     if (oldVal === undefined) {
-      // TODO get rid of this
-      console.log(this.defaultNameMap);
       throw new Error(
         "tried to set uniform " +
           name +

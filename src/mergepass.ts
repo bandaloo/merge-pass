@@ -6,7 +6,7 @@ import {
   WebGLProgramLeaf,
 } from "./webglprogramloop";
 import { input } from ".";
-import { fcolor } from "./exprs/fragcolorexpr";
+import { settings } from "./settings";
 
 /** repetitions and callback for loop */
 export interface LoopInfo {
@@ -210,16 +210,6 @@ export class EffectLoop implements EffectLike, Generable {
       );
       return program;
     }
-    // TODO get rid of this
-    /*
-    console.log("!has target switch", !this.hasTargetSwitch());
-    console.log(
-      "samples",
-      fullSampleNum === 0 || (firstSampleNum === 1 && restSampleNum === 0)
-    );
-    console.log("effects", this.effects);
-    */
-    //console.log("not valid");
     // otherwise, regroup and try again on regrouped loops
     this.effects = this.regroup();
     return new WebGLProgramLoop(
@@ -348,10 +338,9 @@ export class Merger {
 
     // add the copy to scene texture if in texture mode
     if (this.textureMode) {
-      // TODO get rid of this
-      console.log("we are in texture mode!");
-      // TODO see if it needs scene texture before doing this
-      // can we even do this? maybe just always make the scene texture
+      if (settings.verbosity > 1) {
+        console.log("we are in texture mode!");
+      }
       for (const name in effects.effectMap) {
         const list = effects.effectMap[name];
         list.unshift(loop([input()]).target(-1));
@@ -457,7 +446,7 @@ export class Merger {
       }
     }
 
-    console.log(this.programMap);
+    if (settings.verbosity > 0) console.log(this.programMap);
   }
 
   /**

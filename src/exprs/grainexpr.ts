@@ -2,7 +2,8 @@ import { Float } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
 import { ExprVec4, n2e, tag, PrimitiveFloat } from "./expr";
 
-// TODO consider getting rid of this since it's easy to make your own with `random` and `brightness`
+// TODO consider getting rid of this since it's easy to make your own with
+// `random` and `brightness`
 /** grain expression */
 export class GrainExpr extends ExprVec4 {
   grain: Float;

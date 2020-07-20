@@ -1,9 +1,8 @@
 import { Expr, Needs } from "./exprs/expr";
 import { LoopInfo, TexInfo, UniformLocs, TexWrapper } from "./mergepass";
+import { settings } from "./settings";
 
 export type WebGLProgramElement = WebGLProgramLeaf | WebGLProgramLoop[];
-
-let textureDebug = false;
 
 // update me on change to needs
 export function updateNeeds(acc: Needs, curr: Needs): Needs {
@@ -134,15 +133,10 @@ export class WebGLProgramLoop {
           throw new Error("tried to target -1 but scene texture was undefined");
         }
         tex.back = tex.scene;
-        // TODO get rid of this
-        /*
-        console.log("render target is -1");
-        console.log("tex.back", tex.back);
-        console.log("saved texture", savedTexture);
-        */
       }
       tex.bufTextures[this.loopInfo.target] = savedTexture;
-      if (textureDebug) console.log("saved texture: " + savedTexture.name);
+      if (settings.verbosity > 99)
+        console.log("saved texture: " + savedTexture.name);
     }
 
     // setup for program leaf
@@ -230,7 +224,7 @@ export class WebGLProgramLoop {
         gl.bindTexture(gl.TEXTURE_2D, tex.back.tex);
         // use our last program as the draw program
         gl.drawArrays(gl.TRIANGLES, 0, 6);
-        if (textureDebug) {
+        if (settings.verbosity > 99) {
           console.log("intermediate back", tex.back.name);
           console.log("intermediate front", tex.front.name);
         }
@@ -267,7 +261,7 @@ export class WebGLProgramLoop {
     if (savedTexture !== undefined) {
       const target = this.loopInfo.target as number;
 
-      if (textureDebug) {
+      if (settings.verbosity > 99) {
         console.log("pre final back", tex.back.name);
         console.log("pre final front", tex.front.name);
       }
@@ -285,7 +279,7 @@ export class WebGLProgramLoop {
       }
       tex.back = savedTexture;
 
-      if (textureDebug) {
+      if (settings.verbosity > 99) {
         console.log("post final back", tex.back.name);
         console.log("post final front", tex.front.name);
         console.log("channel texture", tex.bufTextures[target].name);
