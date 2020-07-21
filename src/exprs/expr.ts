@@ -555,7 +555,7 @@ export function pfloat(num: number) {
 }
 
 /** @ignore */
-export function wrapInValue(num: number | AllVals) {
+export function wrapInValue<T extends AllVals>(num: number | T) {
   if (typeof num === "number") return pfloat(num);
   return num;
 }

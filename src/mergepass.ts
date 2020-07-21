@@ -2,7 +2,7 @@ import { CodeBuilder } from "./codebuilder";
 import { ExprVec4 } from "./exprs/expr";
 import { input } from "./exprs/scenesampleexpr";
 import { SetColorExpr } from "./exprs/setcolorexpr";
-import { Vec4 } from "./exprtypes";
+import { Vec4, AllVals } from "./exprtypes";
 import { settings } from "./settings";
 import {
   updateNeeds,
@@ -260,6 +260,13 @@ export class EffectLoop implements EffectLike, Generable {
     }
     return false;
   }
+
+  /** @ignore */
+  /*
+  regionWrap(space: number[], exp: AllVals | Eff) {
+
+  }
+  */
 }
 
 /** creates an effect loop */

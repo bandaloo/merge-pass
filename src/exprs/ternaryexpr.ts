@@ -1,5 +1,11 @@
 import { AllVals, Float, Vec2, Vec3, Vec4 } from "../exprtypes";
-import { n2e, Operator as Op, PrimitiveFloat, SourceLists } from "./expr";
+import {
+  n2e,
+  Operator as Op,
+  PrimitiveFloat,
+  SourceLists,
+  wrapInValue,
+} from "./expr";
 
 function genTernarySourceList(
   floats: Float[],
@@ -86,7 +92,8 @@ export function ternary(
   // wrap single float in array if need be
   if (!Array.isArray(floats)) floats = [floats];
   return new TernaryExpr(
-    floats.map((f) => n2e(f)),
+    // TODO what's up with the return type of this map?
+    floats.map((f) => wrapInValue(f)),
     success,
     failure
   );

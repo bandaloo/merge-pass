@@ -47,5 +47,6 @@ export * from "./exprs/invertexpr";
 export * from "./exprs/edgeexpr";
 export * from "./exprs/edgecolorexpr";
 export * from "./exprs/ternaryexpr";
+export * from "./exprs/regiondecorator";
 
 export * from "./exprs/expr";

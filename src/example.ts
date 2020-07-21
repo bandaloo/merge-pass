@@ -234,6 +234,18 @@ const demos: Demos = {
     };
   },
 
+  region: () => {
+    const merger = new MP.Merger(
+      [MP.region([0, 0, 0.5, 0.5], MP.brightness(0.3), MP.brightness(-0.3))],
+      sourceCanvas,
+      gl
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
+
   huerotate: () => {
     let c: MP.ChangeCompExpr<MP.RGBToHSVExpr, MP.Mutable<MP.PrimitiveFloat>>;
     const merger = new MP.Merger(
@@ -1167,6 +1179,7 @@ const draws: Draws = {
   edgecolor: [redSpiral],
   depthedge: [higherOrderPerspective(true), higherOrderPerspective(false)],
   ternary: [stripes],
+  region: [stripes],
 };
 
 interface Notes {
