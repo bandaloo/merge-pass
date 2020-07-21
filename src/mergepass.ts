@@ -2,13 +2,14 @@ import { CodeBuilder } from "./codebuilder";
 import { ExprVec4 } from "./exprs/expr";
 import { input } from "./exprs/scenesampleexpr";
 import { SetColorExpr } from "./exprs/setcolorexpr";
-import { Vec4, AllVals } from "./exprtypes";
+import { Vec4, AllVals, Float } from "./exprtypes";
 import { settings } from "./settings";
 import {
   updateNeeds,
   WebGLProgramLeaf,
   WebGLProgramLoop,
 } from "./webglprogramloop";
+import { region } from "./exprs/regiondecorator";
 
 /** repetitions and callback for loop */
 export interface LoopInfo {
@@ -262,11 +263,14 @@ export class EffectLoop implements EffectLike, Generable {
   }
 
   /** @ignore */
-  /*
-  regionWrap(space: number[], exp: AllVals | Eff) {
-
+  regionWrap(space: (Float | number)[], failure: Vec4) {
+    this.effects = this.effects.map((e) =>
+      e instanceof EffectLoop && !(e instanceof ExprVec4)
+        ? e.regionWrap(space, failure)
+        : new SetColorExpr(region(space, e, failure))
+    );
+    return this;
   }
-  */
 }
 
 /** creates an effect loop */
@@ -475,7 +479,10 @@ export class Merger {
       }
     }
 
-    if (settings.verbosity > 0) console.log(this.programMap);
+    if (settings.verbosity > 0) {
+      console.log(effects);
+      console.log(this.programMap);
+    }
   }
 
   /**

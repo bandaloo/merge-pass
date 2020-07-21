@@ -56,6 +56,8 @@ interface Parseable {
 
   /** returns the GLSL type as a string */
   typeString(): TypeString;
+
+  //getSampleNum(): number;
 }
 
 export interface Applicable {
@@ -88,6 +90,7 @@ export abstract class Expr implements Parseable, EffectLike {
   sourceCode: string = "";
 
   constructor(sourceLists: SourceLists, defaultNames: string[]) {
+    // TODO update you needs based on sub-expressions!! values in sourceList
     this.id = "_id_" + Expr.count;
     Expr.count++;
     if (sourceLists.sections.length - sourceLists.values.length !== 1) {
@@ -125,8 +128,12 @@ export abstract class Expr implements Parseable, EffectLike {
     }
   }
 
-  getSampleNum(mult = 1) {
-    return this.needs.neighborSample ? mult : 0;
+  getSampleNum(mult = 1): number {
+    return this.needs.neighborSample
+      ? mult
+      : this.sourceLists.values
+          .map((v) => v.getSampleNum())
+          .reduce(((acc, curr) => acc + curr), 0);
   }
 
   /**
@@ -230,7 +237,8 @@ export function cvec4(sourceLists: SourceLists, externalFuncs: string[] = []) {
   );
 }
 
-export class Mutable<T extends Primitive> implements Parseable, Applicable {
+export class Mutable<T extends Primitive>
+  implements Parseable, Applicable, EffectLike {
   primitive: T;
   name: string | undefined;
 
@@ -264,6 +272,10 @@ export class Mutable<T extends Primitive> implements Parseable, Applicable {
   typeString() {
     return this.primitive.typeString();
   }
+
+  getSampleNum() {
+    return 0;
+  }
 }
 
 export function mut<T extends Primitive>(val: T, name?: string): Mutable<T>;
@@ -283,7 +295,7 @@ export function mut<T extends Primitive>(val: T | number, name?: string) {
   return new Mutable(primitive, name);
 }
 
-export abstract class Primitive implements Parseable, Applicable {
+export abstract class Primitive implements Parseable, Applicable, EffectLike {
   abstract toString(): string;
 
   abstract typeString(): TypeString;
@@ -295,6 +307,10 @@ export abstract class Primitive implements Parseable, Applicable {
 
   parse() {
     return this.toString();
+  }
+
+  getSampleNum() {
+    return 0;
   }
 }
 
@@ -507,6 +523,10 @@ export class WrappedExpr<T extends AllVals> implements Parseable {
 
   parse(buildInfo: BuildInfo, defaultName: string, enc?: Expr): string {
     return this.expr.parse(buildInfo, defaultName, enc);
+  }
+
+  getSampleNum(): number {
+    return this.expr.getSampleNum();
   }
 }
 

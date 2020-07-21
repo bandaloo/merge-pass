@@ -11,18 +11,17 @@ function createDifferenceFloats(floats: Float[]) {
   const axes = "xy";
   const differences: Float[] = [];
 
-  if (![2, 4].includes(floats.length)) {
+  // TODO make this just 4
+  if (floats.length !== 4) {
     throw new Error("incorrect amount of points specified for region");
   }
 
-  for (let i = 0; i < floats.length / 2; i++) {
+  for (let i = 0; i < 2; i++) {
     differences.push(op(getcomp(pos(), axes[i]), "-", floats[i]));
   }
 
-  for (let i = floats.length / 2; i < floats.length; i++) {
-    differences.push(
-      op(floats[i], "-", getcomp(pos(), axes[i - floats.length / 2]))
-    );
+  for (let i = 2; i < floats.length; i++) {
+    differences.push(op(floats[i], "-", getcomp(pos(), axes[i - 2])));
   }
 
   return differences;
@@ -65,19 +64,16 @@ export function region<T extends Vec4, U extends Vec4>(
   failure: U
 ): TernaryExpr<T, U>;
 // TODO make this work for loops and uncomment this
-/*
-export function region(
+export function region<U extends Vec4>(
   space: (Float | number)[],
   success: EffectLoop,
-  failure: EffectLoop
+  failure: U
 ): EffectLoop;
-*/
 export function region(space: (Float | number)[], success: any, failure: any) {
   const floats = space.map((f) => wrapInValue(f));
 
   if (success instanceof EffectLoop) {
-    throw new Error("TODO");
-    //return;
+    return success.regionWrap(space, failure);
   }
   return ternary(createDifferenceFloats(floats), success, failure);
 }

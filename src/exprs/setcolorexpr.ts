@@ -1,5 +1,5 @@
-import { ExprVec4, tag, PrimitiveVec4 } from "./expr";
 import { Vec4 } from "../exprtypes";
+import { ExprVec4, tag } from "./expr";
 
 /**
  * set fragment color expression (not needed for the user; used internally for
@@ -12,6 +12,15 @@ export class SetColorExpr extends ExprVec4 {
     super(tag`(${vec})`, ["uVal"]);
     this.vec = vec;
   }
+
+  /*
+  getSampleNum() {
+    if (this.vec instanceof ExprVec4) {
+      this.vec.getSampleNum();
+    }
+    return 0;
+  }
+  */
 
   /** sets the value which will be set to the color */
   /*
