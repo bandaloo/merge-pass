@@ -216,23 +216,41 @@ const demos: Demos = {
     };
   },
 
+  ternary: () => {
+    const merger = new MP.Merger(
+      [
+        MP.ternary(
+          [MP.a1("sin", MP.time()), MP.a1("cos", MP.time())],
+          MP.changecomp(MP.fcolor(), MP.get2comp(MP.fcolor(), "gr"), "rg"),
+          MP.changecomp(MP.fcolor(), MP.get2comp(MP.fcolor(), "gr"), "rb")
+        ),
+      ],
+      sourceCanvas,
+      gl
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
+
   huerotate: () => {
     let c: MP.ChangeCompExpr<MP.RGBToHSVExpr, MP.Mutable<MP.PrimitiveFloat>>;
     const merger = new MP.Merger(
       [
-        // TODO put this back!
-        /*
         MP.hsv2rgb(
           (c = MP.changecomp(MP.rgb2hsv(MP.fcolor()), MP.mut(0.5), "r", "+"))
         ),
-        */
+        /*
         MP.ternary(
           [1, MP.a1("cos", MP.time()), 3],
+          //MP.a1("cos", MP.time()),
           MP.hsv2rgb(
             (c = MP.changecomp(MP.rgb2hsv(MP.fcolor()), MP.mut(0.5), "r", "+"))
           ),
           MP.fcolor()
         ),
+        */
       ],
       sourceCanvas,
       gl
@@ -1148,6 +1166,7 @@ const draws: Draws = {
   sobel: [redSpiral],
   edgecolor: [redSpiral],
   depthedge: [higherOrderPerspective(true), higherOrderPerspective(false)],
+  ternary: [stripes],
 };
 
 interface Notes {
@@ -1268,6 +1287,10 @@ const notes: Notes = {
     "effect by blurring the scene buffer and then tracing edges from the depth buffer. " +
     "with this method, the outlines naturally get thinner in the distance. " +
     "you can also shift from light edges to dark edges at runtime with <code>setMult</code>",
+  ternary:
+    "you can use <code>ternary</code> expressions. if all the floats you pass in as the first argument " +
+    "are all greater than zero, then the expression evaluates to the second argument. else, " +
+    "it evaluates to the third argument. this also works with a single float instead of a list of floats",
 };
 
 const canvases = [sourceCanvas];
@@ -1323,6 +1346,7 @@ window.addEventListener("load", () => {
     "merge-pass demo: " + mstr;
 
   // unindent code string
+  // only replace leading spaces with nbsp
   let codeStr = (" ".repeat(4) + demos[mstr])
     .split("\n")
     .map((l) => l.substr(4))
