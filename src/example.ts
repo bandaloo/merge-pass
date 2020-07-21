@@ -220,8 +220,18 @@ const demos: Demos = {
     let c: MP.ChangeCompExpr<MP.RGBToHSVExpr, MP.Mutable<MP.PrimitiveFloat>>;
     const merger = new MP.Merger(
       [
+        // TODO put this back!
+        /*
         MP.hsv2rgb(
           (c = MP.changecomp(MP.rgb2hsv(MP.fcolor()), MP.mut(0.5), "r", "+"))
+        ),
+        */
+        MP.ternary(
+          [1, MP.a1("cos", MP.time()), 3],
+          MP.hsv2rgb(
+            (c = MP.changecomp(MP.rgb2hsv(MP.fcolor()), MP.mut(0.5), "r", "+"))
+          ),
+          MP.fcolor()
         ),
       ],
       sourceCanvas,

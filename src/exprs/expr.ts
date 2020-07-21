@@ -95,6 +95,8 @@ export abstract class Expr implements Parseable, EffectLike {
       throw new Error("wrong lengths for source and values");
     }
     if (sourceLists.values.length !== defaultNames.length) {
+      console.log(sourceLists);
+      console.log(defaultNames);
       throw new Error(
         "default names list length doesn't match values list length"
       );

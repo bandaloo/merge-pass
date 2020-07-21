@@ -1,6 +1,7 @@
 export * from "./mergepass";
 export * from "./exprtypes";
 export * from "./glslfunctions";
+export * from "./settings";
 
 export * from "./exprs/blurexpr";
 export * from "./exprs/fragcolorexpr";
@@ -45,6 +46,6 @@ export * from "./exprs/monochromeexpr";
 export * from "./exprs/invertexpr";
 export * from "./exprs/edgeexpr";
 export * from "./exprs/edgecolorexpr";
-export * from "./settings";
+export * from "./exprs/ternaryexpr";
 
 export * from "./exprs/expr";

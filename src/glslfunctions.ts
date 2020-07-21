@@ -299,6 +299,8 @@ vec3 permute(vec3 x) { return mod289_3(((x*34.0)+1.0)*x); }`,
 }`,
 };
 
+// TODO these should really be in something like a `utils.ts`
+
 /** @ignore */
 export function captureAndAppend(str: string, reg: RegExp, suffix: string) {
   const matches = str.match(reg);
