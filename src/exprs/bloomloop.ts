@@ -17,7 +17,6 @@ import {
 import { fcolor } from "./fragcolorexpr";
 import { op } from "./opexpr";
 import { input } from "./scenesampleexpr";
-import { setcolor } from "./setcolorexpr";
 import { vec2 } from "./vecexprs";
 
 // TODO bloom uses `input` so it has to be the first
@@ -43,7 +42,7 @@ export class BloomLoop extends EffectLoop {
     const step = a2("step", bright, threshold);
     const col = cvec4(tag`vec4(${fcolor()}.rgb * (1. - ${step}), 1.)`);
     const list = [
-      setcolor(col),
+      col,
       loop(
         [
           gauss(vec2(horizontal, 0), taps),
@@ -53,7 +52,7 @@ export class BloomLoop extends EffectLoop {
         ],
         reps
       ),
-      setcolor(op(fcolor(), "+", input())),
+      op(fcolor(), "+", input()),
     ];
     super(list, { num: 1 });
     this.threshold = threshold;

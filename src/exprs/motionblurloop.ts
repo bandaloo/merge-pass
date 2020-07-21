@@ -1,10 +1,9 @@
 import { Float } from "../exprtypes";
 import { EffectLoop, loop } from "../mergepass";
 import { channel } from "./channelsampleexpr";
-import { mut, n2e, float, PrimitiveFloat, BasicFloat } from "./expr";
+import { BasicFloat, float, mut, n2e, PrimitiveFloat } from "./expr";
 import { fcolor } from "./fragcolorexpr";
 import { op } from "./opexpr";
-import { setcolor } from "./setcolorexpr";
 
 /** frame averaging motion blur loop */
 export class MotionBlurLoop extends EffectLoop {
@@ -14,7 +13,7 @@ export class MotionBlurLoop extends EffectLoop {
     const col1 = op(channel(target), "*", persistence);
     const col2 = op(fcolor(), "*", op(1, "-", persistence));
     const effects = [
-      loop([setcolor(op(col1, "+", col2))]).target(target),
+      loop([op(col1, "+", col2)]).target(target),
       channel(target),
     ];
     super(effects, { num: 1 });

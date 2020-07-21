@@ -1,12 +1,14 @@
 import { CodeBuilder } from "./codebuilder";
 import { ExprVec4 } from "./exprs/expr";
+import { input } from "./exprs/scenesampleexpr";
+import { SetColorExpr } from "./exprs/setcolorexpr";
+import { Vec4 } from "./exprtypes";
+import { settings } from "./settings";
 import {
-  WebGLProgramLoop,
   updateNeeds,
   WebGLProgramLeaf,
+  WebGLProgramLoop,
 } from "./webglprogramloop";
-import { input } from ".";
-import { settings } from "./settings";
 
 /** repetitions and callback for loop */
 export interface LoopInfo {
@@ -48,15 +50,35 @@ interface ProgramMap {
   [name: string]: WebGLProgramLoop;
 }
 
+interface UnprocessedEffectMap {
+  [name: string]: (Vec4 | EffectLoop)[];
+}
+
+function wrapInSetColors(effects: (Vec4 | EffectLoop)[]): EffectElement[] {
+  return effects.map((e) =>
+    e instanceof ExprVec4 || e instanceof EffectLoop ? e : new SetColorExpr(e)
+  );
+}
+
+// should be function of loop?
+function processEffectMap(eMap: UnprocessedEffectMap): EffectMap {
+  const result: EffectMap = {};
+  for (const name in eMap) {
+    const val = eMap[name];
+    result[name] = wrapInSetColors(val);
+  }
+  return result;
+}
+
 interface EffectMap {
-  [name: string]: (ExprVec4 | EffectLoop)[];
+  [name: string]: EffectElement[];
 }
 
 export class EffectDictionary {
   effectMap: EffectMap;
 
-  constructor(effectMap: EffectMap) {
-    this.effectMap = effectMap;
+  constructor(effectMap: UnprocessedEffectMap) {
+    this.effectMap = processEffectMap(effectMap);
   }
 
   toProgramMap(
@@ -115,8 +137,8 @@ export class EffectLoop implements EffectLike, Generable {
   effects: EffectElement[];
   loopInfo: LoopInfo;
 
-  constructor(effects: EffectElement[], loopInfo: LoopInfo) {
-    this.effects = effects;
+  constructor(effects: (Vec4 | EffectLoop)[], loopInfo: LoopInfo) {
+    this.effects = wrapInSetColors(effects);
     this.loopInfo = loopInfo;
   }
 
@@ -241,7 +263,7 @@ export class EffectLoop implements EffectLike, Generable {
 }
 
 /** creates an effect loop */
-export function loop(effects: EffectElement[], rep = 1) {
+export function loop(effects: (Vec4 | EffectLoop)[], rep = 1) {
   return new EffectLoop(effects, { num: rep });
 }
 
@@ -324,7 +346,7 @@ export class Merger {
    * @param options additional options for the texture
    */
   constructor(
-    effects: (ExprVec4 | EffectLoop)[] | EffectDictionary,
+    effects: (Vec4 | EffectLoop)[] | EffectDictionary,
     source: TexImageSource | WebGLTexture,
     gl: WebGL2RenderingContext,
     options?: MergerOptions

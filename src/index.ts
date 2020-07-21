@@ -15,7 +15,6 @@ export * from "./exprs/normfragcoordexpr";
 export * from "./exprs/normcenterfragcoordexpr";
 export * from "./exprs/scenesampleexpr";
 export * from "./exprs/brightnessexpr";
-export * from "./exprs/setcolorexpr";
 export * from "./exprs/contrastexpr";
 export * from "./exprs/grainexpr";
 export * from "./exprs/getcompexpr";

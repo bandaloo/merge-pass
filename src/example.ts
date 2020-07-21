@@ -124,11 +124,11 @@ const demos: Demos = {
             4
           ).target(0),
           MP.brightness(-0.3),
-          MP.setcolor(MP.op(MP.fcolor(), "+", MP.input())),
+          MP.op(MP.fcolor(), "+", MP.input()),
         ]).target(0),
-        MP.loop([
-          MP.setcolor(MP.op(MP.op(MP.channel(0), "+", MP.fcolor()), "/", 2)),
-        ]).target(1),
+        MP.loop([MP.op(MP.op(MP.channel(0), "+", MP.fcolor()), "/", 2)]).target(
+          1
+        ),
         MP.channel(1),
       ],
       sourceCanvas,
@@ -182,7 +182,7 @@ const demos: Demos = {
 
   redonly: () => {
     const merger = new MP.Merger(
-      [MP.setcolor(MP.changecomp(MP.fcolor(), MP.vec2(0, 0), "gb"))],
+      [MP.changecomp(MP.fcolor(), MP.vec2(0, 0), "gb")],
       sourceCanvas,
       gl
     );
@@ -194,7 +194,7 @@ const demos: Demos = {
 
   redzero: () => {
     const merger = new MP.Merger(
-      [MP.setcolor(MP.changecomp(MP.fcolor(), 0, "r"))],
+      [MP.changecomp(MP.fcolor(), 0, "r")],
       sourceCanvas,
       gl
     );
@@ -206,11 +206,7 @@ const demos: Demos = {
 
   redgreenswap: () => {
     const merger = new MP.Merger(
-      [
-        MP.setcolor(
-          MP.changecomp(MP.fcolor(), MP.get2comp(MP.fcolor(), "gr"), "rg")
-        ),
-      ],
+      [MP.changecomp(MP.fcolor(), MP.get2comp(MP.fcolor(), "gr"), "rg")],
       sourceCanvas,
       gl
     );
@@ -825,7 +821,7 @@ const demos: Demos = {
   edgecolor: (channels: TexImageSource[] = []) => {
     let a: EdgeColorExpr;
     const merger = new MP.Merger(
-      [MP.setcolor((a = MP.edgecolor(MP.mut(MP.pvec4(1.0, 1.0, 1.0, 1.0)))))],
+      [(a = MP.edgecolor(MP.mut(MP.pvec4(1.0, 1.0, 1.0, 1.0))))],
       sourceCanvas,
       gl,
       { channels: [null] }
@@ -855,7 +851,7 @@ const demos: Demos = {
   depthedge: (channels: TexImageSource[] = []) => {
     const edge = MP.edge(MP.mut(1.0), 0);
     const merger = new MP.Merger(
-      [MP.blur2d(1, 1, 13), MP.setcolor(edge)],
+      [MP.blur2d(1, 1, 13), edge],
       sourceCanvas,
       gl,
       { channels: channels }
