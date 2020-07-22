@@ -264,8 +264,9 @@ export class EffectLoop implements EffectLike, Generable {
 
   /** @ignore */
   regionWrap(space: (Float | number)[], failure: Vec4) {
+    // TODO why do we have the not instance
     this.effects = this.effects.map((e) =>
-      e instanceof EffectLoop && !(e instanceof ExprVec4)
+      e instanceof EffectLoop /* && !(e instanceof ExprVec4) */
         ? e.regionWrap(space, failure)
         : new SetColorExpr(
             region(

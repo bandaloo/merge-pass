@@ -58,7 +58,7 @@ interface Parseable {
   /** returns the GLSL type as a string */
   typeString(): TypeString;
 
-  //getSampleNum(): number;
+  brandExprWithRegion(space: Float[]): Parseable;
 }
 
 export interface Applicable {
@@ -89,6 +89,8 @@ export abstract class Expr implements Parseable, EffectLike {
   externalFuncs: string[] = [];
   sourceLists: SourceLists;
   sourceCode: string = "";
+  funcIndex = 0;
+  regionBranded = false;
 
   constructor(sourceLists: SourceLists, defaultNames: string[]) {
     // TODO update you needs based on sub-expressions!! values in sourceList
@@ -213,7 +215,12 @@ export abstract class Expr implements Parseable, EffectLike {
   }
 
   brandExprWithRegion(space: Float[]) {
-    brandWithRegion(this.sourceLists, this.externalFuncs, space);
+    brandWithRegion(this, this.funcIndex, space);
+    for (const v of this.sourceLists.values) {
+      // TODO get rid of this
+      //console.log("brand", v);
+      v.brandExprWithRegion(space);
+    }
     return this;
   }
 }
@@ -293,6 +300,10 @@ export class Mutable<T extends Primitive>
   getSampleNum() {
     return 0;
   }
+
+  brandExprWithRegion(space: Float[]) {
+    return this;
+  }
 }
 
 export function mut<T extends Primitive>(val: T, name?: string): Mutable<T>;
@@ -328,6 +339,10 @@ export abstract class Primitive implements Parseable, Applicable, EffectLike {
 
   getSampleNum() {
     return 0;
+  }
+
+  brandExprWithRegion(space: Float[]) {
+    return this;
   }
 }
 
@@ -544,6 +559,10 @@ export class WrappedExpr<T extends AllVals> implements Parseable {
 
   getSampleNum(): number {
     return this.expr.getSampleNum();
+  }
+
+  brandExprWithRegion(space: Float[]): Parseable {
+    return this.expr.brandExprWithRegion(space);
   }
 }
 

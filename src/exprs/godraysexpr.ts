@@ -59,6 +59,7 @@ export class GodRaysExpr extends ExprVec4 {
       "uThreshold",
       "uNewColor",
     ]);
+    this.funcIndex = 1; // depth converting function needs to be before
     this.col = col;
     this.exposure = exposure;
     this.decay = decay;
@@ -88,7 +89,7 @@ export class GodRaysExpr extends ExprVec4 {
     }
     this.externalFuncs.push(customGodRayFunc);
     //this.needs.extraBuffers = new Set([samplerNum]);
-    this.brandExprWithChannel(1, samplerNum);
+    this.brandExprWithChannel(this.funcIndex, samplerNum);
   }
 
   /** sets the light color */

@@ -1,4 +1,4 @@
-import { SourceLists, Expr, Needs } from "./exprs/expr";
+import { Needs, SourceLists, Expr } from "./exprs/expr";
 import { Float } from "./exprtypes";
 import { glslFuncs } from "./glslfunctions";
 
@@ -76,12 +76,11 @@ export function brandWithChannel(
 }
 
 /** @ignore */
-export function brandWithRegion(
-  sourceLists: SourceLists,
-  funcs: string[],
-  space: Float[]
-) {
-  // TODO only do if it's a sampling expression
+export function brandWithRegion(expr: Expr, funcIndex: number, space: Float[]) {
+  const sourceLists = expr.sourceLists;
+  const funcs = expr.externalFuncs;
+  const needs = expr.needs;
+  if (expr.regionBranded || !needs.neighborSample) return;
   const { origFuncName, newFuncName, ending } = nameExtractor(
     sourceLists,
     "_region"
@@ -105,7 +104,7 @@ export function brandWithRegion(
 
   // replace name in the external function and `texture2D` and sampler
   // (assumes the sampling function is the first external function)
-  funcs[0] = funcs[0]
+  funcs[funcIndex] = funcs[funcIndex]
     .split(origFuncName)
     .join(newFuncDeclaration)
     .split(origTextureName)
@@ -131,4 +130,5 @@ export function brandWithRegion(
   funcs.unshift(glslFuncs.texture2D_region);
   // TODO get rid of this
   console.log(sourceLists);
+  expr.regionBranded = true;
 }

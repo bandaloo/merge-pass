@@ -77,7 +77,9 @@ export function region(space: (Float | number)[], success: any, failure: any) {
   }
   return ternary(
     createDifferenceFloats(floats),
-    success instanceof Expr ? success.brandExprWithRegion(floats) : success,
-    failure instanceof Expr ? failure.brandExprWithRegion(floats) : failure
+    //success instanceof Expr ? success.brandExprWithRegion(floats) : success,
+    //failure instanceof Expr ? failure.brandExprWithRegion(floats) : failure
+    success.brandExprWithRegion(floats),
+    failure.brandExprWithRegion(floats)
   );
 }
