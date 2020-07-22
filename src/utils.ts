@@ -43,17 +43,10 @@ export function brandWithChannel(
   funcIndex: number,
   samplerNum?: number
 ) {
+  samplerNum === undefined
+    ? (needs.neighborSample = true)
+    : (needs.extraBuffers = new Set([samplerNum]));
   if (samplerNum === undefined) return;
-  // TODO make this generic
-  /*
-  const origFuncName = sourceLists.sections[0];
-  const ending = origFuncName[origFuncName.length - 1] === ")" ? ")" : "";
-  const newFuncName =
-    origFuncName.substr(0, origFuncName.length - 1 - ~~(ending === ")")) +
-    (samplerNum !== undefined ? "_" + samplerNum : "") +
-    "(" +
-    ending;
-  */
   const { origFuncName, newFuncName, ending } = nameExtractor(
     sourceLists,
     samplerNum !== undefined ? "_" + samplerNum : ""
@@ -62,17 +55,13 @@ export function brandWithChannel(
   sourceLists.sections[0] = sourceLists.sections[0]
     .split(origFuncName)
     .join(newFuncName);
-  // TODO get rid of this
-  console.log(origFuncName);
-  console.log(newFuncName);
-  console.log(sourceLists);
-  console.log(funcs[funcIndex]);
   funcs[funcIndex] = funcs[funcIndex]
     .split(origFuncName)
     .join(newFuncName)
     .split("uSampler")
     .join("uBufferSampler" + samplerNum);
-  needs.extraBuffers = new Set([samplerNum]);
+  //needs.extraBuffers = new Set([samplerNum]);
+  //needs.neighborSample = false;
 }
 
 /** @ignore */
@@ -80,7 +69,11 @@ export function brandWithRegion(expr: Expr, funcIndex: number, space: Float[]) {
   const sourceLists = expr.sourceLists;
   const funcs = expr.externalFuncs;
   const needs = expr.needs;
-  if (expr.regionBranded || !needs.neighborSample) return;
+  if (
+    expr.regionBranded ||
+    (!needs.neighborSample && needs.extraBuffers.size === 0)
+  )
+    return;
   const { origFuncName, newFuncName, ending } = nameExtractor(
     sourceLists,
     "_region"
@@ -89,9 +82,6 @@ export function brandWithRegion(expr: Expr, funcIndex: number, space: Float[]) {
     0,
     newFuncName.length - ~~(ending === ")")
   );
-  // TODO get rid of this
-  console.log(origFuncName);
-  console.log(newFuncName);
   const newFuncDeclaration =
     openFuncName +
     "float r_x_min, float r_y_min, float r_x_max, float r_y_max" +

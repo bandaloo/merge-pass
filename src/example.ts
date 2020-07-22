@@ -234,20 +234,27 @@ const demos: Demos = {
     };
   },
 
-  region: () => {
+  region: (channels: TexImageSource[] = []) => {
+    const offset = MP.op(MP.a1("sin", MP.time()), "/", 5);
     const merger = new MP.Merger(
       //[MP.region([0, 0, 0.5, 0.5], MP.brightness(0.3), MP.brightness(-0.3))],
       //[MP.region([0.1, 0.1, 0.5, 0.5], MP.blur2d(1, 1), MP.brightness(0.1))],
       //[MP.region([0.1, 0.1, 0.5, 0.5], MP.edge("dark"), MP.brightness(0.1))],
       [
         MP.region(
-          [0.1, 0.1, 0.5, 0.5],
-          MP.loop([MP.blur2d(), MP.edge("dark")]),
+          [MP.op(offset, "+", 0.3), 0.3, MP.op(offset, "+", 0.7), 0.7],
+          MP.loop([
+            MP.blur2d(),
+            MP.edge("dark"),
+            MP.brightness(MP.getcomp(MP.channel(0), "r")),
+          ]),
           MP.brightness(0.1)
         ),
       ],
+      //[MP.region([0.1, 0.1, 0.5, 0.5], MP.channel(0), MP.brightness(0.1))],
       sourceCanvas,
-      gl
+      gl,
+      { channels: channels }
     );
     return {
       merger: merger,
@@ -1188,7 +1195,7 @@ const draws: Draws = {
   edgecolor: [redSpiral],
   depthedge: [higherOrderPerspective(true), higherOrderPerspective(false)],
   ternary: [stripes],
-  region: [stripes],
+  region: [stripes, vectorSpiral],
 };
 
 interface Notes {

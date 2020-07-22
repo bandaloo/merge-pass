@@ -2,12 +2,14 @@
 /** glsl source code for external functions */
 export const glslFuncs = {
   // TODO bad to calculate single pixel width every time; maybe it can be a need
-  texture2D_region: `vec4 texture2D_region(float r_x_min,
-                                           float r_y_min,
-                                           float r_x_max,
-                                           float r_y_max,
-                                           sampler2D sampler,
-                                           vec2 uv) {
+  texture2D_region: `vec4 texture2D_region(
+  float r_x_min,
+  float r_y_min,
+  float r_x_max,
+  float r_y_max,
+  sampler2D sampler,
+  vec2 uv
+) {
   vec2 d = vec2(1., 1.) / uResolution; // pixel width
   return texture2D(sampler, clamp(uv, vec2(r_x_min + d.x, r_y_min + d.x), vec2(r_x_max - d.y, r_y_max - d.y)));
 }`,
@@ -307,5 +309,8 @@ vec3 permute(vec3 x) { return mod289_3(((x*34.0)+1.0)*x); }`,
 }`,
   invert: `vec4 invert(vec4 col) {
   return vec4(vec3(1., 1., 1.) - col.rgb, col.a);
+}`,
+  channel: `vec4 channel(vec2 uv, sampler2D sampler) {
+  return texture2D(sampler, uv);
 }`,
 };
