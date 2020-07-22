@@ -1,5 +1,5 @@
 import { Float, Vec2, Vec4 } from "../exprtypes";
-import { glslFuncs, replaceSampler } from "../glslfunctions";
+import { glslFuncs } from "../glslfunctions";
 import {
   ExprVec4,
   float,
@@ -13,6 +13,7 @@ import {
 } from "./expr";
 import { fcolor } from "./fragcolorexpr";
 import { pvec2, vec4 } from "./vecexprs";
+import { replaceSampler } from "../utils";
 
 /** godrays expression */
 export class GodRaysExpr extends ExprVec4 {
@@ -37,7 +38,7 @@ export class GodRaysExpr extends ExprVec4 {
     convertDepth?: { threshold: Float; newColor: Vec4 }
   ) {
     // TODO the metaprogramming here is not so good!
-    // leaving off the function call section for now
+    // leaving off the function call section for now (we addd it back later)
     const sourceLists = tag`${col}, ${exposure}, ${decay}, ${density}, ${weight}, ${lightPos}, ${
       convertDepth !== undefined ? convertDepth.threshold : float(0)
     }, ${
@@ -46,9 +47,8 @@ export class GodRaysExpr extends ExprVec4 {
     // TODO make this more generic
     // append the _<num> onto the function name
     // also add _depth if this is a version of the function that uses depth buffer
-    sourceLists.sections[0] += `godrays_${samplerNum}${
-      convertDepth !== undefined ? "_depth" : ""
-    }(`;
+    const customName = `godrays${convertDepth !== undefined ? "_depth" : ""}(`;
+    sourceLists.sections[0] = customName;
     super(sourceLists, [
       "uCol",
       "uExposure",
@@ -67,21 +67,28 @@ export class GodRaysExpr extends ExprVec4 {
     this.lightPos = lightPos;
     this.threshold = convertDepth?.threshold;
     this.newColor = convertDepth?.newColor;
+    /*
     let customGodRayFunc = replaceSampler(
       glslFuncs.godrays,
       /vec4\sgodrays/g,
       samplerNum,
       convertDepth === undefined ? undefined : "_depth"
     );
+    */
+
+    //customGodRayFunc = glslFuncs.split();
+    let customGodRayFunc = glslFuncs.godrays.split("godrays(").join(customName);
+
     if (convertDepth !== undefined) {
-      // uncomment the line that does the conversion
-      // TODO replace this with a more generic #ifdef and #ifndef kind of
-      // like the C preprocessor
+      // with regex, uncomment the line in the source code that does the
+      // conversion (if you think about it that's basically what a preprocessor
+      // does...)
       customGodRayFunc = customGodRayFunc.replace(/\/\/uncomment\s/g, "");
       this.externalFuncs.push(glslFuncs.depth2occlusion);
     }
     this.externalFuncs.push(customGodRayFunc);
     this.needs.extraBuffers = new Set([0]);
+    this.brandExprWithChannel(samplerNum);
   }
 
   /** sets the light color */

@@ -1,5 +1,5 @@
 import { CodeBuilder } from "./codebuilder";
-import { ExprVec4 } from "./exprs/expr";
+import { ExprVec4, wrapInValue } from "./exprs/expr";
 import { input } from "./exprs/scenesampleexpr";
 import { SetColorExpr } from "./exprs/setcolorexpr";
 import { Vec4, AllVals, Float } from "./exprtypes";
@@ -267,7 +267,13 @@ export class EffectLoop implements EffectLike, Generable {
     this.effects = this.effects.map((e) =>
       e instanceof EffectLoop && !(e instanceof ExprVec4)
         ? e.regionWrap(space, failure)
-        : new SetColorExpr(region(space, e, failure))
+        : new SetColorExpr(
+            region(
+              space,
+              e.brandExprWithRegion(space.map((e) => wrapInValue(e))),
+              failure
+            )
+          )
     );
     return this;
   }

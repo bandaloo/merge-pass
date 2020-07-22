@@ -237,7 +237,7 @@ const demos: Demos = {
   region: () => {
     const merger = new MP.Merger(
       //[MP.region([0, 0, 0.5, 0.5], MP.brightness(0.3), MP.brightness(-0.3))],
-      [MP.region([0, 0, 0.5, 0.5], MP.blur2d(1, 1), MP.brightness(0.1))],
+      [MP.region([0.1, 0.1, 0.5, 0.5], MP.blur2d(1, 1), MP.brightness(0.1))],
       sourceCanvas,
       gl
     );

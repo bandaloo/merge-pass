@@ -1,6 +1,5 @@
 import { AllVals, Float, Vec2, Vec3, Vec4 } from "../exprtypes";
 import {
-  n2e,
   Operator as Op,
   PrimitiveFloat,
   SourceLists,

@@ -1,6 +1,7 @@
 import { UniformLocs, EffectLoop, EffectLike, Generable } from "../mergepass";
 import { AllVals, Float, TypeString } from "../exprtypes";
 import { updateNeeds } from "../webglprogramloop";
+import { brandWithChannel, brandWithRegion } from "../utils";
 
 interface UniformTypeMap {
   [name: string]: TypeString;
@@ -86,7 +87,7 @@ export abstract class Expr implements Parseable, EffectLike {
   readonly uniformValChangeMap: UniformValChangeMap = {};
   readonly defaultNameMap: DefaultNameMap = {};
   externalFuncs: string[] = [];
-  private sourceLists: SourceLists;
+  sourceLists: SourceLists;
   sourceCode: string = "";
 
   constructor(sourceLists: SourceLists, defaultNames: string[]) {
@@ -133,7 +134,7 @@ export abstract class Expr implements Parseable, EffectLike {
       ? mult
       : this.sourceLists.values
           .map((v) => v.getSampleNum())
-          .reduce(((acc, curr) => acc + curr), 0);
+          .reduce((acc, curr) => acc + curr, 0);
   }
 
   /**
@@ -197,6 +198,16 @@ export abstract class Expr implements Parseable, EffectLike {
 
   addFuncs(funcs: string[]) {
     this.externalFuncs.push(...funcs);
+    return this;
+  }
+
+  brandExprWithChannel(samplerNum: number) {
+    brandWithChannel(this.sourceLists, this.externalFuncs, samplerNum);
+    return this;
+  }
+
+  brandExprWithRegion(space: Float[]) {
+    brandWithRegion(this.sourceLists, this.externalFuncs, space);
     return this;
   }
 }

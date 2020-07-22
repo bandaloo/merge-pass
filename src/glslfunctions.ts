@@ -1,6 +1,16 @@
 // adapted from The Book of Shaders
 /** glsl source code for external functions */
 export const glslFuncs = {
+  // TODO is this small delta a good idea? does make edges harder
+  texture2D_region: `vec4 texture2D_region(float r_x_min,
+                                           float r_y_min,
+                                           float r_x_max,
+                                           float r_y_max,
+                                           sampler2D sampler,
+                                           vec2 uv) {
+  const float d = 0.001;
+  return texture2D(sampler, clamp(uv, vec2(r_x_min + d, r_y_min + d), vec2(r_x_max - d, r_y_max - d)));
+}`,
   // TODO replace with a better one
   // adapted from The Book of Shaders
   random: `float random(vec2 st) {
@@ -137,7 +147,7 @@ export const glslFuncs = {
 
   float lumaB = dot(rgbB, luma);
 
-  if(lumaB < lumaMin || lumaB > lumaMax) {
+  if (lumaB < lumaMin || lumaB > lumaMax) {
     return vec4(rgbA.r, rgbA.g, rgbA.b, alpha);
   }
 
@@ -266,6 +276,7 @@ export const glslFuncs = {
 vec2 mod289_2(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 vec3 permute(vec3 x) { return mod289_3(((x*34.0)+1.0)*x); }`,
   // sobel adapted from https://gist.github.com/Hebali/6ebfc66106459aacee6a9fac029d0115
+  // TODO change sobel to sob or something
   sobel: `vec4 sobel() {
   vec2 uv = gl_FragCoord.xy / uResolution;
   vec4 k[8];
@@ -285,9 +296,9 @@ vec3 permute(vec3 x) { return mod289_3(((x*34.0)+1.0)*x); }`,
 
   vec4 edge_h = k[2] + (2. * k[4]) + k[7] - (k[0] + (2. * k[3]) + k[5]);
   vec4 edge_v = k[0] + (2. * k[1]) + k[2] - (k[5] + (2. * k[6]) + k[7]);
-  vec4 sobel = sqrt(edge_h * edge_h + edge_v * edge_v);
+  vec4 sob = sqrt(edge_h * edge_h + edge_v * edge_v);
 
-  return vec4(1. - sobel.rgb, 1.);
+  return vec4(1. - sob.rgb, 1.);
 }`,
   // inlining a similar function will substitute in the full expression for
   // every component, so it's more efficient to have a function
@@ -298,26 +309,3 @@ vec3 permute(vec3 x) { return mod289_3(((x*34.0)+1.0)*x); }`,
   return vec4(vec3(1., 1., 1.) - col.rgb, col.a);
 }`,
 };
-
-// TODO these should really be in something like a `utils.ts`
-
-/** @ignore */
-export function captureAndAppend(str: string, reg: RegExp, suffix: string) {
-  const matches = str.match(reg);
-  if (matches === null) throw new Error("no match in the given string");
-  return str.replace(reg, matches[0] + suffix);
-}
-
-/** @ignore */
-export function replaceSampler(
-  fullString: string,
-  funcRegExp: RegExp,
-  samplerNum: number,
-  extra?: string
-) {
-  return captureAndAppend(
-    fullString.replace(/uSampler/g, "uBufferSampler" + samplerNum),
-    funcRegExp,
-    "_" + samplerNum + (extra === undefined ? "" : extra)
-  );
-}

@@ -1,5 +1,6 @@
-import { glslFuncs, replaceSampler } from "../glslfunctions";
+import { glslFuncs } from "../glslfunctions";
 import { ExprVec4, SourceLists } from "./expr";
+import { replaceSampler } from "../utils";
 
 /** @ignore */
 function genSobelSource(samplerNum?: number): SourceLists {
