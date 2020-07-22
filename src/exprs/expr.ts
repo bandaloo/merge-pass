@@ -201,8 +201,14 @@ export abstract class Expr implements Parseable, EffectLike {
     return this;
   }
 
-  brandExprWithChannel(samplerNum: number) {
-    brandWithChannel(this.sourceLists, this.externalFuncs, samplerNum);
+  brandExprWithChannel(funcIndex: number, samplerNum?: number) {
+    brandWithChannel(
+      this.sourceLists,
+      this.externalFuncs,
+      this.needs,
+      funcIndex,
+      samplerNum
+    );
     return this;
   }
 

@@ -1,5 +1,5 @@
 import { glslFuncs } from "../glslfunctions";
-import { ExprVec4, SourceLists } from "./expr";
+import { ExprVec4, SourceLists, tag } from "./expr";
 import { replaceSampler } from "../utils";
 
 /** @ignore */
@@ -13,7 +13,8 @@ function genSobelSource(samplerNum?: number): SourceLists {
 /** Sobel edge detection expression */
 export class SobelExpr extends ExprVec4 {
   constructor(samplerNum?: number) {
-    super(genSobelSource(samplerNum), []);
+    super(tag`sobel()`, []);
+    /*
     if (samplerNum === undefined) {
       this.needs.neighborSample = true;
       this.externalFuncs = [glslFuncs.sobel];
@@ -23,7 +24,10 @@ export class SobelExpr extends ExprVec4 {
         replaceSampler(glslFuncs.sobel, /vec4\ssobel+/, samplerNum),
       ];
     }
+    */
     this.needs.neighborSample = true;
+    this.externalFuncs = [glslFuncs.sobel];
+    this.brandExprWithChannel(0, samplerNum);
   }
 }
 

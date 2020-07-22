@@ -1,4 +1,4 @@
-import { SourceLists, Expr } from "./exprs/expr";
+import { SourceLists, Expr, Needs } from "./exprs/expr";
 import { Float } from "./exprtypes";
 import { glslFuncs } from "./glslfunctions";
 
@@ -24,23 +24,55 @@ export function replaceSampler(
   );
 }
 
+function nameExtractor(sourceLists: SourceLists, extra: string) {
+  const origFuncName = sourceLists.sections[0];
+  const ending = origFuncName[origFuncName.length - 1] === ")" ? ")" : "";
+  const newFuncName =
+    origFuncName.substr(0, origFuncName.length - 1 - ~~(ending === ")")) +
+    extra +
+    "(" +
+    ending;
+  return { origFuncName, newFuncName, ending };
+}
+
 /** @ignore */
 export function brandWithChannel(
   sourceLists: SourceLists,
   funcs: string[],
+  needs: Needs,
+  funcIndex: number,
   samplerNum?: number
 ) {
   if (samplerNum === undefined) return;
+  // TODO make this generic
+  /*
   const origFuncName = sourceLists.sections[0];
+  const ending = origFuncName[origFuncName.length - 1] === ")" ? ")" : "";
   const newFuncName =
-    origFuncName.substr(0, origFuncName.length - 1) +
+    origFuncName.substr(0, origFuncName.length - 1 - ~~(ending === ")")) +
     (samplerNum !== undefined ? "_" + samplerNum : "") +
-    "(";
+    "(" +
+    ending;
+  */
+  const { origFuncName, newFuncName, ending } = nameExtractor(
+    sourceLists,
+    samplerNum !== undefined ? "_" + samplerNum : ""
+  );
 
+  sourceLists.sections[0] = sourceLists.sections[0]
+    .split(origFuncName)
+    .join(newFuncName);
   // TODO get rid of this
   console.log(origFuncName);
   console.log(newFuncName);
-  funcs[0] = funcs[0].split(origFuncName).join(newFuncName);
+  console.log(sourceLists);
+  console.log(funcs[funcIndex]);
+  funcs[funcIndex] = funcs[funcIndex]
+    .split(origFuncName)
+    .join(newFuncName)
+    .split("uSampler")
+    .join("uBufferSampler" + samplerNum);
+  needs.extraBuffers = new Set([samplerNum]);
 }
 
 /** @ignore */
@@ -50,21 +82,26 @@ export function brandWithRegion(
   space: Float[]
 ) {
   // TODO only do if it's a sampling expression
-  const origFuncName = sourceLists.sections[0];
-  const newFuncName =
-    origFuncName.substr(0, origFuncName.length - 1) +
-    (space !== undefined ? "_region" : "") +
-    "(";
+  const { origFuncName, newFuncName, ending } = nameExtractor(
+    sourceLists,
+    "_region"
+  );
+  const openFuncName = newFuncName.substr(
+    0,
+    newFuncName.length - ~~(ending === ")")
+  );
+  // TODO get rid of this
+  console.log(origFuncName);
+  console.log(newFuncName);
   const newFuncDeclaration =
-    newFuncName +
-    "float r_x_min, float r_y_min, float r_x_max, float r_y_max, ";
+    openFuncName +
+    "float r_x_min, float r_y_min, float r_x_max, float r_y_max" +
+    (ending === ")" ? ")" : ", ");
 
+  console.log(newFuncDeclaration);
   const origTextureName = "texture2D(";
   const newTextureName =
     "texture2D_region(r_x_min, r_y_min, r_x_max, r_y_max, ";
-
-  //const origSamplerName = "uSampler";
-  //const newSamplerName = "uBufferSamper";
 
   // replace name in the external function and `texture2D` and sampler
   // (assumes the sampling function is the first external function)
@@ -73,20 +110,24 @@ export function brandWithRegion(
     .join(newFuncDeclaration)
     .split(origTextureName)
     .join(newTextureName);
-  //.split(origSamplerName)
-  //.join(newSamplerName);
 
-  if (space !== undefined) {
-    // shift the original name off the list
-    sourceLists.sections.shift();
-    for (let i = 0; i < 4; i++) {
-      sourceLists.sections.unshift(", ");
-    }
-    // add the new name to the beginning of the list
-    sourceLists.sections.unshift(newFuncName);
-    // add values from region data
-    sourceLists.values.unshift(...space);
+  // shift the original name off the list
+  sourceLists.sections.shift();
+  // add the close paren if we're opening up a function with 0 args
+  if (ending === ")") sourceLists.sections.unshift(")");
+  // add commas (one less if it is a 0 arg function call)
+  for (let i = 0; i < 4 - ~~(ending === ")"); i++) {
+    sourceLists.sections.unshift(", ");
   }
+
+  // add the new name to the beginning of the list
+  sourceLists.sections.unshift(
+    newFuncName.substr(0, newFuncName.length - ~~(ending === ")"))
+  );
+  // add values from region data
+  sourceLists.values.unshift(...space);
+
+  // put the texture access wrapper at the beginning
   funcs.unshift(glslFuncs.texture2D_region);
   // TODO get rid of this
   console.log(sourceLists);

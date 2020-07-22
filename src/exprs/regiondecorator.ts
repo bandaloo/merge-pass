@@ -1,6 +1,6 @@
 import { Float, Vec2, Vec3, Vec4 } from "../exprtypes";
 import { EffectLoop } from "../mergepass";
-import { PrimitiveFloat, wrapInValue } from "./expr";
+import { PrimitiveFloat, wrapInValue, Expr } from "./expr";
 import { ternary, TernaryExpr } from "./ternaryexpr";
 import { op } from "./opexpr";
 import { getcomp } from "./getcompexpr";
@@ -75,5 +75,9 @@ export function region(space: (Float | number)[], success: any, failure: any) {
   if (success instanceof EffectLoop) {
     return success.regionWrap(space, failure);
   }
-  return ternary(createDifferenceFloats(floats), success, failure);
+  return ternary(
+    createDifferenceFloats(floats),
+    success instanceof Expr ? success.brandExprWithRegion(floats) : success,
+    failure instanceof Expr ? failure.brandExprWithRegion(floats) : failure
+  );
 }

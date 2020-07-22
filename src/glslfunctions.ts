@@ -1,15 +1,15 @@
 // adapted from The Book of Shaders
 /** glsl source code for external functions */
 export const glslFuncs = {
-  // TODO is this small delta a good idea? does make edges harder
+  // TODO bad to calculate single pixel width every time; maybe it can be a need
   texture2D_region: `vec4 texture2D_region(float r_x_min,
                                            float r_y_min,
                                            float r_x_max,
                                            float r_y_max,
                                            sampler2D sampler,
                                            vec2 uv) {
-  const float d = 0.001;
-  return texture2D(sampler, clamp(uv, vec2(r_x_min + d, r_y_min + d), vec2(r_x_max - d, r_y_max - d)));
+  vec2 d = vec2(1., 1.) / uResolution; // pixel width
+  return texture2D(sampler, clamp(uv, vec2(r_x_min + d.x, r_y_min + d.x), vec2(r_x_max - d.y, r_y_max - d.y)));
 }`,
   // TODO replace with a better one
   // adapted from The Book of Shaders

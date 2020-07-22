@@ -87,8 +87,8 @@ export class GodRaysExpr extends ExprVec4 {
       this.externalFuncs.push(glslFuncs.depth2occlusion);
     }
     this.externalFuncs.push(customGodRayFunc);
-    this.needs.extraBuffers = new Set([0]);
-    this.brandExprWithChannel(samplerNum);
+    //this.needs.extraBuffers = new Set([samplerNum]);
+    this.brandExprWithChannel(1, samplerNum);
   }
 
   /** sets the light color */
