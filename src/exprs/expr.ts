@@ -40,6 +40,7 @@ export interface Needs {
   sceneBuffer: boolean;
   timeUniform: boolean;
   mouseUniform: boolean;
+  passCount: boolean;
   extraBuffers: Set<number>;
 }
 
@@ -75,12 +76,14 @@ export abstract class Expr implements Parseable, EffectLike {
    */
   static count = 0;
   readonly id: string;
+  // update me on change to needs
   readonly needs: Needs = {
     neighborSample: false,
     centerSample: false,
     sceneBuffer: false,
     timeUniform: false,
     mouseUniform: false,
+    passCount: false,
     extraBuffers: new Set(),
   };
   readonly defaultNames: string[];

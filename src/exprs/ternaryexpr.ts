@@ -7,7 +7,7 @@ import {
 } from "./expr";
 
 function genTernarySourceList(
-  floats: Float[],
+  floats: Float[] | null,
   success: AllVals,
   failure: AllVals
 ) {
@@ -18,11 +18,15 @@ function genTernarySourceList(
 
   let counter = 0;
   // generate the boolean expression
-  for (const f of floats) {
-    counter++;
-    const last = counter === floats.length;
-    sourceList.values.push(f);
-    sourceList.sections.push(` > 0.${last ? ") ? " : " && "}`);
+  if (floats !== null) {
+    for (const f of floats) {
+      counter++;
+      const last = counter === floats.length;
+      sourceList.values.push(f);
+      sourceList.sections.push(` > 0.${last ? ") ? " : " && "}`);
+    }
+  } else {
+    sourceList.sections[0] += "uCount == 0) ? ";
   }
   // generate the success expression and colon
   sourceList.values.push(success);
@@ -37,63 +41,63 @@ export class TernaryExpr<T extends AllVals, U extends AllVals> extends Op<T> {
   success: T;
   failure: U;
 
-  constructor(floats: Float[], success: T, failure: U) {
+  constructor(floats: Float[] | null, success: T, failure: U) {
     super(success, genTernarySourceList(floats, success, failure), [
-      ...Array.from(floats, (val, index) => "uFloat" + index),
+      ...(floats !== null
+        ? Array.from(floats, (val, index) => "uFloat" + index)
+        : []),
       "uSuccess",
       "uFailure",
     ]);
     this.success = success;
     this.failure = failure;
+    this.needs.passCount = floats === null;
   }
 }
 
 export function ternary<T extends Float, U extends Float>(
-  floats: (Float | number)[] | Float | number,
+  floats: (Float | number)[] | Float | number | null,
   success: T,
   failure: U
 ): TernaryExpr<T, U>;
 export function ternary<T extends Float>(
-  floats: (Float | number)[] | Float | number,
+  floats: (Float | number)[] | Float | number | null,
   success: T,
   failure: number
 ): TernaryExpr<T, PrimitiveFloat>;
 export function ternary<U extends Float>(
-  floats: (Float | number)[] | Float | number,
+  floats: (Float | number)[] | Float | number | null,
   success: number,
   failure: U
 ): TernaryExpr<PrimitiveFloat, U>;
 export function ternary(
-  floats: (Float | number)[] | Float | number,
+  floats: (Float | number)[] | Float | number | null,
   success: number,
   failure: number
 ): TernaryExpr<PrimitiveFloat, PrimitiveFloat>;
 export function ternary<T extends Vec2, U extends Vec2>(
-  floats: (Float | number)[] | Float | number,
+  floats: (Float | number)[] | Float | number | null,
   success: T,
   failure: U
 ): TernaryExpr<T, U>;
 export function ternary<T extends Vec3, U extends Vec3>(
-  floats: (Float | number)[] | Float | number,
+  floats: (Float | number)[] | Float | number | null,
   success: T,
   failure: U
 ): TernaryExpr<T, U>;
 export function ternary<T extends Vec4, U extends Vec4>(
-  floats: (Float | number)[] | Float | number,
+  floats: (Float | number)[] | Float | number | null,
   success: T,
   failure: U
 ): TernaryExpr<T, U>;
 export function ternary(
-  floats: (Float | number)[] | Float | number,
+  floats: (Float | number)[] | Float | number | null,
   success: any,
   failure: any
 ) {
   // wrap single float in array if need be
-  if (!Array.isArray(floats)) floats = [floats];
-  return new TernaryExpr(
-    // TODO what's up with the return type of this map?
-    floats.map((f) => wrapInValue(f)),
-    success,
-    failure
-  );
+  if (!Array.isArray(floats) && floats !== null)
+    floats = [floats].map((f) => wrapInValue(f));
+  // TODO get rid of this cast
+  return new TernaryExpr(floats as any, success, failure);
 }

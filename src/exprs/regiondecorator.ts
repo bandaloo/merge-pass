@@ -5,6 +5,7 @@ import { ternary, TernaryExpr } from "./ternaryexpr";
 import { op } from "./opexpr";
 import { getcomp } from "./getcompexpr";
 import { pos } from "./normfragcoordexpr";
+import { fcolor } from "./fragcolorexpr";
 
 // form: x1, y1, x2, y2
 function createDifferenceFloats(floats: Float[]) {
@@ -75,11 +76,14 @@ export function region(space: (Float | number)[], success: any, failure: any) {
   if (success instanceof EffectLoop) {
     return success.regionWrap(space, failure);
   }
+
   return ternary(
     createDifferenceFloats(floats),
     //success instanceof Expr ? success.brandExprWithRegion(floats) : success,
     //failure instanceof Expr ? failure.brandExprWithRegion(floats) : failure
     success.brandExprWithRegion(floats),
+    // null means the ternary will only be true on the first pass
+    //new TernaryExpr(null, failure.brandExprWithRegion(floats), fcolor())
     failure.brandExprWithRegion(floats)
   );
 }

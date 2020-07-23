@@ -5,6 +5,7 @@
 import * as dat from "dat.gui";
 import * as MP from "./index";
 import { EdgeColorExpr } from "./exprs/edgecolorexpr";
+import { brightness } from "./exprs/brightnessexpr";
 
 const slow = false;
 
@@ -242,14 +243,18 @@ const demos: Demos = {
       //[MP.region([0.1, 0.1, 0.5, 0.5], MP.edge("dark"), MP.brightness(0.1))],
       [
         MP.region(
-          [MP.op(offset, "+", 0.3), 0.3, MP.op(offset, "+", 0.7), 0.7],
+          [MP.op(offset, "+", 0.2), 0.2, MP.op(offset, "+", 0.8), 0.8],
+          //[0, 0, 0.5, 0.5],
           MP.loop([
             MP.blur2d(),
             MP.edge("dark"),
             MP.brightness(MP.getcomp(MP.channel(0), "r")),
+            //MP.region([0, 0, 0.5, 0.5], MP.brightness(-0.2), MP.fcolor()),
           ]),
-          MP.brightness(0.1)
+          //MP.fcolor()
+          MP.brightness(-0.2)
         ),
+        //MP.brightness(-0.2),
       ],
       //[MP.region([0.1, 0.1, 0.5, 0.5], MP.channel(0), MP.brightness(0.1))],
       sourceCanvas,

@@ -1,5 +1,5 @@
 import { CodeBuilder } from "./codebuilder";
-import { ExprVec4, wrapInValue } from "./exprs/expr";
+import { ExprVec4, wrapInValue, Needs } from "./exprs/expr";
 import { input } from "./exprs/scenesampleexpr";
 import { SetColorExpr } from "./exprs/setcolorexpr";
 import { Vec4, AllVals, Float } from "./exprtypes";
@@ -10,6 +10,8 @@ import {
   WebGLProgramLoop,
 } from "./webglprogramloop";
 import { region } from "./exprs/regiondecorator";
+import { fcolor, FragColorExpr } from "./exprs/fragcolorexpr";
+import { ternary } from "./exprs/ternaryexpr";
 
 /** repetitions and callback for loop */
 export interface LoopInfo {
@@ -89,12 +91,13 @@ export class EffectDictionary {
     fShaders: WebGLShader[]
   ) {
     const programMap: ProgramMap = {};
-    let needs = {
+    let needs: Needs = {
       neighborSample: false,
       centerSample: false,
       sceneBuffer: false,
       timeUniform: false,
       mouseUniform: false,
+      passCount: false,
       extraBuffers: new Set<number>(),
     };
     for (const name in this.effectMap) {
@@ -263,16 +266,19 @@ export class EffectLoop implements EffectLike, Generable {
   }
 
   /** @ignore */
-  regionWrap(space: (Float | number)[], failure: Vec4) {
-    // TODO why do we have the not instance
-    this.effects = this.effects.map((e) =>
+  regionWrap(space: (Float | number)[], failure: Vec4, finalPath = true) {
+    this.effects = this.effects.map((e, index) =>
       e instanceof EffectLoop /* && !(e instanceof ExprVec4) */
-        ? e.regionWrap(space, failure)
+        ? e.regionWrap(space, failure, index === this.effects.length - 1)
         : new SetColorExpr(
             region(
               space,
               e.brandExprWithRegion(space.map((e) => wrapInValue(e))),
-              failure
+              index === this.effects.length - 1 && finalPath
+                ? !(failure instanceof FragColorExpr)
+                  ? ternary(null, failure, fcolor())
+                  : failure
+                : fcolor()
             )
           )
     );

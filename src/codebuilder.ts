@@ -16,6 +16,9 @@ const TIME_SET = `uniform mediump float uTime;\n`;
 const MOUSE_SET = `uniform mediump vec2 uMouse;\n`;
 
 /** @ignore */
+const COUNT_SET = `uniform int uCount;\n`;
+
+/** @ignore */
 const BOILERPLATE = `#ifdef GL_ES
 precision mediump float;
 #endif
@@ -58,12 +61,14 @@ export class CodeBuilder {
       uniformTypes: {},
       externalFuncs: new Set<string>(),
       exprs: [],
+      // update me on change to needs
       needs: {
         centerSample: false,
         neighborSample: false,
         sceneBuffer: false,
         timeUniform: false,
         mouseUniform: false,
+        passCount: false,
         extraBuffers: new Set(),
       },
     };
@@ -128,6 +133,7 @@ export class CodeBuilder {
       (this.totalNeeds.sceneBuffer ? SCENE_SET : "") +
       (this.totalNeeds.timeUniform ? TIME_SET : "") +
       (this.totalNeeds.mouseUniform ? MOUSE_SET : "") +
+      (this.totalNeeds.passCount ? COUNT_SET : "") +
       Array.from(this.totalNeeds.extraBuffers)
         .map((n) => channelSamplerDeclaration(n))
         .join("\n") +

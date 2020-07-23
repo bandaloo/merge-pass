@@ -12,6 +12,7 @@ export function updateNeeds(acc: Needs, curr: Needs): Needs {
     sceneBuffer: acc.sceneBuffer || curr.sceneBuffer,
     timeUniform: acc.timeUniform || curr.timeUniform,
     mouseUniform: acc.mouseUniform || curr.mouseUniform,
+    passCount: acc.passCount || curr.passCount,
     extraBuffers: new Set([...acc.extraBuffers, ...curr.extraBuffers]),
   };
 }
@@ -38,6 +39,20 @@ export class WebGLProgramLeaf {
   }
 }
 
+/** @ignore */
+function getLoc(
+  programElement: WebGLProgramLeaf,
+  gl: WebGL2RenderingContext,
+  name: string
+) {
+  gl.useProgram(programElement.program);
+  const loc = gl.getUniformLocation(programElement.program, name);
+  if (loc === null) {
+    throw new Error("could not get the " + name + " uniform location");
+  }
+  return loc;
+}
+
 /** recursive data structure of compiled programs */
 export class WebGLProgramLoop {
   programElement: WebGLProgramElement;
@@ -47,6 +62,9 @@ export class WebGLProgramLoop {
   //totalNeeds: Needs | undefined;
   timeLoc?: WebGLUniformLocation;
   mouseLoc?: WebGLUniformLocation;
+  countLoc?: WebGLUniformLocation;
+
+  counter = 0;
 
   constructor(
     programElement: WebGLProgramElement,
@@ -62,7 +80,10 @@ export class WebGLProgramLoop {
         );
       }
 
+      // TODO get rid of repeated code
+
       // get the time uniform location
+      /*
       if (this.programElement.totalNeeds.timeUniform) {
         gl.useProgram(this.programElement.program);
         const timeLoc = gl.getUniformLocation(
@@ -86,6 +107,17 @@ export class WebGLProgramLoop {
           throw new Error("could not get the mouse uniform location");
         }
         this.mouseLoc = mouseLoc;
+      }
+      */
+
+      if (this.programElement.totalNeeds.timeUniform) {
+        this.timeLoc = getLoc(this.programElement, gl, "uTime");
+      }
+      if (this.programElement.totalNeeds.mouseUniform) {
+        this.mouseLoc = getLoc(this.programElement, gl, "uMouse");
+      }
+      if (this.programElement.totalNeeds.passCount) {
+        this.countLoc = getLoc(this.programElement, gl, "uCount");
       }
     }
   }
@@ -197,12 +229,37 @@ export class WebGLProgramLoop {
           defaultUniforms.mouseY
         );
       }
+
+      // set count uniform if needed
+      if (this.programElement.totalNeeds.passCount && outerLoop !== undefined) {
+        if (this.countLoc === undefined) {
+          throw new Error("count location is undefined");
+        }
+        if (outerLoop !== undefined) {
+          gl.uniform1i(this.countLoc, outerLoop.counter);
+          // TODO get rid of this
+          /*
+          console.log(
+            "set the count uniform",
+            this.counter,
+            "outer rep",
+            outerLoop?.loopInfo.num
+          );
+          */
+        }
+        this.counter++;
+        const mod = outerLoop === undefined ? 1 : outerLoop.loopInfo.num;
+        this.counter %= mod;
+        //console.log(this.counter);
+      }
     }
 
     for (let i = 0; i < this.loopInfo.num; i++) {
       const newLast = i === this.loopInfo.num - 1;
       if (this.programElement instanceof WebGLProgramLeaf) {
         if (newLast && last && this.last) {
+          // TODO get rid of this
+          //console.log("last");
           // we are on the final pass of the final loop, so draw screen by
           // setting to the default framebuffer
           gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -256,7 +313,13 @@ export class WebGLProgramLoop {
           );
         }
       }
+
+      //this.counter++;
+      //this.counter %= outerLoop?.loopInfo.num;
+      // TODO get rid of this
+      //console.log("outer counter", this.counter);
     }
+
     // swap the textures back if we were temporarily using a channel texture
     if (savedTexture !== undefined) {
       const target = this.loopInfo.target as number;
