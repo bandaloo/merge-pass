@@ -90,6 +90,14 @@ export function ternary<T extends Vec4, U extends Vec4>(
   success: T,
   failure: U
 ): TernaryExpr<T, U>;
+/**
+ * creates a ternary expression; the boolean expression is if all the floats
+ * given are greater than 0
+ * @param floats if all these floats (or the single float) are above 0, then
+ * evaluates to success expression
+ * @param success
+ * @param failure
+ */
 export function ternary(
   floats: (Float | number)[] | Float | number | null,
   success: any,

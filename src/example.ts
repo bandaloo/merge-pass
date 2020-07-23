@@ -238,25 +238,22 @@ const demos: Demos = {
   region: (channels: TexImageSource[] = []) => {
     const offset = MP.op(MP.a1("sin", MP.time()), "/", 5);
     const merger = new MP.Merger(
-      //[MP.region([0, 0, 0.5, 0.5], MP.brightness(0.3), MP.brightness(-0.3))],
-      //[MP.region([0.1, 0.1, 0.5, 0.5], MP.blur2d(1, 1), MP.brightness(0.1))],
-      //[MP.region([0.1, 0.1, 0.5, 0.5], MP.edge("dark"), MP.brightness(0.1))],
       [
         MP.region(
           [MP.op(offset, "+", 0.2), 0.2, MP.op(offset, "+", 0.8), 0.8],
-          //[0, 0, 0.5, 0.5],
           MP.loop([
             MP.blur2d(),
             MP.edge("dark"),
             MP.brightness(MP.getcomp(MP.channel(0), "r")),
-            //MP.region([0, 0, 0.5, 0.5], MP.brightness(-0.2), MP.fcolor()),
+            MP.region(
+              [0.3, 0.3, 0.7, 0.7],
+              MP.loop([MP.blur2d(), MP.brightness(-0.5)]),
+              MP.fcolor()
+            ),
           ]),
-          //MP.fcolor()
           MP.brightness(-0.2)
         ),
-        //MP.brightness(-0.2),
       ],
-      //[MP.region([0.1, 0.1, 0.5, 0.5], MP.channel(0), MP.brightness(0.1))],
       sourceCanvas,
       gl,
       { channels: channels }
@@ -274,16 +271,6 @@ const demos: Demos = {
         MP.hsv2rgb(
           (c = MP.changecomp(MP.rgb2hsv(MP.fcolor()), MP.mut(0.5), "r", "+"))
         ),
-        /*
-        MP.ternary(
-          [1, MP.a1("cos", MP.time()), 3],
-          //MP.a1("cos", MP.time()),
-          MP.hsv2rgb(
-            (c = MP.changecomp(MP.rgb2hsv(MP.fcolor()), MP.mut(0.5), "r", "+"))
-          ),
-          MP.fcolor()
-        ),
-        */
       ],
       sourceCanvas,
       gl
@@ -946,7 +933,7 @@ const stripes = (t: number, frames: number) => {
   if (frames === 0) {
     x.fillStyle = "black";
     x.fillRect(0, 0, 960, 540);
-    x.font = "99px monospace";
+    x.font = "99px Helvetica, sans-serif";
     x.fillStyle = "white";
     x.textAlign = "center";
     x.textBaseline = "middle";

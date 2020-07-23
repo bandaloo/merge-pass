@@ -268,7 +268,9 @@ export class EffectLoop implements EffectLike, Generable {
   /** @ignore */
   regionWrap(space: (Float | number)[], failure: Vec4, finalPath = true) {
     this.effects = this.effects.map((e, index) =>
-      e instanceof EffectLoop /* && !(e instanceof ExprVec4) */
+      // loops that aren't all the way to the right can't terminate the count ternery
+      // don't wrap fcolors in a ternery (it's redundant)
+      e instanceof EffectLoop
         ? e.regionWrap(space, failure, index === this.effects.length - 1)
         : new SetColorExpr(
             region(
@@ -302,6 +304,7 @@ type EffectElement = ExprVec4 | EffectLoop;
  * been updated in the current loop
  */
 export interface UniformLocs {
+  // the counter is what enables expressions to exist across multiple programs
   [name: string]: { locs: WebGLUniformLocation[]; counter: number };
 }
 

@@ -80,36 +80,6 @@ export class WebGLProgramLoop {
         );
       }
 
-      // TODO get rid of repeated code
-
-      // get the time uniform location
-      /*
-      if (this.programElement.totalNeeds.timeUniform) {
-        gl.useProgram(this.programElement.program);
-        const timeLoc = gl.getUniformLocation(
-          this.programElement.program,
-          "uTime"
-        );
-        if (timeLoc === null) {
-          throw new Error("could not get the time uniform location");
-        }
-        this.timeLoc = timeLoc;
-      }
-
-      // get the mouse uniform location
-      if (this.programElement.totalNeeds.mouseUniform) {
-        gl.useProgram(this.programElement.program);
-        const mouseLoc = gl.getUniformLocation(
-          this.programElement.program,
-          "uMouse"
-        );
-        if (mouseLoc === null) {
-          throw new Error("could not get the mouse uniform location");
-        }
-        this.mouseLoc = mouseLoc;
-      }
-      */
-
       if (this.programElement.totalNeeds.timeUniform) {
         this.timeLoc = getLoc(this.programElement, gl, "uTime");
       }
@@ -182,7 +152,6 @@ export class WebGLProgramLoop {
         }
         gl.activeTexture(gl.TEXTURE1);
         if (this.loopInfo.target === -1) {
-          //console.log("binding scene to the saved texture", savedTexture);
           gl.bindTexture(gl.TEXTURE_2D, (savedTexture as TexWrapper).tex);
         } else {
           gl.bindTexture(gl.TEXTURE_2D, tex.scene.tex);
@@ -237,20 +206,10 @@ export class WebGLProgramLoop {
         }
         if (outerLoop !== undefined) {
           gl.uniform1i(this.countLoc, outerLoop.counter);
-          // TODO get rid of this
-          /*
-          console.log(
-            "set the count uniform",
-            this.counter,
-            "outer rep",
-            outerLoop?.loopInfo.num
-          );
-          */
         }
         this.counter++;
         const mod = outerLoop === undefined ? 1 : outerLoop.loopInfo.num;
         this.counter %= mod;
-        //console.log(this.counter);
       }
     }
 
@@ -258,8 +217,6 @@ export class WebGLProgramLoop {
       const newLast = i === this.loopInfo.num - 1;
       if (this.programElement instanceof WebGLProgramLeaf) {
         if (newLast && last && this.last) {
-          // TODO get rid of this
-          //console.log("last");
           // we are on the final pass of the final loop, so draw screen by
           // setting to the default framebuffer
           gl.bindFramebuffer(gl.FRAMEBUFFER, null);
@@ -313,11 +270,6 @@ export class WebGLProgramLoop {
           );
         }
       }
-
-      //this.counter++;
-      //this.counter %= outerLoop?.loopInfo.num;
-      // TODO get rid of this
-      //console.log("outer counter", this.counter);
     }
 
     // swap the textures back if we were temporarily using a channel texture

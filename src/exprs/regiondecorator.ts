@@ -70,6 +70,13 @@ export function region<U extends Vec4>(
   success: EffectLoop,
   failure: U
 ): EffectLoop;
+/**
+ * restrict an effect to a region of the screen
+ * @param space top left, top right, bottom left, bottom right corners of the
+ * region
+ * @param success expression for being inside the region
+ * @param failure expression for being outside the region
+ */
 export function region(space: (Float | number)[], success: any, failure: any) {
   const floats = space.map((f) => wrapInValue(f));
 
@@ -79,11 +86,7 @@ export function region(space: (Float | number)[], success: any, failure: any) {
 
   return ternary(
     createDifferenceFloats(floats),
-    //success instanceof Expr ? success.brandExprWithRegion(floats) : success,
-    //failure instanceof Expr ? failure.brandExprWithRegion(floats) : failure
     success.brandExprWithRegion(floats),
-    // null means the ternary will only be true on the first pass
-    //new TernaryExpr(null, failure.brandExprWithRegion(floats), fcolor())
     failure.brandExprWithRegion(floats)
   );
 }
