@@ -13,7 +13,6 @@ import {
 } from "./expr";
 import { fcolor } from "./fragcolorexpr";
 import { pvec2, vec4 } from "./vecexprs";
-import { replaceSampler } from "../utils";
 
 /** godrays expression */
 export class GodRaysExpr extends ExprVec4 {
@@ -81,7 +80,6 @@ export class GodRaysExpr extends ExprVec4 {
       this.externalFuncs.push(glslFuncs.depth2occlusion);
     }
     this.externalFuncs.push(customGodRayFunc);
-    //this.needs.extraBuffers = new Set([samplerNum]);
     this.brandExprWithChannel(this.funcIndex, samplerNum);
   }
 

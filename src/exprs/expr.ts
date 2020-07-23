@@ -217,8 +217,6 @@ export abstract class Expr implements Parseable, EffectLike {
   brandExprWithRegion(space: Float[]) {
     brandWithRegion(this, this.funcIndex, space);
     for (const v of this.sourceLists.values) {
-      // TODO get rid of this
-      //console.log("brand", v);
       v.brandExprWithRegion(space);
     }
     return this;

@@ -955,6 +955,26 @@ const stripes = (t: number, frames: number) => {
   x.drawImage(c, 0, k + 2);
 };
 
+const higherOrderSpiral = (
+  dots: [number, number, number],
+  background: [number, number, number],
+  num = 50,
+  size = 1,
+  speed = 1
+) => (t: number, frames: number) => {
+  x.fillStyle = R(...background);
+  x.fillRect(0, 0, 960, 540);
+  let d;
+  for (let i = num; (i -= 0.5); i > 0) {
+    x.beginPath();
+    d = 2 * C((2 + S(t / 99)) * 2 * i * speed);
+    x.arc(480 + d * 10 * C(i) * i, 270 + d * 9 * S(i) * i, i * size, 0, 44 / 7);
+    const fade = i / num;
+    x.fillStyle = R(dots[0] * fade, dots[1] * fade, dots[2] * fade);
+    x.fill();
+  }
+};
+
 const redSpiral = (t: number, frames: number) => {
   x.fillStyle = "white";
   x.fillRect(0, 0, 960, 540);
@@ -1174,7 +1194,8 @@ const draws: Draws = {
     higherOrderWaves(false),
     bitwiseGrid(),
   ],
-  motionblur: [redSpiral],
+  //motionblur: [higherOrderSpiral([101, 8, 252], [242, 128, 7], 25, 2, 3)],
+  motionblur: [higherOrderSpiral([40, 40, 40], [0, 235, 145], 25, 2, 3)],
   basicdof: [higherOrderPerspective(true), higherOrderPerspective(false)],
   lineardof: [
     higherOrderPerspective(true),

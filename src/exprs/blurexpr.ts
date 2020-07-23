@@ -3,13 +3,9 @@ import { glslFuncs } from "../glslfunctions";
 import { ExprVec4, PrimitiveVec2, SourceLists } from "./expr";
 
 /** @ignore */
-function genBlurSource(
-  direction: Vec2,
-  taps: 5 | 9 | 13,
-  buffer?: number
-): SourceLists {
+function genBlurSource(direction: Vec2, taps: 5 | 9 | 13): SourceLists {
   return {
-    sections: [`gauss${taps}${buffer === undefined ? "" : "_" + buffer}(`, ")"],
+    sections: [`gauss${taps}(`, ")"],
     values: [direction],
   };
 }
@@ -36,7 +32,7 @@ export class BlurExpr extends ExprVec4 {
     if (![5, 9, 13].includes(taps)) {
       throw new Error("taps for gauss blur can only be 5, 9 or 13");
     }
-    super(genBlurSource(direction, taps, samplerNum), ["uDirection"]);
+    super(genBlurSource(direction, taps), ["uDirection"]);
     this.direction = direction;
     this.externalFuncs = [tapsToFuncSource(taps)];
     this.brandExprWithChannel(0, samplerNum);

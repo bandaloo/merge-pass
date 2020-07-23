@@ -9,21 +9,7 @@ export function captureAndAppend(str: string, reg: RegExp, suffix: string) {
   return str.replace(reg, matches[0] + suffix);
 }
 
-// TODO get rid of this
 /** @ignore */
-export function replaceSampler(
-  fullString: string,
-  funcRegExp: RegExp,
-  samplerNum: number,
-  extra?: string // TODO see if this is even useful anymore
-) {
-  return captureAndAppend(
-    fullString.replace(/uSampler/g, "uBufferSampler" + samplerNum),
-    funcRegExp,
-    "_" + samplerNum + (extra === undefined ? "" : extra)
-  );
-}
-
 function nameExtractor(sourceLists: SourceLists, extra: string) {
   const origFuncName = sourceLists.sections[0];
   const ending = origFuncName[origFuncName.length - 1] === ")" ? ")" : "";
@@ -60,8 +46,6 @@ export function brandWithChannel(
     .join(newFuncName)
     .split("uSampler")
     .join("uBufferSampler" + samplerNum);
-  //needs.extraBuffers = new Set([samplerNum]);
-  //needs.neighborSample = false;
 }
 
 /** @ignore */
@@ -118,7 +102,5 @@ export function brandWithRegion(expr: Expr, funcIndex: number, space: Float[]) {
 
   // put the texture access wrapper at the beginning
   funcs.unshift(glslFuncs.texture2D_region);
-  // TODO get rid of this
-  console.log(sourceLists);
   expr.regionBranded = true;
 }

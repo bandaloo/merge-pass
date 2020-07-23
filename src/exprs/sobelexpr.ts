@@ -1,16 +1,6 @@
 import { glslFuncs } from "../glslfunctions";
 import { ExprVec4, tag } from "./expr";
 
-/** @ignore */
-/*
-function genSobelSource(samplerNum?: number): SourceLists {
-  return {
-    sections: [`sobel${samplerNum === undefined ? "" : "_" + samplerNum}()`],
-    values: [],
-  };
-}
-*/
-
 /** Sobel edge detection expression */
 export class SobelExpr extends ExprVec4 {
   constructor(samplerNum?: number) {
