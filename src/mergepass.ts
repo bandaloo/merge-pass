@@ -12,6 +12,8 @@ import {
 import { region } from "./exprs/regiondecorator";
 import { fcolor, FragColorExpr } from "./exprs/fragcolorexpr";
 import { ternary } from "./exprs/ternaryexpr";
+import { channel } from "./exprs/channelsampleexpr";
+import { getcomp } from "./exprs/getcompexpr";
 
 /** repetitions and callback for loop */
 export interface LoopInfo {
@@ -266,7 +268,7 @@ export class EffectLoop implements EffectLike, Generable {
   }
 
   /** @ignore */
-  regionWrap(space: (Float | number)[], failure: Vec4, finalPath = true) {
+  regionWrap(space: Float[] | number, failure: Vec4, finalPath = true) {
     this.effects = this.effects.map((e, index) =>
       // loops that aren't all the way to the right can't terminate the count ternery
       // don't wrap fcolors in a ternery (it's redundant)
@@ -275,7 +277,7 @@ export class EffectLoop implements EffectLike, Generable {
         : new SetColorExpr(
             region(
               space,
-              e.brandExprWithRegion(space.map((e) => wrapInValue(e))),
+              e.brandExprWithRegion(space),
               index === this.effects.length - 1 && finalPath
                 ? !(failure instanceof FragColorExpr)
                   ? ternary(null, failure, fcolor())
@@ -513,10 +515,6 @@ export class Merger {
    * [[mouse]] or [[nmouse]])
    */
   draw(timeVal = 0, mouseX = 0, mouseY = 0) {
-    // TODO double check if this is neccessary
-    //const originalFront = this.tex.front;
-    //const originalBack = this.tex.back;
-
     this.gl.activeTexture(this.gl.TEXTURE0);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.back.tex);
     sendTexture(this.gl, this.source);
@@ -558,10 +556,6 @@ export class Merger {
       this.programLoop.last,
       { timeVal: timeVal, mouseX: mouseX, mouseY: mouseY }
     );
-
-    // make sure front and back are in same order
-    //this.tex.front = originalFront;
-    //this.tex.back = originalBack;
   }
 
   /**
@@ -570,6 +564,7 @@ export class Merger {
    * to construct another [[Merger]] to use new effects
    */
   delete() {
+    // TODO do we have to do something with VertexAttribArray?
     // call bind with null on all textures
     for (let i = 0; i < 2 + this.tex.bufTextures.length; i++) {
       // this gets rid of final texture, scene texture and channels

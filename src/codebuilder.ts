@@ -154,7 +154,7 @@ export class CodeBuilder {
     if (program === null) {
       throw new Error("problem creating program");
     }
-    // TODO are we attaching the vertex shader more times than is necessary?
+
     gl.attachShader(program, vShader);
     gl.attachShader(program, fShader);
     shaders.push(fShader);
@@ -199,6 +199,7 @@ export class CodeBuilder {
       gl.uniform1i(location, b + 2);
     }
 
+    // TODO do we need to do this every time?
     // get attribute
     const position = gl.getAttribLocation(program, "aPosition");
     // enable the attribute

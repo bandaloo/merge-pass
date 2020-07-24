@@ -5,7 +5,6 @@
 import * as dat from "dat.gui";
 import * as MP from "./index";
 import { EdgeColorExpr } from "./exprs/edgecolorexpr";
-import { brightness } from "./exprs/brightnessexpr";
 
 const slow = false;
 
@@ -264,6 +263,26 @@ const demos: Demos = {
     };
   },
 
+  channelregion: (channels: TexImageSource[] = []) => {
+    const offset = MP.op(MP.a1("sin", MP.time()), "/", 5);
+    const merger = new MP.Merger(
+      [
+        MP.region(
+          0,
+          MP.loop([MP.blur2d(), MP.brightness(0.1)]),
+          MP.edge("dark")
+        ),
+      ],
+      sourceCanvas,
+      gl,
+      { channels: channels }
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
+
   huerotate: () => {
     let c: MP.ChangeCompExpr<MP.RGBToHSVExpr, MP.Mutable<MP.PrimitiveFloat>>;
     const merger = new MP.Merger(
@@ -457,7 +476,6 @@ const demos: Demos = {
   },
 
   basicdof: (channels: TexImageSource[] = []) => {
-    //const dof = MP.dof(MP.mut(0.3), MP.mut(0.01));
     const dof = MP.dof();
     const merger = new MP.Merger([dof], sourceCanvas, gl, {
       channels: channels,
@@ -551,11 +569,6 @@ const demos: Demos = {
           convertDepth: {
             threshold: 0.1,
             newColor: MP.mut(MP.pvec4(1, 1, 1, 1)),
-            /*
-            newColor: MP.hsv2rgb(
-              MP.vec4(MP.op(MP.time(), "/", 4), 0.5, 0.5, 1)
-            ),
-            */
           },
         })),
       ],
@@ -840,20 +853,9 @@ const demos: Demos = {
   },
 
   sobel: (channels: TexImageSource[] = []) => {
-    const merger = new MP.Merger(
-      [
-        MP.sobel(),
-        /*
-        MP.brightness(
-          MP.op(MP.getcomp(MP.invert(MP.monochrome(MP.sobel())), "r"), "*", -1)
-        ),
-        */
-        //MP.motionblur(),
-      ],
-      sourceCanvas,
-      gl,
-      { channels: [null] }
-    );
+    const merger = new MP.Merger([MP.sobel()], sourceCanvas, gl, {
+      channels: [null],
+    });
     return {
       merger: merger,
       change: () => {},
@@ -867,7 +869,7 @@ const demos: Demos = {
   )
   */
   edgecolor: (channels: TexImageSource[] = []) => {
-    let a: EdgeColorExpr;
+    let a: MP.EdgeColorExpr;
     const merger = new MP.Merger(
       [(a = MP.edgecolor(MP.mut(MP.pvec4(1.0, 1.0, 1.0, 1.0))))],
       sourceCanvas,
@@ -1209,6 +1211,7 @@ const draws: Draws = {
   depthedge: [higherOrderPerspective(true), higherOrderPerspective(false)],
   ternary: [stripes],
   region: [stripes, vectorSpiral],
+  channelregion: [stripes, higherOrderSpiral([255, 0, 0], [0, 0, 0])],
 };
 
 interface Notes {
@@ -1333,6 +1336,10 @@ const notes: Notes = {
     "you can use <code>ternary</code> expressions. if all the floats you pass in as the first argument " +
     "are all greater than zero, then the expression evaluates to the second argument. else, " +
     "it evaluates to the third argument. this also works with a single float instead of a list of floats",
+  region:
+    "<code>region</code> allows you to restrict an effect to an area of the screen. " +
+    "this can even be done with loops. regions can also contain nested regions, which " +
+    "become obscured by the boundaries of the outer region.",
 };
 
 const canvases = [sourceCanvas];
