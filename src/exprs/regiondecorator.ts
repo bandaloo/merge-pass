@@ -1,11 +1,12 @@
 import { Float, Vec2, Vec3, Vec4 } from "../exprtypes";
-import { EffectLoop } from "../mergepass";
-import { PrimitiveFloat, wrapInValue } from "./expr";
+import { EffectLoop, loop } from "../mergepass";
+import { PrimitiveFloat, wrapInValue, n2e } from "./expr";
 import { getcomp } from "./getcompexpr";
 import { pos } from "./normfragcoordexpr";
 import { op } from "./opexpr";
 import { ternary, TernaryExpr } from "./ternaryexpr";
 import { channel } from "./channelsampleexpr";
+import { fcolor } from "./fragcolorexpr";
 
 // form: x1, y1, x2, y2
 function createDifferenceFloats(floats: Float[]) {
@@ -28,44 +29,64 @@ function createDifferenceFloats(floats: Float[]) {
 }
 
 export function region<T extends Float, U extends Float>(
-  space: (Float | number)[] | number,
+  space: (Float | number)[] | Float | number,
   success: T,
-  failure: U
+  failure: U,
+  not?: boolean
 ): TernaryExpr<T, U>;
 export function region<T extends Float>(
-  space: (Float | number)[] | number,
+  space: (Float | number)[] | Float | number,
   success: T,
-  failure: number
+  failure: number,
+  not?: boolean
 ): TernaryExpr<T, PrimitiveFloat>;
 export function region<U extends Float>(
-  space: (Float | number)[] | number,
+  space: (Float | number)[] | Float | number,
   success: number,
-  failure: U
+  failure: U,
+  not?: boolean
 ): TernaryExpr<PrimitiveFloat, U>;
 export function region(
-  space: (Float | number)[] | number,
+  space: (Float | number)[] | Float | number,
   success: number,
-  failure: number
+  failure: number,
+  not?: boolean
 ): TernaryExpr<PrimitiveFloat, PrimitiveFloat>;
 export function region<T extends Vec2, U extends Vec2>(
-  space: (Float | number)[] | number,
+  space: (Float | number)[] | Float | number,
   success: T,
-  failure: U
+  failure: U,
+  not?: boolean
 ): TernaryExpr<T, U>;
 export function region<T extends Vec3, U extends Vec3>(
-  space: (Float | number)[] | number,
+  space: (Float | number)[] | Float | number,
   success: T,
-  failure: U
+  failure: U,
+  not?: boolean
 ): TernaryExpr<T, U>;
 export function region<T extends Vec4, U extends Vec4>(
-  space: (Float | number)[] | number,
+  space: (Float | number)[] | Float | number,
   success: T,
-  failure: U
+  failure: U,
+  not?: boolean
 ): TernaryExpr<T, U>;
 export function region<U extends Vec4>(
-  space: (Float | number)[] | number,
+  space: (Float | number)[] | Float | number,
   success: EffectLoop,
-  failure: U
+  failure: U,
+  not?: boolean
+): EffectLoop;
+export function region<T extends Vec4>(
+  space: (Float | number)[] | Float | number,
+  success: T,
+  failure: EffectLoop,
+  not?: boolean
+): EffectLoop;
+export function region<U extends Vec4>(
+  space: (Float | number)[] | Float | number,
+  success: EffectLoop,
+  failure: EffectLoop,
+  not?: boolean
 ): EffectLoop;
 /**
  * restrict an effect to a region of the screen
@@ -73,24 +94,45 @@ export function region<U extends Vec4>(
  * region, or just a number if you wish to sample from a channel as the region
  * @param success expression for being inside the region
  * @param failure expression for being outside the region
+ * @param not whether to invert the region
  */
 export function region(
-  space: (Float | number)[] | number,
+  space: (Float | number)[] | Float | number,
   success: any,
-  failure: any
+  failure: any,
+  not = false
 ) {
-  const floats =
-    typeof space !== "number" ? space.map((f) => wrapInValue(f)) : space;
+  const floats: Float[] | Float = Array.isArray(space)
+    ? space.map((f) => wrapInValue(f))
+    : typeof space === "number"
+    ? n2e(space)
+    : space;
+
+  if (failure instanceof EffectLoop) {
+    if (!(success instanceof EffectLoop)) {
+      console.log("invert...");
+      [success, failure] = [failure, success]; // swap the order
+      not = !not; // invert the region
+      console.log("not", not);
+    }
+  }
 
   if (success instanceof EffectLoop) {
-    return success.regionWrap(floats, failure);
+    if (!(failure instanceof EffectLoop)) {
+      console.log("loop...");
+      return success.regionWrap(floats, failure, true, not);
+    }
+    // double loop, so we have to do separately
+    return loop([
+      success.regionWrap(floats, fcolor(), false, not),
+      failure.regionWrap(floats, fcolor(), true, !not),
+    ]);
   }
 
   return ternary(
-    typeof floats === "number"
-      ? getcomp(channel(floats), "r")
-      : createDifferenceFloats(floats),
+    Array.isArray(floats) ? createDifferenceFloats(floats) : floats,
     success.brandExprWithRegion(floats),
-    failure.brandExprWithRegion(floats)
+    failure.brandExprWithRegion(floats),
+    not
   );
 }

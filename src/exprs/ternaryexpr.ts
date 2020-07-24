@@ -9,10 +9,11 @@ import {
 function genTernarySourceList(
   floats: Float[] | null,
   success: AllVals,
-  failure: AllVals
+  failure: AllVals,
+  not: boolean
 ) {
   const sourceList: SourceLists = {
-    sections: ["(("],
+    sections: [`(${not ? "!" : ""}(`],
     values: [],
   };
 
@@ -41,8 +42,8 @@ export class TernaryExpr<T extends AllVals, U extends AllVals> extends Op<T> {
   success: T;
   failure: U;
 
-  constructor(floats: Float[] | null, success: T, failure: U) {
-    super(success, genTernarySourceList(floats, success, failure), [
+  constructor(floats: Float[] | null, success: T, failure: U, not: boolean) {
+    super(success, genTernarySourceList(floats, success, failure, not), [
       ...(floats !== null
         ? Array.from(floats, (val, index) => "uFloat" + index)
         : []),
@@ -58,37 +59,44 @@ export class TernaryExpr<T extends AllVals, U extends AllVals> extends Op<T> {
 export function ternary<T extends Float, U extends Float>(
   floats: (Float | number)[] | Float | number | null,
   success: T,
-  failure: U
+  failure: U,
+  not?: boolean
 ): TernaryExpr<T, U>;
 export function ternary<T extends Float>(
   floats: (Float | number)[] | Float | number | null,
   success: T,
-  failure: number
+  failure: number,
+  not?: boolean
 ): TernaryExpr<T, PrimitiveFloat>;
 export function ternary<U extends Float>(
   floats: (Float | number)[] | Float | number | null,
   success: number,
-  failure: U
+  failure: U,
+  not?: boolean
 ): TernaryExpr<PrimitiveFloat, U>;
 export function ternary(
   floats: (Float | number)[] | Float | number | null,
   success: number,
-  failure: number
+  failure: number,
+  not?: boolean
 ): TernaryExpr<PrimitiveFloat, PrimitiveFloat>;
 export function ternary<T extends Vec2, U extends Vec2>(
   floats: (Float | number)[] | Float | number | null,
   success: T,
-  failure: U
+  failure: U,
+  not?: boolean
 ): TernaryExpr<T, U>;
 export function ternary<T extends Vec3, U extends Vec3>(
   floats: (Float | number)[] | Float | number | null,
   success: T,
-  failure: U
+  failure: U,
+  not?: boolean
 ): TernaryExpr<T, U>;
 export function ternary<T extends Vec4, U extends Vec4>(
   floats: (Float | number)[] | Float | number | null,
   success: T,
-  failure: U
+  failure: U,
+  not?: boolean
 ): TernaryExpr<T, U>;
 /**
  * creates a ternary expression; the boolean expression is if all the floats
@@ -97,15 +105,17 @@ export function ternary<T extends Vec4, U extends Vec4>(
  * evaluates to success expression
  * @param success
  * @param failure
+ * @param not whether to invert the ternary
  */
 export function ternary(
   floats: (Float | number)[] | Float | number | null,
   success: any,
-  failure: any
+  failure: any,
+  not = false
 ) {
   // wrap single float in array if need be
   if (!Array.isArray(floats) && floats !== null)
     floats = [floats].map((f) => wrapInValue(f));
   // TODO get rid of this cast
-  return new TernaryExpr(floats as any, success, failure);
+  return new TernaryExpr(floats as any, success, failure, not);
 }

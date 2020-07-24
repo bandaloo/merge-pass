@@ -52,10 +52,10 @@ export function brandWithChannel(
 export function brandWithRegion(
   expr: Expr,
   funcIndex: number,
-  space: Float[] | number
+  space: Float[] | Float
 ) {
-  // if it's a channel region we can't do region wrapping, so do nothing
-  if (typeof space === "number") return;
+  // if it's not a rectangle region we can't do anything so just return
+  if (!Array.isArray(space)) return;
   const sourceLists = expr.sourceLists;
   const funcs = expr.externalFuncs;
   const needs = expr.needs;

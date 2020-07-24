@@ -59,7 +59,7 @@ interface Parseable {
   /** returns the GLSL type as a string */
   typeString(): TypeString;
 
-  brandExprWithRegion(space: Float[] | number): Parseable;
+  brandExprWithRegion(space: Float[] | Float): Parseable;
 }
 
 export interface Applicable {
@@ -217,7 +217,7 @@ export abstract class Expr implements Parseable, EffectLike {
     return this;
   }
 
-  brandExprWithRegion(space: Float[] | number) {
+  brandExprWithRegion(space: Float[] | Float) {
     brandWithRegion(this, this.funcIndex, space);
     for (const v of this.sourceLists.values) {
       v.brandExprWithRegion(space);
@@ -302,7 +302,7 @@ export class Mutable<T extends Primitive>
     return 0;
   }
 
-  brandExprWithRegion(space: Float[] | number) {
+  brandExprWithRegion(space: Float[] | Float) {
     return this;
   }
 }
@@ -342,7 +342,7 @@ export abstract class Primitive implements Parseable, Applicable, EffectLike {
     return 0;
   }
 
-  brandExprWithRegion(space: Float[] | number) {
+  brandExprWithRegion(space: Float[] | Float) {
     return this;
   }
 }
@@ -562,7 +562,7 @@ export class WrappedExpr<T extends AllVals> implements Parseable {
     return this.expr.getSampleNum();
   }
 
-  brandExprWithRegion(space: Float[] | number): Parseable {
+  brandExprWithRegion(space: Float[] | Float): Parseable {
     return this.expr.brandExprWithRegion(space);
   }
 }

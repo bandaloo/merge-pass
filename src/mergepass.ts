@@ -1,19 +1,17 @@
 import { CodeBuilder } from "./codebuilder";
-import { ExprVec4, wrapInValue, Needs } from "./exprs/expr";
+import { ExprVec4, Needs } from "./exprs/expr";
+import { fcolor, FragColorExpr } from "./exprs/fragcolorexpr";
+import { region } from "./exprs/regiondecorator";
 import { input } from "./exprs/scenesampleexpr";
 import { SetColorExpr } from "./exprs/setcolorexpr";
-import { Vec4, AllVals, Float } from "./exprtypes";
+import { ternary } from "./exprs/ternaryexpr";
+import { Float, Vec4 } from "./exprtypes";
 import { settings } from "./settings";
 import {
   updateNeeds,
   WebGLProgramLeaf,
   WebGLProgramLoop,
 } from "./webglprogramloop";
-import { region } from "./exprs/regiondecorator";
-import { fcolor, FragColorExpr } from "./exprs/fragcolorexpr";
-import { ternary } from "./exprs/ternaryexpr";
-import { channel } from "./exprs/channelsampleexpr";
-import { getcomp } from "./exprs/getcompexpr";
 
 /** repetitions and callback for loop */
 export interface LoopInfo {
@@ -268,12 +266,17 @@ export class EffectLoop implements EffectLike, Generable {
   }
 
   /** @ignore */
-  regionWrap(space: Float[] | number, failure: Vec4, finalPath = true) {
+  regionWrap(
+    space: Float[] | Float,
+    failure: Vec4,
+    finalPath = true,
+    not: boolean
+  ) {
     this.effects = this.effects.map((e, index) =>
       // loops that aren't all the way to the right can't terminate the count ternery
       // don't wrap fcolors in a ternery (it's redundant)
       e instanceof EffectLoop
-        ? e.regionWrap(space, failure, index === this.effects.length - 1)
+        ? e.regionWrap(space, failure, index === this.effects.length - 1, not)
         : new SetColorExpr(
             region(
               space,
@@ -282,7 +285,8 @@ export class EffectLoop implements EffectLike, Generable {
                 ? !(failure instanceof FragColorExpr)
                   ? ternary(null, failure, fcolor())
                   : failure
-                : fcolor()
+                : fcolor(),
+              not
             )
           )
     );

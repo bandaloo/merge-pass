@@ -264,13 +264,33 @@ const demos: Demos = {
   },
 
   channelregion: (channels: TexImageSource[] = []) => {
-    const offset = MP.op(MP.a1("sin", MP.time()), "/", 5);
     const merger = new MP.Merger(
       [
         MP.region(
-          0,
+          MP.getcomp(MP.channel(0), "r"),
           MP.loop([MP.blur2d(), MP.brightness(0.1)]),
-          MP.edge("dark")
+          MP.brightness(-0.3, MP.edge("dark"))
+        ),
+        MP.fxaa(),
+      ],
+      sourceCanvas,
+      gl,
+      { channels: channels }
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
+
+  loopregion: (channels: TexImageSource[] = []) => {
+    const merger = new MP.Merger(
+      [
+        MP.region(
+          MP.getcomp(MP.channel(0), "r"),
+          MP.loop([MP.blur2d(), MP.brightness(0.3)]),
+          MP.loop([MP.blur2d(3, 3), MP.brightness(-0.5), MP.edge("light")]),
+          true
         ),
       ],
       sourceCanvas,
@@ -1212,6 +1232,7 @@ const draws: Draws = {
   ternary: [stripes],
   region: [stripes, vectorSpiral],
   channelregion: [stripes, higherOrderSpiral([255, 0, 0], [0, 0, 0])],
+  loopregion: [stripes, higherOrderSpiral([255, 0, 0], [0, 0, 0])],
 };
 
 interface Notes {
@@ -1340,6 +1361,13 @@ const notes: Notes = {
     "<code>region</code> allows you to restrict an effect to an area of the screen. " +
     "this can even be done with loops. regions can also contain nested regions, which " +
     "become obscured by the boundaries of the outer region.",
+  loopregion: "a region can contain loops on one side or both",
+  channelregion:
+    "instead of a rectangular region, you can pass in any float expression. " +
+    "if that expression evaluates to a number > 0, then it is inside, and outside otherwise. " +
+    "you can invert the region by passing in <code>true</code> as the fourth and final argument. " +
+    "unlike rectangular regions, texture lookups won't be clamped to inside the region. " +
+    "this is also true for normal, rectangular regions",
 };
 
 const canvases = [sourceCanvas];
