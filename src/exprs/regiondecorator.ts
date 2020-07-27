@@ -1,11 +1,12 @@
 import { Float, Vec2, Vec3, Vec4 } from "../exprtypes";
 import { EffectLoop, loop } from "../mergepass";
 import { PrimitiveFloat, wrapInValue } from "./expr";
-import { fcolor } from "./fragcolorexpr";
 import { getcomp } from "./getcompexpr";
 import { pos } from "./normfragcoordexpr";
 import { op } from "./opexpr";
 import { ternary, TernaryExpr } from "./ternaryexpr";
+import { channel } from "./channelsampleexpr";
+import { fcolor } from "./fragcolorexpr";
 
 // form: x1, y1, x2, y2
 function createDifferenceFloats(floats: Float[]) {

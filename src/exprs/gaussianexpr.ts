@@ -1,6 +1,6 @@
 import { Float } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
-import { ExprFloat, n2p, PrimitiveFloat, tag, wrapInValue } from "./expr";
+import { ExprFloat, PrimitiveFloat, tag, wrapInValue } from "./expr";
 
 /** gaussian expression */
 export class GaussianExpr extends ExprFloat {

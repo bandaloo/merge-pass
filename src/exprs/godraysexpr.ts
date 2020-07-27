@@ -4,7 +4,6 @@ import {
   ExprVec4,
   float,
   mut,
-  n2p,
   PrimitiveFloat,
   PrimitiveVec2,
   PrimitiveVec4,
@@ -92,25 +91,25 @@ export class GodRaysExpr extends ExprVec4 {
   /** sets the exposure */
   setExposure(exposure: PrimitiveFloat | number) {
     this.setUniform("uExposure" + this.id, exposure);
-    this.exposure = n2p(exposure);
+    this.exposure = wrapInValue(exposure);
   }
 
   /** sets the decay */
   setDecay(decay: PrimitiveFloat | number) {
     this.setUniform("uDecay" + this.id, decay);
-    this.decay = n2p(decay);
+    this.decay = wrapInValue(decay);
   }
 
   /** sets the density */
   setDensity(density: PrimitiveFloat | number) {
     this.setUniform("uDensity" + this.id, density);
-    this.density = n2p(density);
+    this.density = wrapInValue(density);
   }
 
   /** sets the weight */
   setWeight(weight: PrimitiveFloat | number) {
     this.setUniform("uWeight" + this.id, weight);
-    this.weight = n2p(weight);
+    this.weight = wrapInValue(weight);
   }
 
   /** sets the light position */
@@ -124,7 +123,7 @@ export class GodRaysExpr extends ExprVec4 {
 
   setThreshold(threshold: PrimitiveFloat | number) {
     this.setUniform("uThreshold" + this.id, threshold);
-    this.threshold = n2p(threshold);
+    this.threshold = wrapInValue(threshold);
   }
 
   setNewColor(newColor: PrimitiveVec4) {

@@ -150,7 +150,7 @@ export abstract class Expr implements Parseable, EffectLike {
     newVal = wrapInValue(newVal);
     const originalName = name;
     if (typeof newVal === "number") {
-      newVal = n2p(newVal);
+      newVal = wrapInValue(newVal);
     }
     if (!(newVal instanceof Primitive)) {
       throw new Error("cannot set a non-primitive");
@@ -319,7 +319,7 @@ export function mut(val: number, name?: string): Mutable<PrimitiveFloat>;
  * @param name the optional name for the uniform
  */
 export function mut<T extends Primitive>(val: T | number, name?: string) {
-  const primitive = typeof val === "number" ? n2p(val) : val;
+  const primitive = typeof val === "number" ? wrapInValue(val) : val;
   return new Mutable(primitive, name);
 }
 
@@ -435,7 +435,7 @@ export abstract class BasicVec extends Expr {
     if (index < 0 || index >= this.values.length) {
       throw new Error("out of bounds of setting component");
     }
-    this.setUniform(this.defaultNames[index] + this.id, n2p(primitive));
+    this.setUniform(this.defaultNames[index] + this.id, wrapInValue(primitive));
   }
 }
 
@@ -471,7 +471,7 @@ export class BasicFloat extends Expr {
   }
 
   setVal(primitive: PrimitiveFloat | number) {
-    this.setUniform("uFloat" + this.id, n2p(primitive));
+    this.setUniform("uFloat" + this.id, wrapInValue(primitive));
   }
 
   typeString() {
@@ -487,7 +487,7 @@ export class ExprFloat extends Expr {
   }
 
   setVal(primitive: PrimitiveFloat | number) {
-    this.setUniform("uFloat" + this.id, n2p(primitive));
+    this.setUniform("uFloat" + this.id, wrapInValue(primitive));
   }
 
   typeString() {
@@ -496,7 +496,7 @@ export class ExprFloat extends Expr {
 }
 
 export function float(value: Float | number) {
-  if (typeof value === "number") value = n2p(value);
+  if (typeof value === "number") value = wrapInValue(value);
   return new BasicFloat({ sections: ["", ""], values: [value] }, ["uFloat"]);
 }
 
@@ -577,13 +577,6 @@ export class Operator<T extends AllVals> extends Expr {
   typeString(): TypeString {
     return this.ret.typeString() as TypeString;
   }
-}
-
-// TODO see if we need this
-/** number to primitive float */
-export function n2p(num: number | PrimitiveFloat) {
-  if (num instanceof PrimitiveFloat) return num;
-  return new PrimitiveFloat(num);
 }
 
 /** creates a primitive float */

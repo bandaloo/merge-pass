@@ -1499,5 +1499,3 @@ function destroyAndCreate(str: string) {
 
 setTimeout(() => destroyAndCreate("redgreenswap"), 2000);
 */
-
-console.log("new version");

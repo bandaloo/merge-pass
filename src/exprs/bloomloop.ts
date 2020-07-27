@@ -10,10 +10,9 @@ import {
   cvec4,
   float,
   mut,
-
   PrimitiveFloat,
   tag,
-  wrapInValue
+  wrapInValue,
 } from "./expr";
 import { fcolor } from "./fragcolorexpr";
 import { op } from "./opexpr";
