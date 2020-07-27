@@ -1,5 +1,5 @@
 import { AllVals, Vec } from "../exprtypes";
-import { Operator as Op, PrimitiveFloat, wrapInValue, n2e } from "./expr";
+import { Operator as Op, PrimitiveFloat, wrapInValue } from "./expr";
 import { checkLegalComponents, typeStringToLength } from "./getcompexpr";
 
 export type ArithOp = "/" | "*" | "+" | "-";

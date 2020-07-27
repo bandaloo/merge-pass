@@ -522,6 +522,7 @@ export class Merger {
     this.gl.activeTexture(this.gl.TEXTURE0);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.back.tex);
     sendTexture(this.gl, this.source);
+    // TODO only do unbinding and rebinding in texture mode
     // TODO see if we need to unbind
     this.gl.bindTexture(this.gl.TEXTURE_2D, null);
 

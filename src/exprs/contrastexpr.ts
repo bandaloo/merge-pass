@@ -1,6 +1,6 @@
 import { Float, Vec4 } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
-import { ExprVec4, n2e, tag, PrimitiveFloat, n2p } from "./expr";
+import { ExprVec4, tag, PrimitiveFloat, n2p, wrapInValue } from "./expr";
 import { fcolor } from "./fragcolorexpr";
 
 export class ContrastExpr extends ExprVec4 {
@@ -27,5 +27,5 @@ export class ContrastExpr extends ExprVec4 {
  * fragment color)
  */
 export function contrast(val: Float | number, col?: Vec4) {
-  return new ContrastExpr(n2e(val), col);
+  return new ContrastExpr(wrapInValue(val), col);
 }

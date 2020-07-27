@@ -278,7 +278,6 @@ export const glslFuncs = {
 vec2 mod289_2(vec2 x) { return x - floor(x * (1.0 / 289.0)) * 289.0; }
 vec3 permute(vec3 x) { return mod289_3(((x*34.0)+1.0)*x); }`,
   // sobel adapted from https://gist.github.com/Hebali/6ebfc66106459aacee6a9fac029d0115
-  // TODO change sobel to sob or something
   sobel: `vec4 sobel() {
   vec2 uv = gl_FragCoord.xy / uResolution;
   vec4 k[8];

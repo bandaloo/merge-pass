@@ -1366,8 +1366,8 @@ const notes: Notes = {
     "instead of a rectangular region, you can pass in any float expression. " +
     "if that expression evaluates to a number > 0, then it is inside, and outside otherwise. " +
     "you can invert the region by passing in <code>true</code> as the fourth and final argument. " +
-    "unlike rectangular regions, texture lookups won't be clamped to inside the region. " +
-    "this is also true for normal, rectangular regions",
+    "this is also true for normal, rectangular regions. " +
+    "unlike rectangular regions, texture lookups won't be clamped to inside the region.",
 };
 
 const canvases = [sourceCanvas];
@@ -1499,3 +1499,5 @@ function destroyAndCreate(str: string) {
 
 setTimeout(() => destroyAndCreate("redgreenswap"), 2000);
 */
+
+console.log("new version");

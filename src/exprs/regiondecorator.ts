@@ -1,12 +1,11 @@
 import { Float, Vec2, Vec3, Vec4 } from "../exprtypes";
 import { EffectLoop, loop } from "../mergepass";
-import { PrimitiveFloat, wrapInValue, n2e } from "./expr";
+import { PrimitiveFloat, wrapInValue } from "./expr";
+import { fcolor } from "./fragcolorexpr";
 import { getcomp } from "./getcompexpr";
 import { pos } from "./normfragcoordexpr";
 import { op } from "./opexpr";
 import { ternary, TernaryExpr } from "./ternaryexpr";
-import { channel } from "./channelsampleexpr";
-import { fcolor } from "./fragcolorexpr";
 
 // form: x1, y1, x2, y2
 function createDifferenceFloats(floats: Float[]) {
@@ -105,21 +104,18 @@ export function region(
   const floats: Float[] | Float = Array.isArray(space)
     ? space.map((f) => wrapInValue(f))
     : typeof space === "number"
-    ? n2e(space)
+    ? wrapInValue(space)
     : space;
 
   if (failure instanceof EffectLoop) {
     if (!(success instanceof EffectLoop)) {
-      console.log("invert...");
       [success, failure] = [failure, success]; // swap the order
       not = !not; // invert the region
-      console.log("not", not);
     }
   }
 
   if (success instanceof EffectLoop) {
     if (!(failure instanceof EffectLoop)) {
-      console.log("loop...");
       return success.regionWrap(floats, failure, true, not);
     }
     // double loop, so we have to do separately

@@ -96,7 +96,6 @@ export abstract class Expr implements Parseable, EffectLike {
   regionBranded = false;
 
   constructor(sourceLists: SourceLists, defaultNames: string[]) {
-    // TODO update you needs based on sub-expressions!! values in sourceList
     this.id = "_id_" + Expr.count;
     Expr.count++;
     if (sourceLists.sections.length - sourceLists.values.length !== 1) {
@@ -580,25 +579,6 @@ export class Operator<T extends AllVals> extends Expr {
   }
 }
 
-export function n2e(num: number | Float): PrimitiveFloat;
-export function n2e(num: undefined): undefined;
-export function n2e(
-  num: number | Float | undefined
-): PrimitiveFloat | undefined;
-export function n2e(num: number | Float | undefined) {
-  if (num === undefined) return undefined;
-  if (
-    num instanceof PrimitiveFloat ||
-    num instanceof ExprFloat ||
-    num instanceof Operator ||
-    num instanceof Mutable ||
-    num instanceof WrappedExpr ||
-    num instanceof BasicFloat
-  )
-    return num;
-  return new PrimitiveFloat(num);
-}
-
 // TODO see if we need this
 /** number to primitive float */
 export function n2p(num: number | PrimitiveFloat) {
@@ -612,7 +592,15 @@ export function pfloat(num: number) {
 }
 
 /** @ignore */
-export function wrapInValue<T extends AllVals>(num: number | T) {
+export function wrapInValue(num: number): PrimitiveFloat;
+export function wrapInValue<T extends AllVals>(num: T | number): T;
+export function wrapInValue<T extends AllVals>(
+  num: T | number | undefined
+): T | PrimitiveFloat | undefined;
+export function wrapInValue<T extends AllVals>(
+  num: number | T | undefined
+): PrimitiveFloat | T | undefined {
+  if (num === undefined) return undefined;
   if (typeof num === "number") return pfloat(num);
   return num;
 }

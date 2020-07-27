@@ -10,9 +10,10 @@ import {
   cvec4,
   float,
   mut,
-  n2e,
+
   PrimitiveFloat,
   tag,
+  wrapInValue
 } from "./expr";
 import { fcolor } from "./fragcolorexpr";
 import { op } from "./opexpr";
@@ -114,10 +115,10 @@ export function bloom(
   reps?: number
 ) {
   return new BloomLoop(
-    n2e(threshold),
-    n2e(horizontal),
-    n2e(vertical),
-    n2e(boost),
+    wrapInValue(threshold),
+    wrapInValue(horizontal),
+    wrapInValue(vertical),
+    wrapInValue(boost),
     taps,
     reps
   );

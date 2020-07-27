@@ -1,7 +1,7 @@
 import { Float } from "../exprtypes";
 import { EffectLoop } from "../mergepass";
 import { gauss } from "./blurexpr";
-import { n2e, BasicFloat, PrimitiveFloat, mut, float } from "./expr";
+import { BasicFloat, float, mut, PrimitiveFloat, wrapInValue } from "./expr";
 import { vec2 } from "./vecexprs";
 
 /** 2D blur loop */
@@ -63,8 +63,8 @@ export function blur2d(
   samplerNum?: number
 ) {
   return new Blur2dLoop(
-    n2e(horizontalExpr),
-    n2e(verticalExpr),
+    wrapInValue(horizontalExpr),
+    wrapInValue(verticalExpr),
     reps,
     taps,
     samplerNum

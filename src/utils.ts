@@ -77,7 +77,6 @@ export function brandWithRegion(
     "float r_x_min, float r_y_min, float r_x_max, float r_y_max" +
     (ending === ")" ? ")" : ", ");
 
-  console.log(newFuncDeclaration);
   const origTextureName = "texture2D(";
   const newTextureName =
     "texture2D_region(r_x_min, r_y_min, r_x_max, r_y_max, ";

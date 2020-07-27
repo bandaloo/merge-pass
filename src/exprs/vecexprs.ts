@@ -3,11 +3,11 @@ import {
   BasicVec2,
   BasicVec3,
   BasicVec4,
-  n2e,
   PrimitiveVec2,
-  SourceLists,
   PrimitiveVec3,
   PrimitiveVec4,
+  SourceLists,
+  wrapInValue,
 } from "./expr";
 
 /** @ignore */
@@ -28,7 +28,9 @@ function vecSourceList(...components: Float[]): [SourceLists, string[]] {
 
 /** creates a basic vec2 expression */
 export function vec2(comp1: Float | number, comp2: Float | number) {
-  return new BasicVec2(...vecSourceList(...[comp1, comp2].map((c) => n2e(c))));
+  return new BasicVec2(
+    ...vecSourceList(...[comp1, comp2].map((c) => wrapInValue(c)))
+  );
 }
 
 /** creates a basic vec3 expression */
@@ -38,7 +40,7 @@ export function vec3(
   comp3: Float | number
 ) {
   return new BasicVec3(
-    ...vecSourceList(...[comp1, comp2, comp3].map((c) => n2e(c)))
+    ...vecSourceList(...[comp1, comp2, comp3].map((c) => wrapInValue(c)))
   );
 }
 
@@ -50,7 +52,7 @@ export function vec4(
   comp4: Float | number
 ) {
   return new BasicVec4(
-    ...vecSourceList(...[comp1, comp2, comp3, comp4].map((c) => n2e(c)))
+    ...vecSourceList(...[comp1, comp2, comp3, comp4].map((c) => wrapInValue(c)))
   );
 }
 

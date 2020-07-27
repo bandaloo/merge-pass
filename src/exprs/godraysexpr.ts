@@ -4,12 +4,12 @@ import {
   ExprVec4,
   float,
   mut,
-  n2e,
   n2p,
   PrimitiveFloat,
   PrimitiveVec2,
   PrimitiveVec4,
   tag,
+  wrapInValue,
 } from "./expr";
 import { fcolor } from "./fragcolorexpr";
 import { pvec2, vec4 } from "./vecexprs";
@@ -166,16 +166,16 @@ interface GodraysOptions {
 export function godrays(options: GodraysOptions = {}) {
   return new GodRaysExpr(
     options.color,
-    n2e(options.exposure),
-    n2e(options.decay),
-    n2e(options.density),
-    n2e(options.weight),
+    wrapInValue(options.exposure),
+    wrapInValue(options.decay),
+    wrapInValue(options.density),
+    wrapInValue(options.weight),
     options.lightPos,
     options.samplerNum,
     options.convertDepth === undefined
       ? undefined
       : {
-          threshold: n2e(options.convertDepth.threshold),
+          threshold: wrapInValue(options.convertDepth.threshold),
           newColor: options.convertDepth.newColor,
         }
   );

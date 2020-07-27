@@ -1,7 +1,7 @@
 import { Float } from "../exprtypes";
 import { EffectLoop, loop } from "../mergepass";
 import { channel } from "./channelsampleexpr";
-import { BasicFloat, float, mut, n2e, PrimitiveFloat } from "./expr";
+import { BasicFloat, float, mut, PrimitiveFloat, wrapInValue } from "./expr";
 import { fcolor } from "./fragcolorexpr";
 import { op } from "./opexpr";
 
@@ -37,5 +37,5 @@ export class MotionBlurLoop extends EffectLoop {
  * motion blur at all (defaults to 0.3)
  */
 export function motionblur(target?: number, persistence?: Float | number) {
-  return new MotionBlurLoop(target, n2e(persistence));
+  return new MotionBlurLoop(target, wrapInValue(persistence));
 }
