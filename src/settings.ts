@@ -6,4 +6,6 @@ export const settings = {
    * frame!)
    */
   verbosity: 0,
+  /** texture offset */
+  offset: 0,
 };

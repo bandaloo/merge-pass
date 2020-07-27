@@ -519,7 +519,7 @@ export class Merger {
    * [[mouse]] or [[nmouse]])
    */
   draw(timeVal = 0, mouseX = 0, mouseY = 0) {
-    this.gl.activeTexture(this.gl.TEXTURE0);
+    this.gl.activeTexture(this.gl.TEXTURE0 + settings.offset);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.back.tex);
     sendTexture(this.gl, this.source);
     // TODO only do unbinding and rebinding in texture mode
@@ -531,7 +531,7 @@ export class Merger {
       this.programLoop.getTotalNeeds().sceneBuffer &&
       this.tex.scene !== undefined
     ) {
-      this.gl.activeTexture(this.gl.TEXTURE1);
+      this.gl.activeTexture(this.gl.TEXTURE1 + settings.offset);
       this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.scene.tex);
       sendTexture(this.gl, this.source);
       // TODO see if we need to unbind
@@ -542,7 +542,7 @@ export class Merger {
     let counter = 0;
     for (const b of this.channels) {
       // TODO check for texture limit
-      this.gl.activeTexture(this.gl.TEXTURE2 + counter);
+      this.gl.activeTexture(this.gl.TEXTURE2 + counter + settings.offset);
       this.gl.bindTexture(
         this.gl.TEXTURE_2D,
         this.tex.bufTextures[counter].tex
@@ -573,7 +573,7 @@ export class Merger {
     // call bind with null on all textures
     for (let i = 0; i < 2 + this.tex.bufTextures.length; i++) {
       // this gets rid of final texture, scene texture and channels
-      this.gl.activeTexture(this.gl.TEXTURE0 + i);
+      this.gl.activeTexture(this.gl.TEXTURE0 + i + settings.offset);
       this.gl.bindTexture(this.gl.TEXTURE_2D, null);
     }
     // call bind with null on all vertex buffers (just 1)

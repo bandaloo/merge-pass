@@ -154,7 +154,7 @@ export class WebGLProgramLoop {
             "needs scene buffer, but scene texture is somehow undefined"
           );
         }
-        gl.activeTexture(gl.TEXTURE1);
+        gl.activeTexture(gl.TEXTURE1 + settings.offset);
         if (this.loopInfo.target === -1) {
           gl.bindTexture(gl.TEXTURE_2D, (savedTexture as TexWrapper).tex);
         } else {
@@ -164,7 +164,7 @@ export class WebGLProgramLoop {
 
       // bind all extra channel textures if needed
       for (const n of this.programElement.totalNeeds.extraBuffers) {
-        gl.activeTexture(gl.TEXTURE2 + n);
+        gl.activeTexture(gl.TEXTURE2 + n + settings.offset);
         gl.bindTexture(gl.TEXTURE_2D, tex.bufTextures[n].tex);
       }
 
@@ -238,7 +238,7 @@ export class WebGLProgramLoop {
         }
         // allows us to read from `texBack`
         // default sampler is 0, so `uSampler` uniform will always sample from texture 0
-        gl.activeTexture(gl.TEXTURE0);
+        gl.activeTexture(gl.TEXTURE0 + settings.offset);
         gl.bindTexture(gl.TEXTURE_2D, tex.back.tex);
         // use our last program as the draw program
         gl.drawArrays(gl.TRIANGLES, 0, 6);
@@ -252,11 +252,11 @@ export class WebGLProgramLoop {
 
         // deactivate and unbind all the channel textures needed
         for (const n of this.programElement.totalNeeds.extraBuffers) {
-          gl.activeTexture(gl.TEXTURE2 + n);
+          gl.activeTexture(gl.TEXTURE2 + n + settings.offset);
           gl.bindTexture(gl.TEXTURE_2D, null);
         }
 
-        gl.activeTexture(gl.TEXTURE1);
+        gl.activeTexture(gl.TEXTURE1 + settings.offset);
         gl.bindTexture(gl.TEXTURE_2D, null);
       } else {
         if (this.loopInfo.func !== undefined) {

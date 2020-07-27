@@ -190,13 +190,18 @@ export class CodeBuilder {
       // TODO allow for texture options for scene texture
       const location = gl.getUniformLocation(program, "uSceneSampler");
       // put the scene buffer in texture 1 (0 is used for the backbuffer)
-      gl.uniform1i(location, 1);
+      gl.uniform1i(location, 1 + settings.offset);
     }
     // set all sampler uniforms
     for (const b of this.totalNeeds.extraBuffers) {
       const location = gl.getUniformLocation(program, channelSamplerName(b));
       // offset the texture location by 2 (0 and 1 are used for scene and original)
-      gl.uniform1i(location, b + 2);
+      gl.uniform1i(location, b + 2 + settings.offset);
+    }
+    // set the default sampler if there is an offset
+    if (settings.offset !== 0) {
+      const location = gl.getUniformLocation(program, "uSampler");
+      gl.uniform1i(location, settings.offset);
     }
 
     // TODO do we need to do this every time?
