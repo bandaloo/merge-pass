@@ -843,7 +843,7 @@ const demos: Demos = {
   bloom: (channels: TexImageSource[] = []) => {
     const bloom = MP.bloom();
     const merger = new MP.Merger([bloom], sourceCanvas, gl, {
-      channels: channels,
+      channels: [null, null],
     });
 
     class BloomControls {
@@ -1368,6 +1368,10 @@ const notes: Notes = {
     "you can invert the region by passing in <code>true</code> as the fourth and final argument. " +
     "this is also true for normal, rectangular regions. " +
     "unlike rectangular regions, texture lookups won't be clamped to inside the region.",
+  bloom:
+    "this effect requires a temporary texture. the default assumes it is in channel 1 " +
+    "(since you might already have a depth texture in channel 0.) this can be changed with " +
+    "the fifth parameter <code>samplerNum</code> (not used in this example)",
 };
 
 const canvases = [sourceCanvas];

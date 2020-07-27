@@ -3,6 +3,7 @@ import { EffectLoop, loop } from "../mergepass";
 import { a2 } from "./arity2";
 import { gauss } from "./blurexpr";
 import { brightness } from "./brightnessexpr";
+import { channel } from "./channelsampleexpr";
 import { contrast } from "./contrastexpr";
 import {
   BasicFloat,
@@ -16,7 +17,6 @@ import {
 } from "./expr";
 import { fcolor } from "./fragcolorexpr";
 import { op } from "./opexpr";
-import { input } from "./scenesampleexpr";
 import { vec2 } from "./vecexprs";
 
 // TODO bloom uses `input` so it has to be the first
@@ -33,16 +33,21 @@ export class BloomLoop extends EffectLoop {
     horizontal: Float = float(mut(1)),
     vertical: Float = float(mut(1)),
     boost: Float = float(mut(1.3)),
+    samplerNum: number = 1,
     taps: 5 | 9 | 13 = 9,
     reps = 3
   ) {
     const bright = cfloat(
-      tag`((${fcolor()}.r + ${fcolor()}.g + ${fcolor()}.b) / 3.)`
+      tag`((${channel(samplerNum)}.r + ${channel(samplerNum)}.g + ${channel(
+        samplerNum
+      )}.b) / 3.)`
     );
     const step = a2("step", bright, threshold);
-    const col = cvec4(tag`vec4(${fcolor()}.rgb * (1. - ${step}), 1.)`);
+    const col = cvec4(
+      tag`vec4(${channel(samplerNum)}.rgb * (1. - ${step}), 1.)`
+    );
     const list = [
-      col,
+      loop([col]).target(samplerNum),
       loop(
         [
           gauss(vec2(horizontal, 0), taps),
@@ -51,8 +56,8 @@ export class BloomLoop extends EffectLoop {
           contrast(boost),
         ],
         reps
-      ),
-      op(fcolor(), "+", input()),
+      ).target(samplerNum),
+      op(fcolor(), "+", channel(samplerNum)),
     ];
     super(list, { num: 1 });
     this.threshold = threshold;
@@ -110,6 +115,7 @@ export function bloom(
   horizontal?: Float | number,
   vertical?: Float | number,
   boost?: Float | number,
+  samplerNum?: number,
   taps?: 5 | 9 | 13,
   reps?: number
 ) {
@@ -118,6 +124,7 @@ export function bloom(
     wrapInValue(horizontal),
     wrapInValue(vertical),
     wrapInValue(boost),
+    samplerNum,
     taps,
     reps
   );
