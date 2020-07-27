@@ -842,9 +842,14 @@ const demos: Demos = {
 
   bloom: (channels: TexImageSource[] = []) => {
     const bloom = MP.bloom();
-    const merger = new MP.Merger([bloom], sourceCanvas, gl, {
-      channels: [null, null],
-    });
+    const merger = new MP.Merger(
+      [MP.edgecolor(MP.vec4(0, 0, 0.4, 1)), bloom],
+      sourceCanvas,
+      gl,
+      {
+        channels: [null, null],
+      }
+    );
 
     class BloomControls {
       threshold = 0.4;
@@ -1172,7 +1177,7 @@ const bloomTest = (t: number, frames: number) => {
   x.fillRect(0, 0, 960, 540);
   const num = 8;
   for (let i = 0; i < num; i++) {
-    const c = 255 / (i + 1);
+    const c = 254 / (i + 1) + 1;
     const position = spacing * i - (spacing * (num - 1)) / 2;
     x.fillStyle = R(c, c, c);
     x.fillRect(

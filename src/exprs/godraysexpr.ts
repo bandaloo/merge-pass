@@ -13,6 +13,12 @@ import {
 import { fcolor } from "./fragcolorexpr";
 import { pvec2, vec4 } from "./vecexprs";
 
+/**
+ * @ignore
+ * the number of samples in the source code already
+ */
+const DEFAULT_SAMPLES = 100;
+
 /** godrays expression */
 export class GodRaysExpr extends ExprVec4 {
   col: Vec4;
@@ -33,6 +39,7 @@ export class GodRaysExpr extends ExprVec4 {
     weight: Float = mut(0.01),
     lightPos: Vec2 = mut(pvec2(0.5, 0.5)),
     samplerNum: number = 0,
+    numSamples: number = DEFAULT_SAMPLES,
     convertDepth?: { threshold: Float; newColor: Vec4 }
   ) {
     // TODO the metaprogramming here is not so good!
@@ -45,7 +52,9 @@ export class GodRaysExpr extends ExprVec4 {
     // TODO make this more generic
     // append the _<num> onto the function name
     // also add _depth if this is a version of the function that uses depth buffer
-    const customName = `godrays${convertDepth !== undefined ? "_depth" : ""}(`;
+    const customName = `godrays${convertDepth !== undefined ? "_depth" : ""}${
+      numSamples !== 100 ? "_s" + numSamples : ""
+    }(`;
     sourceLists.sections[0] = customName;
     super(sourceLists, [
       "uCol",
@@ -69,7 +78,13 @@ export class GodRaysExpr extends ExprVec4 {
     // will be 1 if needs to convert depth, and 0 otherwise
     this.funcIndex = ~~(convertDepth !== undefined);
 
-    let customGodRayFunc = glslFuncs.godrays.split("godrays(").join(customName);
+    let customGodRayFunc = glslFuncs.godrays
+      .split("godrays(")
+      .join(customName)
+      .replace(
+        `NUM_SAMPLES = ${DEFAULT_SAMPLES}`,
+        "NUM_SAMPLES = " + numSamples
+      );
 
     if (convertDepth !== undefined) {
       // with regex, uncomment the line in the source code that does the
@@ -146,6 +161,11 @@ interface GodraysOptions {
   weight?: Float | number;
   /** where the rays eminate from */
   lightPos?: Vec2;
+  /**
+   * number of samples; aka the quality (note that this cannot be changed at
+   * runtime, as looping by a non-constant does not play nice with shaders)
+   */
+  numSamples?: number;
   /** where to sample from */
   samplerNum?: number;
   /** information for how to convert a depth buffer into an occlusion buffer */
@@ -170,6 +190,7 @@ export function godrays(options: GodraysOptions = {}) {
     wrapInValue(options.density),
     wrapInValue(options.weight),
     options.lightPos,
+    options.numSamples,
     options.samplerNum,
     options.convertDepth === undefined
       ? undefined
