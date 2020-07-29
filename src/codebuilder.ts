@@ -32,7 +32,7 @@ uniform mediump vec2 uResolution;\n`;
  */
 export function channelSamplerName(num: number) {
   // texture 2 sampler has number 0 (0 and 1 are used for back buffer and scene)
-  return `uBufferSampler${num}`;
+  return num === -1 ? "uSampler" : `uBufferSampler${num}`;
 }
 
 /**

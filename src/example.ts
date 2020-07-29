@@ -654,7 +654,8 @@ const demos: Demos = {
   mitosis: () => {
     const merger = new MP.Merger(
       [
-        MP.input(
+        MP.channel(
+          -1,
           MP.changecomp(
             MP.pos(),
             MP.op(
