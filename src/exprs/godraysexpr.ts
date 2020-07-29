@@ -190,8 +190,8 @@ export function godrays(options: GodraysOptions = {}) {
     wrapInValue(options.density),
     wrapInValue(options.weight),
     options.lightPos,
-    options.numSamples,
     options.samplerNum,
+    options.numSamples,
     options.convertDepth === undefined
       ? undefined
       : {

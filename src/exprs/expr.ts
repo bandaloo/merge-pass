@@ -383,7 +383,7 @@ export abstract class PrimitiveVec extends Primitive {
   }
 
   toString() {
-    return `${this.typeString}(${this.values
+    return `${this.typeString()}(${this.values
       .map((n) => toGLSLFloatString(n))
       .join(", ")})`;
   }

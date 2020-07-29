@@ -137,10 +137,6 @@ export class WebGLProgramLoop {
         tex.back = tex.scene;
       }
       tex.bufTextures[this.loopInfo.target] = savedTexture;
-      // TODO get rid of this
-      //console.log("saved texture", savedTexture);
-      //console.log("buf textures", tex.bufTextures);
-      //console.log("target buf texture", tex.bufTextures[this.loopInfo.target]);
       if (settings.verbosity > 99)
         console.log("saved texture: " + savedTexture.name);
     }

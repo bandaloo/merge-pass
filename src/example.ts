@@ -1387,7 +1387,7 @@ let key: string;
 
 window.addEventListener("load", () => {
   MP.settings.verbosity = 1;
-  MP.settings.offset = 3;
+  MP.settings.offset = 0;
   console.log("offset", MP.settings.offset);
   let mstr = getVariable("m");
   let dstr = getVariable("d");

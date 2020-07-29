@@ -113,9 +113,15 @@ export function ternary(
   failure: any,
   not = false
 ) {
+  // TODO make this type safe (ran into a type error here)
   // wrap single float in array if need be
   if (!Array.isArray(floats) && floats !== null)
     floats = [floats].map((f) => wrapInValue(f));
   // TODO get rid of this cast
-  return new TernaryExpr(floats as any, success, failure, not);
+  return new TernaryExpr(
+    floats as any,
+    wrapInValue(success),
+    wrapInValue(failure),
+    not
+  );
 }
