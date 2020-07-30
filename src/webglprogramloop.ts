@@ -12,6 +12,7 @@ export function updateNeeds(acc: Needs, curr: Needs): Needs {
     sceneBuffer: acc.sceneBuffer || curr.sceneBuffer,
     timeUniform: acc.timeUniform || curr.timeUniform,
     mouseUniform: acc.mouseUniform || curr.mouseUniform,
+    passCount: acc.passCount || curr.passCount,
     extraBuffers: new Set([...acc.extraBuffers, ...curr.extraBuffers]),
   };
 }
@@ -38,6 +39,20 @@ export class WebGLProgramLeaf {
   }
 }
 
+/** @ignore */
+function getLoc(
+  programElement: WebGLProgramLeaf,
+  gl: WebGL2RenderingContext,
+  name: string
+) {
+  gl.useProgram(programElement.program);
+  const loc = gl.getUniformLocation(programElement.program, name);
+  if (loc === null) {
+    throw new Error("could not get the " + name + " uniform location");
+  }
+  return loc;
+}
+
 /** recursive data structure of compiled programs */
 export class WebGLProgramLoop {
   programElement: WebGLProgramElement;
@@ -47,6 +62,9 @@ export class WebGLProgramLoop {
   //totalNeeds: Needs | undefined;
   timeLoc?: WebGLUniformLocation;
   mouseLoc?: WebGLUniformLocation;
+  countLoc?: WebGLUniformLocation;
+
+  counter = 0;
 
   constructor(
     programElement: WebGLProgramElement,
@@ -62,30 +80,14 @@ export class WebGLProgramLoop {
         );
       }
 
-      // get the time uniform location
       if (this.programElement.totalNeeds.timeUniform) {
-        gl.useProgram(this.programElement.program);
-        const timeLoc = gl.getUniformLocation(
-          this.programElement.program,
-          "uTime"
-        );
-        if (timeLoc === null) {
-          throw new Error("could not get the time uniform location");
-        }
-        this.timeLoc = timeLoc;
+        this.timeLoc = getLoc(this.programElement, gl, "uTime");
       }
-
-      // get the mouse uniform location
       if (this.programElement.totalNeeds.mouseUniform) {
-        gl.useProgram(this.programElement.program);
-        const mouseLoc = gl.getUniformLocation(
-          this.programElement.program,
-          "uMouse"
-        );
-        if (mouseLoc === null) {
-          throw new Error("could not get the mouse uniform location");
-        }
-        this.mouseLoc = mouseLoc;
+        this.mouseLoc = getLoc(this.programElement, gl, "uMouse");
+      }
+      if (this.programElement.totalNeeds.passCount) {
+        this.countLoc = getLoc(this.programElement, gl, "uCount");
       }
     }
   }
@@ -148,9 +150,8 @@ export class WebGLProgramLoop {
             "needs scene buffer, but scene texture is somehow undefined"
           );
         }
-        gl.activeTexture(gl.TEXTURE1);
+        gl.activeTexture(gl.TEXTURE1 + settings.offset);
         if (this.loopInfo.target === -1) {
-          //console.log("binding scene to the saved texture", savedTexture);
           gl.bindTexture(gl.TEXTURE_2D, (savedTexture as TexWrapper).tex);
         } else {
           gl.bindTexture(gl.TEXTURE_2D, tex.scene.tex);
@@ -159,7 +160,7 @@ export class WebGLProgramLoop {
 
       // bind all extra channel textures if needed
       for (const n of this.programElement.totalNeeds.extraBuffers) {
-        gl.activeTexture(gl.TEXTURE2 + n);
+        gl.activeTexture(gl.TEXTURE2 + n + settings.offset);
         gl.bindTexture(gl.TEXTURE_2D, tex.bufTextures[n].tex);
       }
 
@@ -197,6 +198,19 @@ export class WebGLProgramLoop {
           defaultUniforms.mouseY
         );
       }
+
+      // set count uniform if needed
+      if (this.programElement.totalNeeds.passCount && outerLoop !== undefined) {
+        if (this.countLoc === undefined) {
+          throw new Error("count location is undefined");
+        }
+        if (outerLoop !== undefined) {
+          gl.uniform1i(this.countLoc, outerLoop.counter);
+        }
+        this.counter++;
+        const mod = outerLoop === undefined ? 1 : outerLoop.loopInfo.num;
+        this.counter %= mod;
+      }
     }
 
     for (let i = 0; i < this.loopInfo.num; i++) {
@@ -220,7 +234,7 @@ export class WebGLProgramLoop {
         }
         // allows us to read from `texBack`
         // default sampler is 0, so `uSampler` uniform will always sample from texture 0
-        gl.activeTexture(gl.TEXTURE0);
+        gl.activeTexture(gl.TEXTURE0 + settings.offset);
         gl.bindTexture(gl.TEXTURE_2D, tex.back.tex);
         // use our last program as the draw program
         gl.drawArrays(gl.TRIANGLES, 0, 6);
@@ -234,11 +248,11 @@ export class WebGLProgramLoop {
 
         // deactivate and unbind all the channel textures needed
         for (const n of this.programElement.totalNeeds.extraBuffers) {
-          gl.activeTexture(gl.TEXTURE2 + n);
+          gl.activeTexture(gl.TEXTURE2 + n + settings.offset);
           gl.bindTexture(gl.TEXTURE_2D, null);
         }
 
-        gl.activeTexture(gl.TEXTURE1);
+        gl.activeTexture(gl.TEXTURE1 + settings.offset);
         gl.bindTexture(gl.TEXTURE_2D, null);
       } else {
         if (this.loopInfo.func !== undefined) {
@@ -257,6 +271,7 @@ export class WebGLProgramLoop {
         }
       }
     }
+
     // swap the textures back if we were temporarily using a channel texture
     if (savedTexture !== undefined) {
       const target = this.loopInfo.target as number;

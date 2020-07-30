@@ -1,12 +1,12 @@
 import { Float } from "../exprtypes";
 import { EffectLoop } from "../mergepass";
+import { a2 } from "./arity2";
 import { gauss } from "./blurexpr";
 import { channel } from "./channelsampleexpr";
-import { pfloat, n2e, mut, PrimitiveFloat } from "./expr";
+import { mut, pfloat, PrimitiveFloat, wrapInValue } from "./expr";
 import { gaussian, GaussianExpr } from "./gaussianexpr";
 import { getcomp } from "./getcompexpr";
 import { op } from "./opexpr";
-import { a2 } from "./arity2";
 import { vec2 } from "./vecexprs";
 
 export class DoFLoop extends EffectLoop {
@@ -53,5 +53,10 @@ export function dof(
   depthInfo?: Float | number,
   reps?: number
 ) {
-  return new DoFLoop(n2e(depth), n2e(rad), n2e(depthInfo), reps);
+  return new DoFLoop(
+    wrapInValue(depth),
+    wrapInValue(rad),
+    wrapInValue(depthInfo),
+    reps
+  );
 }

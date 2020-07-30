@@ -1,6 +1,6 @@
 import { Float } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
-import { ExprVec4, n2e, tag, PrimitiveFloat } from "./expr";
+import { ExprVec4, tag, PrimitiveFloat, wrapInValue } from "./expr";
 
 // TODO consider getting rid of this since it's easy to make your own with
 // `random` and `brightness`
@@ -21,7 +21,7 @@ export class GrainExpr extends ExprVec4 {
   /** sets the grain level  */
   setGrain(grain: PrimitiveFloat | number) {
     this.setUniform("uGrain" + this.id, grain);
-    this.grain = n2e(grain);
+    this.grain = wrapInValue(grain);
   }
 }
 
@@ -30,5 +30,5 @@ export class GrainExpr extends ExprVec4 {
  * @param val how much the grain should impact the image (0 to 1 is reasonable)
  */
 export function grain(val: Float | number) {
-  return new GrainExpr(n2e(val));
+  return new GrainExpr(wrapInValue(val));
 }

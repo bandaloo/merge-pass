@@ -16,6 +16,9 @@ const TIME_SET = `uniform mediump float uTime;\n`;
 const MOUSE_SET = `uniform mediump vec2 uMouse;\n`;
 
 /** @ignore */
+const COUNT_SET = `uniform int uCount;\n`;
+
+/** @ignore */
 const BOILERPLATE = `#ifdef GL_ES
 precision mediump float;
 #endif
@@ -29,7 +32,7 @@ uniform mediump vec2 uResolution;\n`;
  */
 export function channelSamplerName(num: number) {
   // texture 2 sampler has number 0 (0 and 1 are used for back buffer and scene)
-  return `uBufferSampler${num}`;
+  return num === -1 ? "uSampler" : `uBufferSampler${num}`;
 }
 
 /**
@@ -58,12 +61,14 @@ export class CodeBuilder {
       uniformTypes: {},
       externalFuncs: new Set<string>(),
       exprs: [],
+      // update me on change to needs
       needs: {
         centerSample: false,
         neighborSample: false,
         sceneBuffer: false,
         timeUniform: false,
         mouseUniform: false,
+        passCount: false,
         extraBuffers: new Set(),
       },
     };
@@ -128,6 +133,7 @@ export class CodeBuilder {
       (this.totalNeeds.sceneBuffer ? SCENE_SET : "") +
       (this.totalNeeds.timeUniform ? TIME_SET : "") +
       (this.totalNeeds.mouseUniform ? MOUSE_SET : "") +
+      (this.totalNeeds.passCount ? COUNT_SET : "") +
       Array.from(this.totalNeeds.extraBuffers)
         .map((n) => channelSamplerDeclaration(n))
         .join("\n") +
@@ -148,7 +154,7 @@ export class CodeBuilder {
     if (program === null) {
       throw new Error("problem creating program");
     }
-    // TODO are we attaching the vertex shader more times than is necessary?
+
     gl.attachShader(program, vShader);
     gl.attachShader(program, fShader);
     shaders.push(fShader);
@@ -184,15 +190,21 @@ export class CodeBuilder {
       // TODO allow for texture options for scene texture
       const location = gl.getUniformLocation(program, "uSceneSampler");
       // put the scene buffer in texture 1 (0 is used for the backbuffer)
-      gl.uniform1i(location, 1);
+      gl.uniform1i(location, 1 + settings.offset);
     }
     // set all sampler uniforms
     for (const b of this.totalNeeds.extraBuffers) {
       const location = gl.getUniformLocation(program, channelSamplerName(b));
       // offset the texture location by 2 (0 and 1 are used for scene and original)
-      gl.uniform1i(location, b + 2);
+      gl.uniform1i(location, b + 2 + settings.offset);
+    }
+    // set the default sampler if there is an offset
+    if (settings.offset !== 0) {
+      const location = gl.getUniformLocation(program, "uSampler");
+      gl.uniform1i(location, settings.offset);
     }
 
+    // TODO do we need to do this every time?
     // get attribute
     const position = gl.getAttribLocation(program, "aPosition");
     // enable the attribute

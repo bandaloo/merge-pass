@@ -1,6 +1,6 @@
 import { Float, Vec4 } from "../exprtypes";
 import { brightness } from "./brightnessexpr";
-import { mut, n2e, PrimitiveFloat, WrappedExpr } from "./expr";
+import { mut, PrimitiveFloat, wrapInValue, WrappedExpr } from "./expr";
 import { getcomp } from "./getcompexpr";
 import { invert } from "./invertexpr";
 import { monochrome } from "./monochromeexpr";
@@ -8,7 +8,6 @@ import { op, OpExpr } from "./opexpr";
 import { sobel } from "./sobelexpr";
 
 export class EdgeExpr extends WrappedExpr<Vec4> {
-  // TODO make the default mutable
   mult: Float;
   operator: OpExpr<Float, Float>;
 
@@ -25,7 +24,7 @@ export class EdgeExpr extends WrappedExpr<Vec4> {
 
   setMult(mult: PrimitiveFloat | number) {
     this.operator.setRight(mult);
-    this.mult = n2e(mult);
+    this.mult = wrapInValue(mult);
   }
 }
 
@@ -40,5 +39,5 @@ export function edge(
   samplerNum?: number
 ) {
   const mult = style === "dark" ? -1 : style === "light" ? 1 : style;
-  return new EdgeExpr(n2e(mult), samplerNum);
+  return new EdgeExpr(wrapInValue(mult), samplerNum);
 }

@@ -1,6 +1,7 @@
 import { UniformLocs, EffectLoop, EffectLike, Generable } from "../mergepass";
 import { AllVals, Float, TypeString } from "../exprtypes";
 import { updateNeeds } from "../webglprogramloop";
+import { brandWithChannel, brandWithRegion } from "../utils";
 
 interface UniformTypeMap {
   [name: string]: TypeString;
@@ -39,6 +40,7 @@ export interface Needs {
   sceneBuffer: boolean;
   timeUniform: boolean;
   mouseUniform: boolean;
+  passCount: boolean;
   extraBuffers: Set<number>;
 }
 
@@ -56,6 +58,8 @@ interface Parseable {
 
   /** returns the GLSL type as a string */
   typeString(): TypeString;
+
+  brandExprWithRegion(space: Float[] | Float): Parseable;
 }
 
 export interface Applicable {
@@ -72,20 +76,24 @@ export abstract class Expr implements Parseable, EffectLike {
    */
   static count = 0;
   readonly id: string;
+  // update me on change to needs
   readonly needs: Needs = {
     neighborSample: false,
     centerSample: false,
     sceneBuffer: false,
     timeUniform: false,
     mouseUniform: false,
+    passCount: false,
     extraBuffers: new Set(),
   };
   readonly defaultNames: string[];
   readonly uniformValChangeMap: UniformValChangeMap = {};
   readonly defaultNameMap: DefaultNameMap = {};
   externalFuncs: string[] = [];
-  private sourceLists: SourceLists;
+  sourceLists: SourceLists;
   sourceCode: string = "";
+  funcIndex = 0;
+  regionBranded = false;
 
   constructor(sourceLists: SourceLists, defaultNames: string[]) {
     this.id = "_id_" + Expr.count;
@@ -95,6 +103,8 @@ export abstract class Expr implements Parseable, EffectLike {
       throw new Error("wrong lengths for source and values");
     }
     if (sourceLists.values.length !== defaultNames.length) {
+      console.log(sourceLists);
+      console.log(defaultNames);
       throw new Error(
         "default names list length doesn't match values list length"
       );
@@ -123,8 +133,12 @@ export abstract class Expr implements Parseable, EffectLike {
     }
   }
 
-  getSampleNum(mult = 1) {
-    return this.needs.neighborSample ? mult : 0;
+  getSampleNum(mult = 1): number {
+    return this.needs.neighborSample
+      ? mult
+      : this.sourceLists.values
+          .map((v) => v.getSampleNum())
+          .reduce((acc, curr) => acc + curr, 0);
   }
 
   /**
@@ -136,7 +150,7 @@ export abstract class Expr implements Parseable, EffectLike {
     newVal = wrapInValue(newVal);
     const originalName = name;
     if (typeof newVal === "number") {
-      newVal = n2p(newVal);
+      newVal = wrapInValue(newVal);
     }
     if (!(newVal instanceof Primitive)) {
       throw new Error("cannot set a non-primitive");
@@ -190,6 +204,25 @@ export abstract class Expr implements Parseable, EffectLike {
     this.externalFuncs.push(...funcs);
     return this;
   }
+
+  brandExprWithChannel(funcIndex: number, samplerNum?: number) {
+    brandWithChannel(
+      this.sourceLists,
+      this.externalFuncs,
+      this.needs,
+      funcIndex,
+      samplerNum
+    );
+    return this;
+  }
+
+  brandExprWithRegion(space: Float[] | Float) {
+    brandWithRegion(this, this.funcIndex, space);
+    for (const v of this.sourceLists.values) {
+      v.brandExprWithRegion(space);
+    }
+    return this;
+  }
 }
 
 function genCustomNames(sourceLists: SourceLists) {
@@ -228,7 +261,8 @@ export function cvec4(sourceLists: SourceLists, externalFuncs: string[] = []) {
   );
 }
 
-export class Mutable<T extends Primitive> implements Parseable, Applicable {
+export class Mutable<T extends Primitive>
+  implements Parseable, Applicable, EffectLike {
   primitive: T;
   name: string | undefined;
 
@@ -262,6 +296,14 @@ export class Mutable<T extends Primitive> implements Parseable, Applicable {
   typeString() {
     return this.primitive.typeString();
   }
+
+  getSampleNum() {
+    return 0;
+  }
+
+  brandExprWithRegion(space: Float[] | Float) {
+    return this;
+  }
 }
 
 export function mut<T extends Primitive>(val: T, name?: string): Mutable<T>;
@@ -277,11 +319,11 @@ export function mut(val: number, name?: string): Mutable<PrimitiveFloat>;
  * @param name the optional name for the uniform
  */
 export function mut<T extends Primitive>(val: T | number, name?: string) {
-  const primitive = typeof val === "number" ? n2p(val) : val;
+  const primitive = typeof val === "number" ? wrapInValue(val) : val;
   return new Mutable(primitive, name);
 }
 
-export abstract class Primitive implements Parseable, Applicable {
+export abstract class Primitive implements Parseable, Applicable, EffectLike {
   abstract toString(): string;
 
   abstract typeString(): TypeString;
@@ -293,6 +335,14 @@ export abstract class Primitive implements Parseable, Applicable {
 
   parse() {
     return this.toString();
+  }
+
+  getSampleNum() {
+    return 0;
+  }
+
+  brandExprWithRegion(space: Float[] | Float) {
+    return this;
   }
 }
 
@@ -333,7 +383,7 @@ export abstract class PrimitiveVec extends Primitive {
   }
 
   toString() {
-    return `${this.typeString}(${this.values
+    return `${this.typeString()}(${this.values
       .map((n) => toGLSLFloatString(n))
       .join(", ")})`;
   }
@@ -385,7 +435,7 @@ export abstract class BasicVec extends Expr {
     if (index < 0 || index >= this.values.length) {
       throw new Error("out of bounds of setting component");
     }
-    this.setUniform(this.defaultNames[index] + this.id, n2p(primitive));
+    this.setUniform(this.defaultNames[index] + this.id, wrapInValue(primitive));
   }
 }
 
@@ -421,7 +471,7 @@ export class BasicFloat extends Expr {
   }
 
   setVal(primitive: PrimitiveFloat | number) {
-    this.setUniform("uFloat" + this.id, n2p(primitive));
+    this.setUniform("uFloat" + this.id, wrapInValue(primitive));
   }
 
   typeString() {
@@ -437,7 +487,7 @@ export class ExprFloat extends Expr {
   }
 
   setVal(primitive: PrimitiveFloat | number) {
-    this.setUniform("uFloat" + this.id, n2p(primitive));
+    this.setUniform("uFloat" + this.id, wrapInValue(primitive));
   }
 
   typeString() {
@@ -446,7 +496,7 @@ export class ExprFloat extends Expr {
 }
 
 export function float(value: Float | number) {
-  if (typeof value === "number") value = n2p(value);
+  if (typeof value === "number") value = wrapInValue(value);
   return new BasicFloat({ sections: ["", ""], values: [value] }, ["uFloat"]);
 }
 
@@ -506,6 +556,14 @@ export class WrappedExpr<T extends AllVals> implements Parseable {
   parse(buildInfo: BuildInfo, defaultName: string, enc?: Expr): string {
     return this.expr.parse(buildInfo, defaultName, enc);
   }
+
+  getSampleNum(): number {
+    return this.expr.getSampleNum();
+  }
+
+  brandExprWithRegion(space: Float[] | Float): Parseable {
+    return this.expr.brandExprWithRegion(space);
+  }
 }
 
 export class Operator<T extends AllVals> extends Expr {
@@ -521,39 +579,21 @@ export class Operator<T extends AllVals> extends Expr {
   }
 }
 
-export function n2e(num: number | Float): PrimitiveFloat;
-export function n2e(num: undefined): undefined;
-export function n2e(
-  num: number | Float | undefined
-): PrimitiveFloat | undefined;
-export function n2e(num: number | Float | undefined) {
-  if (num === undefined) return undefined;
-  if (
-    num instanceof PrimitiveFloat ||
-    num instanceof ExprFloat ||
-    num instanceof Operator ||
-    num instanceof Mutable ||
-    num instanceof WrappedExpr ||
-    num instanceof BasicFloat
-  )
-    return num;
-  return new PrimitiveFloat(num);
-}
-
-// TODO see if we need this
-/** number to primitive float */
-export function n2p(num: number | PrimitiveFloat) {
-  if (num instanceof PrimitiveFloat) return num;
-  return new PrimitiveFloat(num);
-}
-
 /** creates a primitive float */
 export function pfloat(num: number) {
   return new PrimitiveFloat(num);
 }
 
 /** @ignore */
-export function wrapInValue(num: number | AllVals) {
+export function wrapInValue(num: number): PrimitiveFloat;
+export function wrapInValue<T extends AllVals>(num: T | number): T;
+export function wrapInValue<T extends AllVals>(
+  num: T | number | undefined
+): T | PrimitiveFloat | undefined;
+export function wrapInValue<T extends AllVals>(
+  num: number | T | undefined
+): PrimitiveFloat | T | undefined {
+  if (num === undefined) return undefined;
   if (typeof num === "number") return pfloat(num);
   return num;
 }

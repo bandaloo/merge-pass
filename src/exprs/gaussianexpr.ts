@@ -1,6 +1,6 @@
 import { Float } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
-import { ExprFloat, n2e, n2p, PrimitiveFloat, tag } from "./expr";
+import { ExprFloat, PrimitiveFloat, tag, wrapInValue } from "./expr";
 
 /** gaussian expression */
 export class GaussianExpr extends ExprFloat {
@@ -17,17 +17,17 @@ export class GaussianExpr extends ExprFloat {
 
   setX(x: PrimitiveFloat | number) {
     this.setUniform("uFloatX" + this.id, x);
-    this.x = n2p(x);
+    this.x = wrapInValue(x);
   }
 
   setA(a: PrimitiveFloat | number) {
     this.setUniform("uFloatA" + this.id, a);
-    this.a = n2p(a);
+    this.a = wrapInValue(a);
   }
 
   setB(b: PrimitiveFloat | number) {
     this.setUniform("uFloatB" + this.id, b);
-    this.b = n2p(b);
+    this.b = wrapInValue(b);
   }
 }
 
@@ -42,5 +42,5 @@ export function gaussian(
   a: Float | number = 0,
   b: Float | number = 1
 ) {
-  return new GaussianExpr(n2e(x), n2e(a), n2e(b));
+  return new GaussianExpr(wrapInValue(x), wrapInValue(a), wrapInValue(b));
 }

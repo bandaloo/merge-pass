@@ -2,7 +2,7 @@ import { AllVals, Float, Vec2, Vec3, Vec4 } from "../exprtypes";
 import { Operator, PrimitiveFloat, wrapInValue, SourceLists } from "./expr";
 
 /** valid function names for [[a2]] */
-type Arity2HomogenousName = "pow" | "step";
+type Arity2HomogenousName = "pow" | "step" | "mod";
 
 /** @ignore */
 function genArity1SourceList(

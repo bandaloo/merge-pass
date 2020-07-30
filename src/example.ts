@@ -124,11 +124,11 @@ const demos: Demos = {
             4
           ).target(0),
           MP.brightness(-0.3),
-          MP.setcolor(MP.op(MP.fcolor(), "+", MP.input())),
+          MP.op(MP.fcolor(), "+", MP.input()),
         ]).target(0),
-        MP.loop([
-          MP.setcolor(MP.op(MP.op(MP.channel(0), "+", MP.fcolor()), "/", 2)),
-        ]).target(1),
+        MP.loop([MP.op(MP.op(MP.channel(0), "+", MP.fcolor()), "/", 2)]).target(
+          1
+        ),
         MP.channel(1),
       ],
       sourceCanvas,
@@ -182,7 +182,7 @@ const demos: Demos = {
 
   redonly: () => {
     const merger = new MP.Merger(
-      [MP.setcolor(MP.changecomp(MP.fcolor(), MP.vec2(0, 0), "gb"))],
+      [MP.changecomp(MP.fcolor(), MP.vec2(0, 0), "gb")],
       sourceCanvas,
       gl
     );
@@ -194,7 +194,7 @@ const demos: Demos = {
 
   redzero: () => {
     const merger = new MP.Merger(
-      [MP.setcolor(MP.changecomp(MP.fcolor(), 0, "r"))],
+      [MP.changecomp(MP.fcolor(), 0, "r")],
       sourceCanvas,
       gl
     );
@@ -206,13 +206,96 @@ const demos: Demos = {
 
   redgreenswap: () => {
     const merger = new MP.Merger(
+      [MP.changecomp(MP.fcolor(), MP.get2comp(MP.fcolor(), "gr"), "rg")],
+      sourceCanvas,
+      gl
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
+
+  ternary: () => {
+    const merger = new MP.Merger(
       [
-        MP.setcolor(
-          MP.changecomp(MP.fcolor(), MP.get2comp(MP.fcolor(), "gr"), "rg")
+        MP.ternary(
+          [MP.a1("sin", MP.time()), MP.a1("cos", MP.time())],
+          MP.changecomp(MP.fcolor(), MP.get2comp(MP.fcolor(), "gr"), "rg"),
+          MP.changecomp(MP.fcolor(), MP.get2comp(MP.fcolor(), "gr"), "rb")
         ),
       ],
       sourceCanvas,
       gl
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
+
+  region: (channels: TexImageSource[] = []) => {
+    const offset = MP.op(MP.a1("sin", MP.time()), "/", 5);
+    const merger = new MP.Merger(
+      [
+        MP.region(
+          [MP.op(offset, "+", 0.2), 0.2, MP.op(offset, "+", 0.8), 0.8],
+          MP.loop([
+            MP.blur2d(),
+            MP.edge("dark"),
+            MP.brightness(MP.getcomp(MP.channel(0), "r")),
+            MP.region(
+              [0.3, 0.3, 0.7, 0.7],
+              MP.loop([MP.blur2d(), MP.brightness(-0.5)]),
+              MP.fcolor()
+            ),
+          ]),
+          MP.brightness(-0.2)
+        ),
+      ],
+      sourceCanvas,
+      gl,
+      { channels: channels }
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
+
+  channelregion: (channels: TexImageSource[] = []) => {
+    const merger = new MP.Merger(
+      [
+        MP.region(
+          MP.getcomp(MP.channel(0), "r"),
+          MP.loop([MP.blur2d(), MP.brightness(0.1)]),
+          MP.brightness(-0.3, MP.edge("dark"))
+        ),
+        MP.fxaa(),
+      ],
+      sourceCanvas,
+      gl,
+      { channels: channels }
+    );
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
+
+  loopregion: (channels: TexImageSource[] = []) => {
+    const merger = new MP.Merger(
+      [
+        MP.region(
+          MP.getcomp(MP.channel(0), "r"),
+          MP.loop([MP.blur2d(), MP.brightness(0.3)]),
+          MP.loop([MP.blur2d(3, 3), MP.brightness(-0.5), MP.edge("light")]),
+          true
+        ),
+      ],
+      sourceCanvas,
+      gl,
+      { channels: channels }
     );
     return {
       merger: merger,
@@ -413,7 +496,6 @@ const demos: Demos = {
   },
 
   basicdof: (channels: TexImageSource[] = []) => {
-    //const dof = MP.dof(MP.mut(0.3), MP.mut(0.01));
     const dof = MP.dof();
     const merger = new MP.Merger([dof], sourceCanvas, gl, {
       channels: channels,
@@ -507,11 +589,6 @@ const demos: Demos = {
           convertDepth: {
             threshold: 0.1,
             newColor: MP.mut(MP.pvec4(1, 1, 1, 1)),
-            /*
-            newColor: MP.hsv2rgb(
-              MP.vec4(MP.op(MP.time(), "/", 4), 0.5, 0.5, 1)
-            ),
-            */
           },
         })),
       ],
@@ -577,7 +654,8 @@ const demos: Demos = {
   mitosis: () => {
     const merger = new MP.Merger(
       [
-        MP.input(
+        MP.channel(
+          -1,
           MP.changecomp(
             MP.pos(),
             MP.op(
@@ -765,9 +843,14 @@ const demos: Demos = {
 
   bloom: (channels: TexImageSource[] = []) => {
     const bloom = MP.bloom();
-    const merger = new MP.Merger([bloom], sourceCanvas, gl, {
-      channels: channels,
-    });
+    const merger = new MP.Merger(
+      [MP.edgecolor(MP.vec4(0, 0, 0.4, 1)), bloom],
+      sourceCanvas,
+      gl,
+      {
+        channels: [null, null],
+      }
+    );
 
     class BloomControls {
       threshold = 0.4;
@@ -796,20 +879,9 @@ const demos: Demos = {
   },
 
   sobel: (channels: TexImageSource[] = []) => {
-    const merger = new MP.Merger(
-      [
-        MP.sobel(),
-        /*
-        MP.brightness(
-          MP.op(MP.getcomp(MP.invert(MP.monochrome(MP.sobel())), "r"), "*", -1)
-        ),
-        */
-        //MP.motionblur(),
-      ],
-      sourceCanvas,
-      gl,
-      { channels: [null] }
-    );
+    const merger = new MP.Merger([MP.sobel()], sourceCanvas, gl, {
+      channels: [null],
+    });
     return {
       merger: merger,
       change: () => {},
@@ -823,9 +895,9 @@ const demos: Demos = {
   )
   */
   edgecolor: (channels: TexImageSource[] = []) => {
-    let a: EdgeColorExpr;
+    let a: MP.EdgeColorExpr;
     const merger = new MP.Merger(
-      [MP.setcolor((a = MP.edgecolor(MP.mut(MP.pvec4(1.0, 1.0, 1.0, 1.0)))))],
+      [(a = MP.edgecolor(MP.mut(MP.pvec4(1.0, 1.0, 1.0, 1.0))))],
       sourceCanvas,
       gl,
       { channels: [null] }
@@ -855,7 +927,7 @@ const demos: Demos = {
   depthedge: (channels: TexImageSource[] = []) => {
     const edge = MP.edge(MP.mut(1.0), 0);
     const merger = new MP.Merger(
-      [MP.blur2d(1, 1, 13), MP.setcolor(edge)],
+      [MP.blur2d(1, 1, 13), edge],
       sourceCanvas,
       gl,
       { channels: channels }
@@ -889,7 +961,7 @@ const stripes = (t: number, frames: number) => {
   if (frames === 0) {
     x.fillStyle = "black";
     x.fillRect(0, 0, 960, 540);
-    x.font = "99px monospace";
+    x.font = "99px Helvetica, sans-serif";
     x.fillStyle = "white";
     x.textAlign = "center";
     x.textBaseline = "middle";
@@ -901,6 +973,26 @@ const stripes = (t: number, frames: number) => {
   x.fillStyle = `hsl(${(k & j) * i},40%,${50 + C(i) * 10}%`;
   x.fillRect(k * 24, 0, 24, k + 2);
   x.drawImage(c, 0, k + 2);
+};
+
+const higherOrderSpiral = (
+  dots: [number, number, number],
+  background: [number, number, number],
+  num = 50,
+  size = 1,
+  speed = 1
+) => (t: number, frames: number) => {
+  x.fillStyle = R(...background);
+  x.fillRect(0, 0, 960, 540);
+  let d;
+  for (let i = num; (i -= 0.5); i > 0) {
+    x.beginPath();
+    d = 2 * C((2 + S(t / 99)) * 2 * i * speed);
+    x.arc(480 + d * 10 * C(i) * i, 270 + d * 9 * S(i) * i, i * size, 0, 44 / 7);
+    const fade = i / num;
+    x.fillStyle = R(dots[0] * fade, dots[1] * fade, dots[2] * fade);
+    x.fill();
+  }
 };
 
 const redSpiral = (t: number, frames: number) => {
@@ -1086,7 +1178,7 @@ const bloomTest = (t: number, frames: number) => {
   x.fillRect(0, 0, 960, 540);
   const num = 8;
   for (let i = 0; i < num; i++) {
-    const c = 255 / (i + 1);
+    const c = 254 / (i + 1) + 1;
     const position = spacing * i - (spacing * (num - 1)) / 2;
     x.fillStyle = R(c, c, c);
     x.fillRect(
@@ -1122,7 +1214,8 @@ const draws: Draws = {
     higherOrderWaves(false),
     bitwiseGrid(),
   ],
-  motionblur: [redSpiral],
+  //motionblur: [higherOrderSpiral([101, 8, 252], [242, 128, 7], 25, 2, 3)],
+  motionblur: [higherOrderSpiral([40, 40, 40], [0, 235, 145], 25, 2, 3)],
   basicdof: [higherOrderPerspective(true), higherOrderPerspective(false)],
   lineardof: [
     higherOrderPerspective(true),
@@ -1142,6 +1235,10 @@ const draws: Draws = {
   sobel: [redSpiral],
   edgecolor: [redSpiral],
   depthedge: [higherOrderPerspective(true), higherOrderPerspective(false)],
+  ternary: [stripes],
+  region: [stripes, vectorSpiral],
+  channelregion: [stripes, higherOrderSpiral([255, 0, 0], [0, 0, 0])],
+  loopregion: [stripes, higherOrderSpiral([255, 0, 0], [0, 0, 0])],
 };
 
 interface Notes {
@@ -1262,6 +1359,25 @@ const notes: Notes = {
     "effect by blurring the scene buffer and then tracing edges from the depth buffer. " +
     "with this method, the outlines naturally get thinner in the distance. " +
     "you can also shift from light edges to dark edges at runtime with <code>setMult</code>",
+  ternary:
+    "you can use <code>ternary</code> expressions. if all the floats you pass in as the first argument " +
+    "are all greater than zero, then the expression evaluates to the second argument. else, " +
+    "it evaluates to the third argument. this also works with a single float instead of a list of floats",
+  region:
+    "<code>region</code> allows you to restrict an effect to an area of the screen. " +
+    "this can even be done with loops. regions can also contain nested regions, which " +
+    "become obscured by the boundaries of the outer region.",
+  loopregion: "a region can contain loops on one side or both",
+  channelregion:
+    "instead of a rectangular region, you can pass in any float expression. " +
+    "if that expression evaluates to a number > 0, then it is inside, and outside otherwise. " +
+    "you can invert the region by passing in <code>true</code> as the fourth and final argument. " +
+    "this is also true for normal, rectangular regions. " +
+    "unlike rectangular regions, texture lookups won't be clamped to inside the region.",
+  bloom:
+    "this effect requires a temporary texture. the default assumes it is in channel 1 " +
+    "(since you might already have a depth texture in channel 0.) this can be changed with " +
+    "the fifth parameter <code>samplerNum</code> (not used in this example)",
 };
 
 const canvases = [sourceCanvas];
@@ -1272,6 +1388,8 @@ let key: string;
 
 window.addEventListener("load", () => {
   MP.settings.verbosity = 1;
+  MP.settings.offset = 0;
+  console.log("offset", MP.settings.offset);
   let mstr = getVariable("m");
   let dstr = getVariable("d");
 
@@ -1317,6 +1435,7 @@ window.addEventListener("load", () => {
     "merge-pass demo: " + mstr;
 
   // unindent code string
+  // only replace leading spaces with nbsp
   let codeStr = (" ".repeat(4) + demos[mstr])
     .split("\n")
     .map((l) => l.substr(4))

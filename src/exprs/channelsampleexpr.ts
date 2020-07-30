@@ -2,14 +2,17 @@ import { channelSamplerName } from "../codebuilder";
 import { Vec2 } from "../exprtypes";
 import { ExprVec4, SourceLists, PrimitiveVec2 } from "./expr";
 import { pos } from "./normfragcoordexpr";
+import { glslFuncs } from "../glslfunctions";
 
 /** @ignore */
 function genChannelSampleSource(buf: number, coord: Vec2): SourceLists {
   return {
-    sections: [`texture2D(${channelSamplerName(buf)}, `, `)`],
+    sections: ["channel(", `, ${channelSamplerName(buf)})`],
     values: [coord],
   };
 }
+
+// TODO create a way to sample but not clamp by region
 
 /** channel sample expression */
 export class ChannelSampleExpr extends ExprVec4 {
@@ -18,7 +21,8 @@ export class ChannelSampleExpr extends ExprVec4 {
   constructor(buf: number, coord: Vec2 = pos()) {
     super(genChannelSampleSource(buf, coord), ["uVec"]);
     this.coord = coord;
-    this.needs.extraBuffers = new Set([buf]);
+    this.externalFuncs = [glslFuncs.channel];
+    if (buf !== -1) this.needs.extraBuffers = new Set([buf]);
   }
 
   setCoord(coord: PrimitiveVec2) {

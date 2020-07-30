@@ -1,6 +1,7 @@
 export * from "./mergepass";
 export * from "./exprtypes";
 export * from "./glslfunctions";
+export * from "./settings";
 
 export * from "./exprs/blurexpr";
 export * from "./exprs/fragcolorexpr";
@@ -15,7 +16,6 @@ export * from "./exprs/normfragcoordexpr";
 export * from "./exprs/normcenterfragcoordexpr";
 export * from "./exprs/scenesampleexpr";
 export * from "./exprs/brightnessexpr";
-export * from "./exprs/setcolorexpr";
 export * from "./exprs/contrastexpr";
 export * from "./exprs/grainexpr";
 export * from "./exprs/getcompexpr";
@@ -46,6 +46,7 @@ export * from "./exprs/monochromeexpr";
 export * from "./exprs/invertexpr";
 export * from "./exprs/edgeexpr";
 export * from "./exprs/edgecolorexpr";
-export * from "./settings";
+export * from "./exprs/ternaryexpr";
+export * from "./exprs/regiondecorator";
 
 export * from "./exprs/expr";

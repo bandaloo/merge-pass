@@ -3,12 +3,11 @@ import { channel } from "./channelsampleexpr";
 import {
   ExprVec4,
   mut,
-  n2e,
   pfloat,
-  tag,
   PrimitiveFloat,
-  n2p,
   PrimitiveVec4,
+  tag,
+  wrapInValue,
 } from "./expr";
 import { pvec4 } from "./vecexprs";
 
@@ -45,7 +44,7 @@ export class DepthToOcclusionExpr extends ExprVec4 {
 
   setThreshold(threshold: PrimitiveFloat | number) {
     this.setUniform("uThreshold" + this.id, threshold);
-    this.threshold = n2p(threshold);
+    this.threshold = wrapInValue(threshold);
   }
 }
 
@@ -64,5 +63,5 @@ export function depth2occlusion(
   newCol: Vec4,
   threshold: Float | number
 ) {
-  return new DepthToOcclusionExpr(depthCol, newCol, n2e(threshold));
+  return new DepthToOcclusionExpr(depthCol, newCol, wrapInValue(threshold));
 }

@@ -1,6 +1,12 @@
-import { ExprVec2, tag, n2e, PrimitiveFloat, PrimitiveVec2 } from "./expr";
+import { Float, Vec2 } from "../exprtypes";
 import { glslFuncs } from "../glslfunctions";
-import { Vec2, Float } from "../exprtypes";
+import {
+  ExprVec2,
+  PrimitiveFloat,
+  PrimitiveVec2,
+  tag,
+  wrapInValue,
+} from "./expr";
 
 /** rotate expression */
 export class RotateExpr extends ExprVec2 {
@@ -22,8 +28,8 @@ export class RotateExpr extends ExprVec2 {
 
   /** set the angle to rotate by */
   setAngle(angle: PrimitiveFloat | number) {
-    this.setUniform("uAngle" + this.id, n2e(angle));
-    this.angle = n2e(angle);
+    this.setUniform("uAngle" + this.id, angle);
+    this.angle = wrapInValue(angle);
   }
 }
 
@@ -33,5 +39,5 @@ export class RotateExpr extends ExprVec2 {
  * @param angle radians to rotate vector by
  */
 export function rotate(vec: Vec2, angle: Float | number) {
-  return new RotateExpr(vec, n2e(angle));
+  return new RotateExpr(vec, wrapInValue(angle));
 }

@@ -1,12 +1,17 @@
 import { CodeBuilder } from "./codebuilder";
-import { ExprVec4 } from "./exprs/expr";
+import { ExprVec4, Needs } from "./exprs/expr";
+import { fcolor, FragColorExpr } from "./exprs/fragcolorexpr";
+import { region } from "./exprs/regiondecorator";
+import { input } from "./exprs/scenesampleexpr";
+import { SetColorExpr } from "./exprs/setcolorexpr";
+import { ternary } from "./exprs/ternaryexpr";
+import { Float, Vec4 } from "./exprtypes";
+import { settings } from "./settings";
 import {
-  WebGLProgramLoop,
   updateNeeds,
   WebGLProgramLeaf,
+  WebGLProgramLoop,
 } from "./webglprogramloop";
-import { input } from ".";
-import { settings } from "./settings";
 
 /** repetitions and callback for loop */
 export interface LoopInfo {
@@ -48,15 +53,35 @@ interface ProgramMap {
   [name: string]: WebGLProgramLoop;
 }
 
+interface UnprocessedEffectMap {
+  [name: string]: (Vec4 | EffectLoop)[];
+}
+
+function wrapInSetColors(effects: (Vec4 | EffectLoop)[]): EffectElement[] {
+  return effects.map((e) =>
+    e instanceof ExprVec4 || e instanceof EffectLoop ? e : new SetColorExpr(e)
+  );
+}
+
+// should be function of loop?
+function processEffectMap(eMap: UnprocessedEffectMap): EffectMap {
+  const result: EffectMap = {};
+  for (const name in eMap) {
+    const val = eMap[name];
+    result[name] = wrapInSetColors(val);
+  }
+  return result;
+}
+
 interface EffectMap {
-  [name: string]: (ExprVec4 | EffectLoop)[];
+  [name: string]: EffectElement[];
 }
 
 export class EffectDictionary {
   effectMap: EffectMap;
 
-  constructor(effectMap: EffectMap) {
-    this.effectMap = effectMap;
+  constructor(effectMap: UnprocessedEffectMap) {
+    this.effectMap = processEffectMap(effectMap);
   }
 
   toProgramMap(
@@ -66,12 +91,13 @@ export class EffectDictionary {
     fShaders: WebGLShader[]
   ) {
     const programMap: ProgramMap = {};
-    let needs = {
+    let needs: Needs = {
       neighborSample: false,
       centerSample: false,
       sceneBuffer: false,
       timeUniform: false,
       mouseUniform: false,
+      passCount: false,
       extraBuffers: new Set<number>(),
     };
     for (const name in this.effectMap) {
@@ -115,8 +141,8 @@ export class EffectLoop implements EffectLike, Generable {
   effects: EffectElement[];
   loopInfo: LoopInfo;
 
-  constructor(effects: EffectElement[], loopInfo: LoopInfo) {
-    this.effects = effects;
+  constructor(effects: (Vec4 | EffectLoop)[], loopInfo: LoopInfo) {
+    this.effects = wrapInSetColors(effects);
     this.loopInfo = loopInfo;
   }
 
@@ -238,10 +264,38 @@ export class EffectLoop implements EffectLike, Generable {
     }
     return false;
   }
+
+  /** @ignore */
+  regionWrap(
+    space: Float[] | Float,
+    failure: Vec4,
+    finalPath = true,
+    not: boolean
+  ) {
+    this.effects = this.effects.map((e, index) =>
+      // loops that aren't all the way to the right can't terminate the count ternery
+      // don't wrap fcolors in a ternery (it's redundant)
+      e instanceof EffectLoop
+        ? e.regionWrap(space, failure, index === this.effects.length - 1, not)
+        : new SetColorExpr(
+            region(
+              space,
+              e.brandExprWithRegion(space),
+              index === this.effects.length - 1 && finalPath
+                ? !(failure instanceof FragColorExpr)
+                  ? ternary(null, failure, fcolor())
+                  : failure
+                : fcolor(),
+              not
+            )
+          )
+    );
+    return this;
+  }
 }
 
 /** creates an effect loop */
-export function loop(effects: EffectElement[], rep = 1) {
+export function loop(effects: (Vec4 | EffectLoop)[], rep = 1) {
   return new EffectLoop(effects, { num: rep });
 }
 
@@ -256,6 +310,7 @@ type EffectElement = ExprVec4 | EffectLoop;
  * been updated in the current loop
  */
 export interface UniformLocs {
+  // the counter is what enables expressions to exist across multiple programs
   [name: string]: { locs: WebGLUniformLocation[]; counter: number };
 }
 
@@ -324,7 +379,7 @@ export class Merger {
    * @param options additional options for the texture
    */
   constructor(
-    effects: (ExprVec4 | EffectLoop)[] | EffectDictionary,
+    effects: (Vec4 | EffectLoop)[] | EffectDictionary,
     source: TexImageSource | WebGLTexture,
     gl: WebGL2RenderingContext,
     options?: MergerOptions
@@ -446,7 +501,10 @@ export class Merger {
       }
     }
 
-    if (settings.verbosity > 0) console.log(this.programMap);
+    if (settings.verbosity > 0) {
+      console.log(effects);
+      console.log(this.programMap);
+    }
   }
 
   /**
@@ -461,13 +519,10 @@ export class Merger {
    * [[mouse]] or [[nmouse]])
    */
   draw(timeVal = 0, mouseX = 0, mouseY = 0) {
-    // TODO double check if this is neccessary
-    //const originalFront = this.tex.front;
-    //const originalBack = this.tex.back;
-
-    this.gl.activeTexture(this.gl.TEXTURE0);
+    this.gl.activeTexture(this.gl.TEXTURE0 + settings.offset);
     this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.back.tex);
     sendTexture(this.gl, this.source);
+    // TODO only do unbinding and rebinding in texture mode
     // TODO see if we need to unbind
     this.gl.bindTexture(this.gl.TEXTURE_2D, null);
 
@@ -476,7 +531,7 @@ export class Merger {
       this.programLoop.getTotalNeeds().sceneBuffer &&
       this.tex.scene !== undefined
     ) {
-      this.gl.activeTexture(this.gl.TEXTURE1);
+      this.gl.activeTexture(this.gl.TEXTURE1 + settings.offset);
       this.gl.bindTexture(this.gl.TEXTURE_2D, this.tex.scene.tex);
       sendTexture(this.gl, this.source);
       // TODO see if we need to unbind
@@ -487,7 +542,7 @@ export class Merger {
     let counter = 0;
     for (const b of this.channels) {
       // TODO check for texture limit
-      this.gl.activeTexture(this.gl.TEXTURE2 + counter);
+      this.gl.activeTexture(this.gl.TEXTURE2 + counter + settings.offset);
       this.gl.bindTexture(
         this.gl.TEXTURE_2D,
         this.tex.bufTextures[counter].tex
@@ -506,10 +561,6 @@ export class Merger {
       this.programLoop.last,
       { timeVal: timeVal, mouseX: mouseX, mouseY: mouseY }
     );
-
-    // make sure front and back are in same order
-    //this.tex.front = originalFront;
-    //this.tex.back = originalBack;
   }
 
   /**
@@ -518,10 +569,11 @@ export class Merger {
    * to construct another [[Merger]] to use new effects
    */
   delete() {
+    // TODO do we have to do something with VertexAttribArray?
     // call bind with null on all textures
     for (let i = 0; i < 2 + this.tex.bufTextures.length; i++) {
       // this gets rid of final texture, scene texture and channels
-      this.gl.activeTexture(this.gl.TEXTURE0 + i);
+      this.gl.activeTexture(this.gl.TEXTURE0 + i + settings.offset);
       this.gl.bindTexture(this.gl.TEXTURE_2D, null);
     }
     // call bind with null on all vertex buffers (just 1)

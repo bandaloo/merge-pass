@@ -1,18 +1,23 @@
 import { Float, Vec2, Vec4 } from "../exprtypes";
-import { glslFuncs, replaceSampler } from "../glslfunctions";
+import { glslFuncs } from "../glslfunctions";
 import {
   ExprVec4,
   float,
   mut,
-  n2e,
-  n2p,
   PrimitiveFloat,
   PrimitiveVec2,
   PrimitiveVec4,
   tag,
+  wrapInValue,
 } from "./expr";
 import { fcolor } from "./fragcolorexpr";
 import { pvec2, vec4 } from "./vecexprs";
+
+/**
+ * @ignore
+ * the number of samples in the source code already
+ */
+const DEFAULT_SAMPLES = 100;
 
 /** godrays expression */
 export class GodRaysExpr extends ExprVec4 {
@@ -34,10 +39,11 @@ export class GodRaysExpr extends ExprVec4 {
     weight: Float = mut(0.01),
     lightPos: Vec2 = mut(pvec2(0.5, 0.5)),
     samplerNum: number = 0,
+    numSamples: number = DEFAULT_SAMPLES,
     convertDepth?: { threshold: Float; newColor: Vec4 }
   ) {
     // TODO the metaprogramming here is not so good!
-    // leaving off the function call section for now
+    // leaving off the function call section for now (we addd it back later)
     const sourceLists = tag`${col}, ${exposure}, ${decay}, ${density}, ${weight}, ${lightPos}, ${
       convertDepth !== undefined ? convertDepth.threshold : float(0)
     }, ${
@@ -46,9 +52,10 @@ export class GodRaysExpr extends ExprVec4 {
     // TODO make this more generic
     // append the _<num> onto the function name
     // also add _depth if this is a version of the function that uses depth buffer
-    sourceLists.sections[0] += `godrays_${samplerNum}${
-      convertDepth !== undefined ? "_depth" : ""
+    const customName = `godrays${convertDepth !== undefined ? "_depth" : ""}${
+      numSamples !== 100 ? "_s" + numSamples : ""
     }(`;
+    sourceLists.sections[0] = customName;
     super(sourceLists, [
       "uCol",
       "uExposure",
@@ -67,21 +74,27 @@ export class GodRaysExpr extends ExprVec4 {
     this.lightPos = lightPos;
     this.threshold = convertDepth?.threshold;
     this.newColor = convertDepth?.newColor;
-    let customGodRayFunc = replaceSampler(
-      glslFuncs.godrays,
-      /vec4\sgodrays/g,
-      samplerNum,
-      convertDepth === undefined ? undefined : "_depth"
-    );
+
+    // will be 1 if needs to convert depth, and 0 otherwise
+    this.funcIndex = ~~(convertDepth !== undefined);
+
+    let customGodRayFunc = glslFuncs.godrays
+      .split("godrays(")
+      .join(customName)
+      .replace(
+        `NUM_SAMPLES = ${DEFAULT_SAMPLES}`,
+        "NUM_SAMPLES = " + numSamples
+      );
+
     if (convertDepth !== undefined) {
-      // uncomment the line that does the conversion
-      // TODO replace this with a more generic #ifdef and #ifndef kind of
-      // like the C preprocessor
+      // with regex, uncomment the line in the source code that does the
+      // conversion (if you think about it that's basically what a preprocessor
+      // does...)
       customGodRayFunc = customGodRayFunc.replace(/\/\/uncomment\s/g, "");
       this.externalFuncs.push(glslFuncs.depth2occlusion);
     }
     this.externalFuncs.push(customGodRayFunc);
-    this.needs.extraBuffers = new Set([0]);
+    this.brandExprWithChannel(this.funcIndex, samplerNum);
   }
 
   /** sets the light color */
@@ -93,25 +106,25 @@ export class GodRaysExpr extends ExprVec4 {
   /** sets the exposure */
   setExposure(exposure: PrimitiveFloat | number) {
     this.setUniform("uExposure" + this.id, exposure);
-    this.exposure = n2p(exposure);
+    this.exposure = wrapInValue(exposure);
   }
 
   /** sets the decay */
   setDecay(decay: PrimitiveFloat | number) {
     this.setUniform("uDecay" + this.id, decay);
-    this.decay = n2p(decay);
+    this.decay = wrapInValue(decay);
   }
 
   /** sets the density */
   setDensity(density: PrimitiveFloat | number) {
     this.setUniform("uDensity" + this.id, density);
-    this.density = n2p(density);
+    this.density = wrapInValue(density);
   }
 
   /** sets the weight */
   setWeight(weight: PrimitiveFloat | number) {
     this.setUniform("uWeight" + this.id, weight);
-    this.weight = n2p(weight);
+    this.weight = wrapInValue(weight);
   }
 
   /** sets the light position */
@@ -125,7 +138,7 @@ export class GodRaysExpr extends ExprVec4 {
 
   setThreshold(threshold: PrimitiveFloat | number) {
     this.setUniform("uThreshold" + this.id, threshold);
-    this.threshold = n2p(threshold);
+    this.threshold = wrapInValue(threshold);
   }
 
   setNewColor(newColor: PrimitiveVec4) {
@@ -148,6 +161,11 @@ interface GodraysOptions {
   weight?: Float | number;
   /** where the rays eminate from */
   lightPos?: Vec2;
+  /**
+   * number of samples; aka the quality (note that this cannot be changed at
+   * runtime, as looping by a non-constant does not play nice with shaders)
+   */
+  numSamples?: number;
   /** where to sample from */
   samplerNum?: number;
   /** information for how to convert a depth buffer into an occlusion buffer */
@@ -167,16 +185,17 @@ interface GodraysOptions {
 export function godrays(options: GodraysOptions = {}) {
   return new GodRaysExpr(
     options.color,
-    n2e(options.exposure),
-    n2e(options.decay),
-    n2e(options.density),
-    n2e(options.weight),
+    wrapInValue(options.exposure),
+    wrapInValue(options.decay),
+    wrapInValue(options.density),
+    wrapInValue(options.weight),
     options.lightPos,
     options.samplerNum,
+    options.numSamples,
     options.convertDepth === undefined
       ? undefined
       : {
-          threshold: n2e(options.convertDepth.threshold),
+          threshold: wrapInValue(options.convertDepth.threshold),
           newColor: options.convertDepth.newColor,
         }
   );

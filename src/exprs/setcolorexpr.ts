@@ -1,9 +1,10 @@
-import { ExprVec4, tag, PrimitiveVec4 } from "./expr";
 import { Vec4 } from "../exprtypes";
+import { ExprVec4, tag } from "./expr";
 
-// TODO the only reason this class exists is because `Operator<ExprVec4>` is not
-// actually a subclass of ExprVec4, so it doesn't have `genPrograms`
-/** set fragment color expression */
+/**
+ * set fragment color expression (not needed for the user; used internally for
+ * wrapping any kind of [[Vec4]] in an [[ExprVec4]])
+ */
 export class SetColorExpr extends ExprVec4 {
   vec: Vec4;
 
@@ -11,18 +12,4 @@ export class SetColorExpr extends ExprVec4 {
     super(tag`(${vec})`, ["uVal"]);
     this.vec = vec;
   }
-
-  /** sets the value which will be set to the color */
-  setVal(vec: PrimitiveVec4) {
-    this.setUniform("uVal", vec);
-    this.vec = vec;
-  }
-}
-
-/**
- * sets the frag color to a new color
- * @param val the color to set the frag color to
- */
-export function setcolor(val: Vec4) {
-  return new SetColorExpr(val);
 }
