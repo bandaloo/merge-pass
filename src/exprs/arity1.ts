@@ -24,7 +24,6 @@ type Arity1HomogenousName =
   | "abs"
   | "sign"
   | "fract"
-  | "mod"
   | "min"
   | "max";
 

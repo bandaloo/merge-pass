@@ -2,7 +2,8 @@ import { AllVals, Float, Vec2, Vec3, Vec4 } from "../exprtypes";
 import { Operator, PrimitiveFloat, wrapInValue, SourceLists } from "./expr";
 
 /** valid function names for [[a2]] */
-type Arity2HomogenousName = "pow" | "step" | "mod";
+type Arity2HomogenousName = "pow" | "step" | "mod" | "atan";
+// note: glsl has atan(y/x) as well as atan(y, x)
 
 /** @ignore */
 function genArity1SourceList(

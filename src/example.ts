@@ -641,9 +641,7 @@ const demos: Demos = {
       [MP.godrays({ lightPos: MP.op(MP.mouse(), "/", MP.resolution()) })],
       sourceCanvas,
       gl,
-      {
-        channels: channels,
-      }
+      { channels: channels }
     );
     return {
       merger: merger,

@@ -29,10 +29,10 @@ export function brandWithChannel(
   funcIndex: number,
   samplerNum?: number
 ) {
-  samplerNum === undefined
+  samplerNum === undefined || samplerNum === -1
     ? (needs.neighborSample = true)
     : (needs.extraBuffers = new Set([samplerNum]));
-  if (samplerNum === undefined) return;
+  if (samplerNum === undefined || samplerNum === -1) return;
   const { origFuncName, newFuncName, ending } = nameExtractor(
     sourceLists,
     samplerNum !== undefined ? "_" + samplerNum : ""
