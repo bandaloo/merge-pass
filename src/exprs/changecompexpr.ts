@@ -55,7 +55,17 @@ export class ChangeCompExpr<T extends Vec, U extends AllVals> extends Op<T> {
   constructor(vec: T, setter: U, comps: string, op?: ArithOp) {
     checkChangeComponents(comps, setter, vec);
     // part of name of custom function
-    const suffix = `${vec.typeString()}_${setter.typeString()}_${comps}`;
+    const operation =
+      op === "+"
+        ? "plus"
+        : op === "-"
+        ? "minus"
+        : op === "*"
+        ? "mult"
+        : op === "/"
+        ? "div"
+        : "assign";
+    const suffix = `${vec.typeString()}_${setter.typeString()}_${comps}_${operation}`;
     super(
       vec,
       { sections: [`changecomp_${suffix}(`, ", ", ")"], values: [vec, setter] },
