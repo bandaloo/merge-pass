@@ -23,6 +23,7 @@ export class ChannelSampleExpr extends ExprVec4 {
     this.coord = coord;
     this.externalFuncs = [glslFuncs.channel];
     if (buf !== -1) this.needs.extraBuffers = new Set([buf]);
+    else this.needs.neighborSample = true;
   }
 
   setCoord(coord: PrimitiveVec2) {
