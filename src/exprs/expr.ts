@@ -138,7 +138,9 @@ export abstract class Expr implements Parseable, EffectLike {
       ? mult
       : this.sourceLists.values
           .map((v) => v.getSampleNum())
-          .reduce((acc, curr) => acc + curr, 0);
+          .reduce((acc, curr) => acc + curr, 0) > 0
+      ? mult
+      : 0;
   }
 
   /**

@@ -947,6 +947,20 @@ const demos: Demos = {
       },
     };
   },
+
+  doublesample: (channels: TexImageSource[] = []) => {
+    const colExpr = MP.channel(-1, MP.vec2(0.5, 0.5));
+    const edge = MP.edgecolor(colExpr);
+    console.log(edge);
+    const merger = new MP.Merger([edge], sourceCanvas, gl, {
+      channels: channels,
+    });
+
+    return {
+      merger: merger,
+      change: () => {},
+    };
+  },
 };
 
 interface Draws {
@@ -1237,6 +1251,7 @@ const draws: Draws = {
   region: [stripes, vectorSpiral],
   channelregion: [stripes, higherOrderSpiral([255, 0, 0], [0, 0, 0])],
   loopregion: [stripes, higherOrderSpiral([255, 0, 0], [0, 0, 0])],
+  doublesample: [stripes],
 };
 
 interface Notes {
@@ -1376,6 +1391,9 @@ const notes: Notes = {
     "this effect requires a temporary texture. the default assumes it is in channel 1 " +
     "(since you might already have a depth texture in channel 0.) this can be changed with " +
     "the fifth parameter <code>samplerNum</code> (not used in this example)",
+  doublesample:
+    "nothing too interesting here; this is mostly just a test case to check " +
+    "that neighbor sampling expressions can be nested",
 };
 
 const canvases = [sourceCanvas];
